@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LCKD—IN · Execute Without Excuses</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0B0A08;
+  --bg2:#111009;
+  --bg3:#171612;
+  --bg4:#1D1C16;
+  --line:#222118;
+  --line2:#2E2D24;
+  --line3:#3C3B30;
+  --text:#F2F0E6;
+  --text2:#B4B2A8;
+  --text3:#6A6960;
+  --text4:#3A3930;
+  --lime:#C8FF00;
+  --lime2:#A8D600;
+  --amber:#FF9F0A;
+  --g0:#0A0C04;
+  --g1:#111A02;
+  --g2:#1C2E04;
+  --g3:#2E4A08;
+  --g4:#4A7410;
+  --g5:#C8FF00;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Space Grotesk',sans-serif;
+  --serif:'Playfair Display',serif;
+  --spring:cubic-bezier(0.34,1.56,0.64,1);
+  --ease:cubic-bezier(0.16,1,0.3,1);
+  --ease2:cubic-bezier(0.25,0.46,0.45,0.94);
+}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased;cursor:none;overflow-x:hidden}
+::selection{background:var(--lime);color:var(--bg)}
+input,button{font-family:var(--sans);cursor:none}
+::-webkit-scrollbar{width:2px}
+::-webkit-scrollbar-thumb{background:var(--line2)}
+
+/* ── CURSOR ── */
+#cur{position:fixed;width:10px;height:10px;background:var(--lime);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s var(--spring),height .2s var(--spring),opacity .2s,background .2s;mix-blend-mode:difference}
+#cur2{position:fixed;width:36px;height:36px;border:1px solid rgba(200,255,0,.3);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .35s var(--ease),height .35s var(--ease),border-color .35s,transform .1s linear;will-change:transform}
+body:has(button:hover) #cur,body:has(a:hover) #cur{width:20px;height:20px}
+body:has(button:hover) #cur2,body:has(a:hover) #cur2{width:56px;height:56px;border-color:rgba(200,255,0,.6)}
+body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
+
+/* ── NAV ── */
+#nav{position:fixed;inset:0 0 auto;z-index:500;height:52px;border-bottom:1px solid var(--line);background:rgba(11,10,8,0.92);backdrop-filter:blur(20px)}
+.nav-in{max-width:1320px;margin:0 auto;padding:0 40px;height:100%;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.06em;cursor:none}
+.logo em{font-style:normal;color:var(--lime)}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nl{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);background:none;border:none;padding:4px 0;cursor:none;transition:color .2s;position:relative}
+.nl::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1px;background:var(--lime);transition:width .3s var(--ease)}
+.nl:hover{color:var(--text)}.nl:hover::after{width:100%}
+.nav-cta{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:8px 20px;border:1px solid var(--line3);color:var(--text);background:transparent;cursor:none;transition:all .2s;position:relative;overflow:hidden}
+.nav-cta::before{content:'';position:absolute;inset:0;background:var(--lime);transform:translateY(100%);transition:transform .25s var(--ease)}
+.nav-cta span{position:relative;z-index:1;transition:color .25s}
+.nav-cta:hover::before{transform:translateY(0)}
+.nav-cta:hover span{color:var(--bg)}
+
+/* ── HERO ── */
+#hero{min-height:100vh;display:grid;grid-template-rows:1fr auto;padding-top:52px;position:relative;overflow:hidden}
+.hero-main{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 24px 40px}
+.hero-ticker{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--text3);margin-bottom:44px;display:flex;align-items:center;gap:12px;opacity:0;animation:fadeUp .6s var(--ease) .1s forwards}
+.ticker-dot{width:5px;height:5px;background:var(--lime);border-radius:50%;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
+.hero-count{font-family:var(--mono);font-weight:800;font-size:clamp(56px,12vw,156px);line-height:1;letter-spacing:-.05em;white-space:nowrap;opacity:0;animation:fadeUp .9s var(--ease) .2s forwards}
+.hero-count .sl{color:var(--text4);font-weight:300}
+.blink-cur{display:inline-block;width:clamp(4px,.8vw,13px);height:clamp(36px,8vw,102px);background:var(--lime);vertical-align:middle;margin-left:2px;animation:blink 1s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.hero-serif{font-family:var(--serif);font-style:italic;font-size:clamp(16px,2.2vw,26px);color:var(--text3);margin-top:18px;letter-spacing:.02em;opacity:0;animation:fadeUp .7s var(--ease) .55s forwards}
+.hero-btns{display:flex;gap:10px;margin-top:40px;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeUp .7s var(--ease) .7s forwards}
+.btn-fill{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:14px 34px;background:var(--text);color:var(--bg);border:none;cursor:none;font-weight:700;transition:all .2s;position:relative;overflow:hidden}
+.btn-fill::after{content:'';position:absolute;inset:0;background:var(--lime);transform:translateX(-100%);transition:transform .25s var(--ease)}
+.btn-fill:hover::after{transform:translateX(0)}
+.btn-fill span{position:relative;z-index:1}
+.btn-stroke{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:14px 34px;background:transparent;color:var(--text3);border:1px solid var(--line2);cursor:none;transition:all .2s}
+.btn-stroke:hover{color:var(--text);border-color:var(--line3)}
+/* hero bottom bar */
+.hero-bar{border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);opacity:0;animation:fadeUp .7s var(--ease) .9s forwards}
+.hb{padding:18px 24px;border-right:1px solid var(--line)}
+.hb:last-child{border-right:none}
+.hb-v{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--text);line-height:1}
+.hb-k{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-top:4px}
+/* scroll hint */
+.scroll-hint{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fadeUp .6s var(--ease) 1.2s forwards}
+.scroll-line{width:1px;height:48px;background:linear-gradient(to bottom,var(--lime),transparent);animation:scrollDown 2s ease-in-out infinite}
+@keyframes scrollDown{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+.scroll-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--text4)}
+
+/* ── MARQUEE ── */
+.marquee-wrap{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0;overflow:hidden;background:var(--bg2)}
+.marquee-track{display:flex;gap:0;animation:marquee 25s linear infinite;width:max-content}
+.marquee-track:hover{animation-play-state:paused}
+.mi{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);padding:0 32px;white-space:nowrap;display:flex;align-items:center;gap:12px}
+.mi em{font-style:normal;color:var(--lime)}
+.mi .sep{color:var(--line3)}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ── QUOTES ── */
+#quotes{min-height:60vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-top:1px solid var(--line)}
+.q-bg{position:absolute;inset:0;transition:background 1s ease}
+.q-overlay{position:absolute;inset:0;background:rgba(11,10,8,.55)}
+.q-content{position:relative;z-index:1;max-width:760px;padding:80px 40px;text-align:center}
+.q-tag{font-family:var(--mono);font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:rgba(200,255,0,.6);margin-bottom:32px}
+.q-text{font-family:var(--serif);font-style:italic;font-size:clamp(22px,4vw,50px);line-height:1.35;color:var(--text);margin-bottom:24px;min-height:160px;display:flex;align-items:center;justify-content:center}
+.q-author{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);margin-bottom:36px}
+.q-controls{display:flex;align-items:center;justify-content:center;gap:16px}
+.q-dot{width:5px;height:5px;border-radius:50%;background:var(--line3);border:none;cursor:none;transition:all .25s;padding:0}
+.q-dot.on{background:var(--lime);transform:scale(1.4)}
+.q-arrow{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:8px 16px;border:1px solid var(--line2);background:transparent;color:var(--text3);cursor:none;transition:all .2s}
+.q-arrow:hover{border-color:var(--text);color:var(--text)}
+
+/* ── CHALLENGE ── */
+#challenge{padding:100px 40px;border-top:1px solid var(--line)}
+.ch-in{max-width:1320px;margin:0 auto}
+.ch-top{display:grid;grid-template-columns:1fr auto;align-items:end;margin-bottom:48px;gap:40px}
+.ch-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line)}
+.ch-card{padding:36px 28px;cursor:none;transition:background .2s;border-right:1px solid var(--line);position:relative;overflow:hidden}
+.ch-card:last-child{border-right:none}
+.ch-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:transparent;transition:background .25s}
+.ch-card.on{background:var(--bg2)}.ch-card.on::before{background:var(--lime)}
+.ch-card:hover{background:var(--bg3)}
+.ch-card:hover::before{background:rgba(200,255,0,.4)}
+.ch-num{font-family:var(--mono);font-size:52px;font-weight:700;letter-spacing:-.03em;line-height:1;color:var(--text);margin-bottom:8px;transition:color .2s}
+.ch-card.on .ch-num{color:var(--lime)}
+.ch-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
+.ch-desc{font-size:13px;font-weight:300;color:var(--text3);line-height:1.7}
+.ch-sel-badge{position:absolute;top:14px;right:14px;font-family:var(--mono);font-size:7px;letter-spacing:.14em;text-transform:uppercase;padding:3px 7px;background:var(--lime);color:var(--bg);font-weight:700;opacity:0;transition:opacity .2s}
+.ch-card.on .ch-sel-badge{opacity:1}
+.ch-custom-row{border:1px solid var(--line);border-top:none;padding:20px 28px;display:none;align-items:center;gap:20px;background:var(--bg2)}
+.ch-custom-row.show{display:flex}
+.ch-ci{background:transparent;border:none;border-bottom:1px solid var(--line2);color:var(--lime);font-family:var(--mono);font-size:32px;font-weight:700;width:90px;outline:none;padding:4px 0;transition:border-color .2s}
+.ch-ci:focus{border-color:var(--lime)}
+.ch-cu{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:.12em}
+.ch-cu-lbl{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.16em;text-transform:uppercase}
+.sel-readout{font-family:var(--mono);font-size:52px;font-weight:700;color:var(--lime);letter-spacing:-.03em;line-height:1;text-align:right}
+.sel-readout-lbl{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;text-align:right;margin-top:4px}
+
+/* ── SECTION BASE ── */
+.sec{padding:120px 40px;border-top:1px solid var(--line)}
+.sec-in{max-width:1320px;margin:0 auto}
+.ey{font-family:var(--mono);font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--text3);margin-bottom:60px;display:flex;align-items:center;gap:12px}
+.ey::after{content:'';flex:0 0 24px;height:1px;background:var(--line2)}
+.disp{font-size:clamp(36px,5vw,62px);font-weight:800;line-height:.98;letter-spacing:-.04em}
+.disp em{font-style:normal;color:var(--lime)}
+.bod{font-size:15px;font-weight:300;line-height:1.85;color:var(--text2)}
+
+/* ── REVEAL ── */
+.rv{opacity:0;transform:translateY(30px);transition:opacity .75s var(--ease),transform .75s var(--ease)}
+.rv.in{opacity:1;transform:none}
+.rv.d1{transition-delay:.1s}.rv.d2{transition-delay:.2s}.rv.d3{transition-delay:.3s}
+
+/* ── GRID ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:center}
+.prof-bar{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.1em;margin-bottom:14px;display:flex;justify-content:space-between}
+.prof-bar span{color:var(--text)}
+.disc-grid{display:grid;grid-template-columns:repeat(20,1fr);gap:4px}
+.dc{aspect-ratio:1;border-radius:2px;background:var(--bg4);border:1px solid rgba(255,255,255,.04);cursor:none;transition:transform .12s var(--spring),filter .12s;opacity:0}
+.dc.show{opacity:1;transition:opacity .4s ease,transform .12s var(--spring),filter .12s}
+.dc:hover{transform:scale(1.5);z-index:10;position:relative;filter:brightness(1.6)}
+.dc.v1{background:var(--g1);border-color:#1C2804}
+.dc.v2{background:var(--g2);border-color:#2E4208}
+.dc.v3{background:var(--g3);border-color:#3E600A}
+.dc.v4{background:var(--g4);border-color:#588C14}
+.dc.v5{background:var(--g5);border-color:var(--lime2)}
+.dc.today{box-shadow:0 0 0 1.5px var(--lime),0 0 16px rgba(200,255,0,.3)}
+.dc.future{background:var(--bg2);opacity:0}
+.dc.future.show{opacity:.14}
+.dc.pivot{background:#140E02;border-color:#2E2004}
+.g-legend{display:flex;align-items:center;gap:7px;margin-top:14px;flex-wrap:wrap}
+.gl{font-family:var(--mono);font-size:9px;color:var(--text3)}
+.glc{width:11px;height:11px;border-radius:2px;flex-shrink:0}
+.g-stats{margin-top:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.gst{background:var(--bg);padding:16px}
+.gst-v{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--text)}
+.gst-k{font-family:var(--mono);font-size:8px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-top:5px}
+.share-bar{display:flex;border:1px solid var(--line2);margin-top:20px;overflow:hidden}
+.share-url{font-family:var(--mono);font-size:11px;color:var(--text3);padding:12px 16px;flex:1}
+.share-url b{color:var(--text);font-weight:400}
+.share-copy{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:12px 18px;background:transparent;color:var(--text3);border:none;border-left:1px solid var(--line2);cursor:none;transition:all .15s;white-space:nowrap}
+.share-copy:hover{background:var(--text);color:var(--bg)}
+
+/* ── HORIZONTAL FEATURE STRIP ── */
+#features{padding:0;border-top:1px solid var(--line);overflow:hidden}
+.feat-header{padding:80px 40px 60px;max-width:1320px;margin:0 auto}
+.feat-scroll{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;cursor:grab;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.feat-scroll:active{cursor:grabbing}
+.feat-scroll::-webkit-scrollbar{display:none}
+.feat-card{min-width:360px;padding:48px 40px;border-right:1px solid var(--line);flex-shrink:0;transition:background .2s;position:relative}
+.feat-card:hover{background:var(--bg2)}
+.feat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:transparent;transition:background .3s}
+.feat-card:hover::after{background:var(--lime)}
+.feat-tag{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);margin-bottom:32px}
+.feat-n{font-family:var(--mono);font-size:11px;color:var(--lime);font-weight:600;margin-bottom:10px}
+.feat-h{font-size:26px;font-weight:700;letter-spacing:-.025em;line-height:1.1;margin-bottom:16px}
+.feat-b{font-size:13px;font-weight:300;color:var(--text2);line-height:1.8}
+.feat-hint{padding:16px 40px;font-family:var(--mono);font-size:9px;color:var(--text4);letter-spacing:.14em;text-transform:uppercase;border-top:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.feat-hint::before{content:'←→';color:var(--lime);font-size:11px}
+
+/* ── DASHBOARD ── */
+.dash-layout{display:grid;grid-template-columns:1fr 420px;gap:100px;align-items:start}
+.tab-row{display:flex;gap:0;margin-bottom:28px}
+.tab{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;padding:9px 18px;border:1px solid var(--line2);background:transparent;color:var(--text3);cursor:none;margin-right:-1px;transition:all .15s}
+.tab.on{background:var(--text);color:var(--bg);border-color:var(--text);z-index:1;position:relative}
+.phone{background:var(--bg3);border:1px solid var(--line2);overflow:hidden;transform:perspective(1000px) rotateY(-4deg) rotateX(2deg);transition:transform .4s var(--ease);box-shadow:24px 24px 60px rgba(0,0,0,.5),-4px -4px 20px rgba(200,255,0,.03)}
+.phone:hover{transform:perspective(1000px) rotateY(0deg) rotateX(0deg)}
+.ph-bar{padding:13px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.ph-logo{font-family:var(--mono);font-size:12px;font-weight:600}
+.ph-logo em{font-style:normal;color:var(--lime)}
+.ph-meta{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase}
+.ph-head{padding:22px 20px 16px;border-bottom:1px solid var(--line)}
+.ph-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ph-day-lbl{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px}
+.ph-day-n{font-family:var(--mono);font-size:32px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.ph-day-n span{color:var(--text3);font-weight:300}
+.ring{position:relative;width:64px;height:64px;flex-shrink:0}
+.ring svg{transform:rotate(-90deg)}
+.ring-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-p{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--lime);line-height:1}
+.ring-s{font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:1px}
+.ph-prog{display:flex;gap:2px;margin-bottom:7px}
+.ps{height:2px;flex:1;background:var(--bg);border-radius:0}
+.ps.d{background:rgba(242,240,230,.5)}
+.ps.c{background:rgba(242,240,230,.18)}
+.ph-score{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase}
+.rw-wrap{max-height:300px;overflow-y:auto}
+.rw-wrap::-webkit-scrollbar{width:1px}
+.rw-wrap::-webkit-scrollbar-thumb{background:var(--line2)}
+.rrow{display:flex;align-items:center;gap:10px;padding:10px 20px;border-bottom:1px solid rgba(255,255,255,.03);cursor:none;transition:background .1s;user-select:none}
+.rrow:hover{background:var(--bg4)}
+.rrow:last-child{border-bottom:none}
+.rn{font-family:var(--mono);font-size:8px;color:var(--text3);width:15px;flex-shrink:0}
+.rbox{width:15px;height:15px;border:1px solid var(--line2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:transparent;transition:all .15s;border-radius:1px}
+.rrow.ck .rbox{background:var(--text);border-color:var(--text);color:var(--bg)}
+.rtxt{font-size:12px;color:rgba(242,240,230,.5);flex:1;line-height:1.3;transition:color .15s}
+.rrow.ck .rtxt{color:var(--text3);text-decoration:line-through;text-decoration-color:var(--line2)}
+.rflag{font-family:var(--mono);font-size:7px;padding:2px 5px;border:1px solid #401818;color:#904040;flex-shrink:0}
+.ph-snap{padding:13px 20px;border-top:1px solid var(--line)}
+.snap-btn{width:100%;border:1px solid var(--line2);background:transparent;color:var(--text3);font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:12px;cursor:none;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden}
+.snap-btn::before{content:'';position:absolute;inset:0;background:var(--lime);transform:translateY(100%);transition:transform .25s var(--ease)}
+.snap-btn:hover{color:var(--bg);border-color:var(--lime)}
+.snap-btn:hover::before{transform:translateY(0)}
+.snap-btn span{position:relative;z-index:1}
+.spnl{display:none}.spnl.on{display:block}
+.snap-drop{margin:20px;border:1px dashed var(--line2);padding:44px 24px;text-align:center;cursor:none;transition:all .2s;position:relative;overflow:hidden}
+.snap-drop::before{content:'';position:absolute;inset:0;background:rgba(200,255,0,.03);opacity:0;transition:opacity .2s}
+.snap-drop:hover::before{opacity:1}
+.snap-drop:hover{border-color:var(--lime)}
+.snap-drop p{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.snap-drop small{font-family:var(--mono);font-size:8px;color:var(--text4)}
+.conf{display:none;padding:20px}
+.conf-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.conf-dot{width:6px;height:6px;background:var(--lime);border-radius:50%;animation:pulse 2s ease-in-out infinite;flex-shrink:0}
+.conf-ttl{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--lime)}
+.conf-sub{font-size:11px;color:var(--text2);font-weight:300;line-height:1.65;margin-bottom:14px}
+.cr-list{display:flex;flex-direction:column;gap:0;margin-bottom:14px}
+.cr{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03);cursor:none}
+.cr:last-child{border-bottom:none}
+.crb{width:13px;height:13px;border:1px solid var(--line2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;color:transparent;border-radius:1px;transition:all .15s}
+.crb.y{background:var(--text);border-color:var(--text);color:var(--bg)}
+.crtxt{font-size:11px;flex:1;line-height:1.3;color:rgba(242,240,230,.5)}
+.crtxt.y{color:rgba(242,240,230,.8)}
+.cr-low{font-family:var(--mono);font-size:7px;padding:2px 5px;border:1px solid #401818;color:#904040;flex-shrink:0}
+.cbtn{width:100%;background:var(--text);color:var(--bg);border:none;padding:12px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:none;font-weight:700;transition:background .15s;margin-bottom:6px;position:relative;overflow:hidden}
+.cbtn::after{content:'';position:absolute;inset:0;background:var(--lime);transform:translateX(-100%);transition:transform .25s var(--ease)}
+.cbtn:hover::after{transform:translateX(0)}
+.cbtn span{position:relative;z-index:1}
+.cbtn2{width:100%;background:transparent;color:var(--text3);border:1px solid var(--line2);padding:10px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;cursor:none;transition:all .15s}
+.cbtn2:hover{color:var(--text);border-color:var(--line3)}
+
+/* ── MUSIC ── */
+.music-widget{border:1px solid var(--line2);overflow:hidden}
+.mw-hd{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.mw-icon{width:30px;height:30px;background:linear-gradient(135deg,#FC3C44,#FF8A80);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.mw-ttl{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text)}
+.mw-sub{font-family:var(--mono);font-size:8px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+.mw-conn{margin-left:auto;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:5px 11px;border:1px solid var(--line2);color:var(--text3);background:transparent;cursor:none;transition:all .15s}
+.mw-conn:hover{border-color:var(--text);color:var(--text)}
+.mw-tracks{padding:4px 0}
+.mw-track{display:flex;align-items:center;gap:12px;padding:10px 18px;cursor:none;transition:background .15s;border-bottom:1px solid rgba(255,255,255,.03)}
+.mw-track:hover,.mw-track.playing{background:var(--bg4)}
+.mw-track:last-child{border-bottom:none}
+.mw-art{width:34px;height:34px;border-radius:3px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.mw-info{flex:1;min-width:0}
+.mw-tn{font-size:12px;color:rgba(242,240,230,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;transition:color .15s}
+.mw-track.playing .mw-tn{color:var(--lime)}
+.mw-ta{font-family:var(--mono);font-size:9px;color:var(--text3)}
+.mw-bars{display:flex;align-items:flex-end;gap:2px;height:14px;flex-shrink:0;opacity:0;transition:opacity .2s}
+.mw-track.playing .mw-bars{opacity:1}
+.mb{width:3px;background:var(--lime);border-radius:1px}
+.mb:nth-child(1){animation:mb 1s .0s ease-in-out infinite alternate;height:100%}
+.mb:nth-child(2){animation:mb 1s .2s ease-in-out infinite alternate;height:60%}
+.mb:nth-child(3){animation:mb 1s .4s ease-in-out infinite alternate;height:80%}
+@keyframes mb{0%{height:20%}100%{height:100%}}
+.mw-ft{padding:12px 18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:9px;color:var(--text3);display:flex;align-items:center;gap:6px;letter-spacing:.06em}
+.mw-ft-dot{width:5px;height:5px;background:var(--lime);border-radius:50%;animation:pulse 2s ease-in-out infinite;flex-shrink:0}
+
+/* ── AI ── */
+.ai-2{display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:center}
+.insights{border:1px solid var(--line);margin-top:28px}
+.ins{display:flex;gap:16px;padding:20px 24px;border-bottom:1px solid var(--line);transition:background .2s}
+.ins:last-child{border-bottom:none}
+.ins:hover{background:var(--bg2)}
+.ins-dot{width:5px;height:5px;background:var(--lime);border-radius:50%;flex-shrink:0;margin-top:8px}
+.ins-txt{font-size:13px;font-weight:300;color:var(--text2);line-height:1.8}
+.ins-txt strong{color:var(--text);font-weight:600}
+.ai-card{border:1px solid var(--line2)}
+.ai-ch{padding:18px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.ai-pulse{width:6px;height:6px;background:var(--lime);border-radius:50%;animation:pulse 2s ease-in-out infinite;flex-shrink:0}
+.ai-ttl{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--lime)}
+.ai-body{padding:24px}
+.ai-msg{font-size:13px;line-height:1.85;color:var(--text2);margin-bottom:24px}
+.ai-msg strong{color:var(--text);font-weight:600;display:block;margin-bottom:8px}
+.ai-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.ast{background:var(--bg);padding:16px}
+.ast-v{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--text)}
+.ast-k{font-family:var(--mono);font-size:8px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-top:4px}
+
+/* ── PIVOT ── */
+.piv-2{display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:start}
+.steps{border:1px solid var(--line)}
+.step{padding:28px 32px;border-bottom:1px solid var(--line);display:flex;gap:20px;transition:background .2s}
+.step:last-child{border-bottom:none}
+.step:hover{background:var(--bg2)}
+.step-n{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--lime);flex-shrink:0;line-height:1.5}
+.step-h{font-size:15px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px}
+.step-b{font-size:13px;font-weight:300;color:var(--text2);line-height:1.7}
+
+/* ── WEARABLES ── */
+.wear-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:28px}
+.wc{background:var(--bg);padding:24px;position:relative;overflow:hidden;transition:background .2s}
+.wc:hover{background:var(--bg2)}
+.wc-src{position:absolute;top:14px;right:14px;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border:1px solid var(--line);color:var(--text3)}
+.wc-ico{font-size:18px;margin-bottom:12px}
+.wc-val{font-family:var(--mono);font-size:26px;font-weight:600;color:var(--text);line-height:1;margin-bottom:3px}
+.wc-key{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase}
+.wc-tr{font-family:var(--mono);font-size:10px;margin-top:8px}
+.up{color:#34C759}.dn{color:#FF453A}.nu{color:var(--text3)}
+
+/* ── WAITLIST ── */
+#waitlist{padding:140px 40px;border-top:1px solid var(--line);text-align:center;position:relative}
+.wl-in{max-width:560px;margin:0 auto;position:relative}
+.wl-tag{font-family:var(--mono);font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--text3);margin-bottom:28px}
+.wl-h{font-size:clamp(48px,8vw,96px);font-weight:800;line-height:.93;letter-spacing:-.05em;margin-bottom:28px}
+.wl-h em{font-style:normal;color:var(--lime)}
+.wl-sub{font-size:15px;font-weight:300;color:var(--text2);line-height:1.8;margin-bottom:44px}
+.wl-form{display:flex;border:1px solid var(--line2);margin-bottom:14px;transition:border-color .2s;position:relative;overflow:hidden}
+.wl-form:focus-within{border-color:var(--line3)}
+.wl-input{flex:1;background:transparent;border:none;padding:16px 20px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;position:relative;z-index:1}
+.wl-input::placeholder{color:var(--text3)}
+.wl-go{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:16px 28px;background:var(--text);color:var(--bg);border:none;cursor:none;font-weight:700;transition:background .2s;white-space:nowrap;position:relative;overflow:hidden;z-index:1}
+.wl-go::after{content:'';position:absolute;inset:0;background:var(--lime);transform:translateY(100%);transition:transform .25s var(--ease)}
+.wl-go:hover::after{transform:translateY(0)}
+.wl-go span{position:relative;z-index:1}
+.wl-note{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.04em}
+#wl-done{display:none;font-family:var(--mono);font-size:12px;color:var(--lime);letter-spacing:.16em;text-transform:uppercase;margin-top:20px}
+.wl-soc{margin-top:40px;display:flex;align-items:center;justify-content:center;gap:14px}
+.wl-avs{display:flex}
+.wl-av{width:30px;height:30px;border-radius:50%;border:2px solid var(--bg);background:var(--bg4);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text);margin-left:-9px}
+.wl-av:first-child{margin-left:0}
+.wl-soc-txt{font-family:var(--mono);font-size:10px;color:var(--text3)}
+.wl-soc-txt strong{color:var(--text)}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--line);padding:32px 40px}
+.foot-in{max-width:1320px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.foot-logo{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.05em}
+.foot-logo em{font-style:normal;color:var(--lime)}
+.foot-r{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+
+@media(max-width:1024px){
+  .grid-2,.dash-layout,.ai-2,.piv-2{grid-template-columns:1fr}
+  .ch-cards{grid-template-columns:repeat(2,1fr)}
+  .wear-grid{grid-template-columns:1fr}
+  .nav-links .nl{display:none}
+  .sec{padding:80px 24px}
+  #waitlist{padding:80px 24px}
+  #challenge{padding:80px 24px}
+  .nav-in{padding:0 24px}
+  footer{padding:24px}
+  .ch-top{grid-template-columns:1fr}
+  .phone{transform:none}
+  .phone:hover{transform:none}
+  #cur,#cur2{display:none}
+  body{cursor:auto}
+  button,input{cursor:pointer}
+}
+@media(max-width:560px){
+  .ch-cards{grid-template-columns:1fr 1fr}
+  .wl-form{flex-direction:column}
+  .hero-count{font-size:clamp(44px,14vw,90px)}
+}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur2"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-in">
+    <div class="logo">LCKD<em>—</em>IN</div>
+    <div class="nav-links">
+      <button class="nl" onclick="goto('challenge')">Challenge</button>
+      <button class="nl" onclick="goto('grid')">Grid</button>
+      <button class="nl" onclick="goto('dashboard')">Dashboard</button>
+      <button class="nl" onclick="goto('coach')">AI Coach</button>
+      <button class="nav-cta" onclick="goto('waitlist')"><span>Join waitlist</span></button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-main">
+    <div class="hero-ticker"><div class="ticker-dot"></div><span id="hero-tag">120-day discipline protocol · zero dopamine</span></div>
+    <div class="hero-count">DAY <span id="hday">001</span><span class="sl"> / </span><span id="htotal">120</span><span class="blink-cur"></span></div>
+    <div class="hero-serif" id="hero-quote-mini">"Consistency over Perfection"</div>
+    <div class="hero-btns">
+      <button class="btn-fill" onclick="goto('waitlist')"><span>Join the waitlist</span></button>
+      <button class="btn-stroke" onclick="goto('dashboard')">See it in action</button>
+    </div>
+  </div>
+  <div class="scroll-hint"><div class="scroll-line"></div><div class="scroll-lbl">Scroll</div></div>
+  <div class="hero-bar">
+    <div class="hb"><div class="hb-v" id="hb-days">120</div><div class="hb-k">Day protocol</div></div>
+    <div class="hb"><div class="hb-v">20</div><div class="hb-k">Daily rules</div></div>
+    <div class="hb"><div class="hb-v">Zero</div><div class="hb-k">Gamification</div></div>
+    <div class="hb"><div class="hb-v">Public</div><div class="hb-k">Discipline grid</div></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track" id="mq"></div>
+</div>
+
+<!-- QUOTES -->
+<section id="quotes">
+  <div class="q-bg" id="q-bg"></div>
+  <div class="q-overlay"></div>
+  <div class="q-content">
+    <div class="q-tag">Daily fuel</div>
+    <div class="q-text" id="q-text"></div>
+    <div class="q-author" id="q-author"></div>
+    <div class="q-controls">
+      <button class="q-arrow" onclick="prevQ()">← Prev</button>
+      <div id="q-dots"></div>
+      <button class="q-arrow" onclick="nextQ()">Next →</button>
+    </div>
+  </div>
+</section>
+
+<!-- CHALLENGE -->
+<section id="challenge">
+  <div class="ch-in">
+    <div class="ch-top rv">
+      <div>
+        <div class="ey" style="margin-bottom:16px">Choose your protocol</div>
+        <div class="disp" style="margin-bottom:16px">Set your<br><em>timeline.</em></div>
+        <p class="bod">30 days to test it. 75 to prove it. 120 to become it. Or go custom.</p>
+      </div>
+      <div>
+        <div class="sel-readout" id="sel-readout">120</div>
+        <div class="sel-readout-lbl">days selected</div>
+      </div>
+    </div>
+    <div class="ch-cards rv d1">
+      <div class="ch-card" onclick="selDays(30,this)">
+        <div class="ch-sel-badge">Selected</div>
+        <div class="ch-num">30</div><div class="ch-lbl">Days · Starter</div>
+        <div class="ch-desc">Test the system. Build the habit. One month of locked-in execution.</div>
+      </div>
+      <div class="ch-card" onclick="selDays(75,this)">
+        <div class="ch-sel-badge">Selected</div>
+        <div class="ch-num">75</div><div class="ch-lbl">Days · Hard</div>
+        <div class="ch-desc">The 75 Hard standard. No off days, no substitutions, no excuses.</div>
+      </div>
+      <div class="ch-card on" onclick="selDays(120,this)">
+        <div class="ch-sel-badge">Selected</div>
+        <div class="ch-num">120</div><div class="ch-lbl">Days · S.I. Challenge</div>
+        <div class="ch-desc">The full self-improvement protocol. Where identities change permanently.</div>
+      </div>
+      <div class="ch-card" onclick="selDays(0,this)">
+        <div class="ch-sel-badge">Selected</div>
+        <div class="ch-num" id="ch-custom-preview">—</div><div class="ch-lbl">Days · Custom</div>
+        <div class="ch-desc">Your number. Your protocol. No templates, no limits.</div>
+      </div>
+    </div>
+    <div class="ch-custom-row" id="ch-custom-row">
+      <div class="ch-cu-lbl">Enter days</div>
+      <input class="ch-ci" id="ch-ci" type="number" min="1" max="999" placeholder="90" oninput="updateCustom(this.value)">
+      <div class="ch-cu">days</div>
+    </div>
+  </div>
+</section>
+
+<!-- GRID -->
+<section class="sec" id="grid">
+  <div class="sec-in">
+    <div class="ey rv">Public discipline grid</div>
+    <div class="grid-2">
+      <div class="rv">
+        <div class="disp" style="margin-bottom:24px">Your streak<br>is <em>public.</em><br>Own it.</div>
+        <p class="bod" style="margin-bottom:32px">120 squares. White for perfect. Green gradient for partial. Dark for a miss. One link that says everything about your discipline without a word.</p>
+        <div class="share-bar">
+          <div class="share-url">lckd-in.com/<b>jashwanth</b></div>
+          <button class="share-copy" id="copy-btn" onclick="copyLink()">Copy link</button>
+        </div>
+      </div>
+      <div class="rv d2">
+        <div class="prof-bar"><span>@jashwanth</span><span>day 1 / 120 · 26 jun 2026</span></div>
+        <div class="disc-grid" id="disc-grid"></div>
+        <div class="g-legend" style="margin-top:14px">
+          <span class="gl">Miss</span>
+          <div class="glc" style="background:var(--bg4)"></div>
+          <div class="glc" style="background:var(--g1)"></div>
+          <div class="glc" style="background:var(--g2)"></div>
+          <div class="glc" style="background:var(--g3)"></div>
+          <div class="glc" style="background:var(--g4)"></div>
+          <div class="glc" style="background:var(--g5)"></div>
+          <span class="gl">Perfect</span>
+          <div class="glc" style="background:#140E02;position:relative"><div style="width:5px;height:5px;background:var(--amber);border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"></div></div>
+          <span class="gl">Pivot</span>
+        </div>
+        <div class="g-stats">
+          <div class="gst"><div class="gst-v">1</div><div class="gst-k">Current day</div></div>
+          <div class="gst"><div class="gst-v">70%</div><div class="gst-k">Today's score</div></div>
+          <div class="gst"><div class="gst-v">14/20</div><div class="gst-k">Rules done</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES horizontal scroll -->
+<section id="features">
+  <div class="feat-header rv">
+    <div class="ey" style="margin-bottom:16px">What makes it different</div>
+    <div class="disp">Built different.<br><em>Works different.</em></div>
+  </div>
+  <div class="feat-scroll" id="feat-scroll">
+    <div class="feat-card"><div class="feat-tag">Vision AI</div><div class="feat-n">01</div><div class="feat-h">Snap &amp; Track</div><div class="feat-b">Photo your handwritten journal. AI reads every checkmark and maps them to your rules — with a confidence review so you control what gets logged. No manual entry.</div></div>
+    <div class="feat-card"><div class="feat-tag">Pattern analysis</div><div class="feat-n">02</div><div class="feat-h">Behavioral AI Coach</div><div class="feat-b">Seven-day rolling analysis finds your causal bottleneck. If screen time fails every time you sleep past 11:30 PM — the coach names that correlation and fixes the root.</div></div>
+    <div class="feat-card"><div class="feat-tag">Streak integrity</div><div class="feat-n">03</div><div class="feat-h">Pivot Protocol</div><div class="feat-b">Break your streak on Day 34? You don't reset to zero. The AI adapts your protocol, marks a pivot on your grid, and keeps you executing. Three pivots per protocol.</div></div>
+    <div class="feat-card"><div class="feat-tag">Biometric data</div><div class="feat-n">04</div><div class="feat-h">Wearable Sync</div><div class="feat-b">Apple Health, Whoop, Oura, Garmin — connect your device and LCKD—IN auto-logs sleep, HRV, steps, and activity into your daily rules. Zero manual entry.</div></div>
+    <div class="feat-card"><div class="feat-tag">Ambient sound</div><div class="feat-n">05</div><div class="feat-h">Rule-matched Music</div><div class="feat-b">Connect Spotify or Apple Music. The app detects your active rule — workout, deep work, meditation — and queues the right playlist automatically. Context-aware audio.</div></div>
+    <div class="feat-card" style="border-right:none"><div class="feat-tag">Social proof</div><div class="feat-n">06</div><div class="feat-h">Public Grid Profile</div><div class="feat-b">Your discipline grid lives at lckd-in.com/yourname. Link it in your bio. Every square you earn is permanent — public accountability with no way to hide.</div></div>
+  </div>
+  <div class="feat-hint rv">Drag to explore all features</div>
+</section>
+
+<!-- DASHBOARD -->
+<section class="sec" id="dashboard">
+  <div class="sec-in">
+    <div class="ey rv">Daily dashboard</div>
+    <div class="dash-layout">
+      <div class="rv">
+        <div class="disp" style="margin-bottom:20px">Five seconds.<br>Log your <em>day.</em></div>
+        <p class="bod" style="margin-bottom:32px">One checklist. One ring. No noise. All 20 rules from the 120 S.I. Challenge — your actual protocol. Toggle any rule. Try Snap & Track to simulate AI vision logging.</p>
+        <div class="tab-row">
+          <button class="tab on" id="tab-day" onclick="switchTab('day')">Day view</button>
+          <button class="tab" id="tab-snap" onclick="switchTab('snap')">Snap &amp; track</button>
+        </div>
+
+        <!-- Music widget here -->
+        <div class="music-widget" style="margin-top:28px">
+          <div class="mw-hd">
+            <div class="mw-icon">♫</div>
+            <div><div class="mw-ttl">Now Playing</div><div class="mw-sub">Spotify · Apple Music</div></div>
+            <button class="mw-conn" onclick="alert('Coming in Phase 2 — join the waitlist for early access.')">Connect</button>
+          </div>
+          <div class="mw-tracks" id="mw-tracks"></div>
+          <div class="mw-ft"><div class="mw-ft-dot"></div>Auto-queued for: Workout → Rule 10</div>
+        </div>
+      </div>
+      <div class="rv d2">
+        <div class="phone" id="phone">
+          <div class="ph-bar"><div class="ph-logo">LCKD<em>—</em>IN</div><div class="ph-meta">day 1 · 26 jun</div></div>
+          <div class="spnl on" id="panel-day">
+            <div class="ph-head">
+              <div class="ph-top">
+                <div><div class="ph-day-lbl">Day</div><div class="ph-day-n">1 <span>/ 120</span></div></div>
+                <div class="ring">
+                  <svg width="64" height="64" viewBox="0 0 64 64">
+                    <circle cx="32" cy="32" r="26" fill="none" stroke="#1D1C16" stroke-width="6"/>
+                    <circle id="ring-arc" cx="32" cy="32" r="26" fill="none" stroke="#C8FF00" stroke-width="6" stroke-dasharray="163.4" stroke-dashoffset="49" stroke-linecap="square"/>
+                  </svg>
+                  <div class="ring-c"><div class="ring-p" id="ring-pct">70%</div><div class="ring-s">today</div></div>
+                </div>
+              </div>
+              <div class="ph-prog" id="ph-prog"></div>
+              <div class="ph-score" id="ph-score">Score: 14 / 20 · 70%</div>
+            </div>
+            <div class="rw-wrap" id="rules-wrap"></div>
+            <div class="ph-snap"><button class="snap-btn" onclick="switchTab('snap')"><span>↑ &nbsp;Snap &amp; track</span></button></div>
+          </div>
+          <div class="spnl" id="panel-snap">
+            <div style="padding:20px 20px 0">
+              <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px">Snap &amp; Track · AI Vision</div>
+              <div style="font-size:12px;font-weight:300;color:var(--text2);line-height:1.7">Upload your handwritten log. AI reads checkmarks and maps them to your 20 rules.</div>
+            </div>
+            <div class="snap-drop" onclick="showConf()"><p>↑ &nbsp;Drop image or tap to browse</p><small>JPG · PNG · HEIC · screenshot</small></div>
+            <div class="conf" id="conf">
+              <div class="conf-hd"><div class="conf-dot"></div><div class="conf-ttl">AI confidence — 87%</div></div>
+              <div class="conf-sub">Detected 14/20 rules completed (70%). Tap to correct — then confirm.</div>
+              <div class="cr-list" id="cr-list"></div>
+              <button class="cbtn" onclick="confirmLog()"><span>Confirm &amp; log day</span></button>
+              <button class="cbtn2" onclick="document.getElementById('conf').style.display='none'">Edit manually</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI COACH -->
+<section class="sec" id="coach" style="background:var(--bg2)">
+  <div class="sec-in">
+    <div class="ey rv">Behavioral AI coach</div>
+    <div class="ai-2">
+      <div class="rv">
+        <div class="disp" style="margin-bottom:20px">Not motivation.<br><em>Pattern</em><br>analysis.</div>
+        <p class="bod" style="margin-bottom:0">Seven-day rolling data across all 20 rules. The coach finds the causal chain — not the symptom — and gives one concrete fix per briefing.</p>
+        <div class="insights">
+          <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>Rule 7 (Sleep 11:30 PM) is your cascade trigger.</strong> Every time it's missed, Rules 8, 12, 13, 16 fail on the same day. 100% correlation across 7 days.</div></div>
+          <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>Screen time & social spike at night.</strong> Not willpower — it's the downstream effect of a missed sleep window. Fix the night, not the apps.</div></div>
+          <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>Tonight's fix:</strong> Phone in drawer by 10 PM. This one change resolves Rules 12, 13, 17, and 19 downstream.</div></div>
+        </div>
+      </div>
+      <div class="rv d2">
+        <div class="ai-card">
+          <div class="ai-ch"><div class="ai-pulse"></div><div class="ai-ttl">AI briefing · day 1 · 26 jun 2026</div></div>
+          <div class="ai-body">
+            <div class="ai-msg"><strong>6 rules missed today. Root cause: Rule 7.</strong>You went to sleep late → woke groggy → productivity collapsed → screen time spiked to compensate. This is a chain, not random failure. "Consistency over Perfection" — your own words on that journal. Tonight: act on them. Phone in drawer by 10 PM. One change. Everything else follows.</div>
+            <div class="ai-stats">
+              <div class="ast"><div class="ast-v">6</div><div class="ast-k">Rules missed</div></div>
+              <div class="ast"><div class="ast-v">70%</div><div class="ast-k">Today's score</div></div>
+              <div class="ast"><div class="ast-v">R7</div><div class="ast-k">Root cause</div></div>
+              <div class="ast"><div class="ast-v">5×</div><div class="ast-k">Downstream</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PIVOT -->
+<section class="sec" id="pivot">
+  <div class="sec-in">
+    <div class="ey rv">Pivot protocol</div>
+    <div class="piv-2">
+      <div class="rv">
+        <div class="disp" style="margin-bottom:20px">Quitting is<br>the only<br><em>failure.</em></div>
+        <p class="bod">Miss a day? LCKD—IN doesn't wipe your grid. Every square you earned stays earned. Three pivots are built into every protocol — use them with intention.</p>
+      </div>
+      <div class="rv d2">
+        <div class="steps">
+          <div class="step"><div class="step-n">01</div><div><div class="step-h">Intercept</div><div class="step-b">The AI activates the moment a day is missed — not to shame, but to diagnose. It pulls your 7-day history and identifies the exact failure before morning.</div></div></div>
+          <div class="step"><div class="step-n">02</div><div><div class="step-h">Adapt</div><div class="step-b">Your protocol adjusts — not resets. The failing rule is restructured. The grid marks an amber pivot square. Your streak is preserved.</div></div></div>
+          <div class="step"><div class="step-n">03</div><div><div class="step-h">Re-lock</div><div class="step-b">You're back executing the same day. Every square you've earned stays. Three pivots across the full protocol — use them with intention, not habit.</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WEARABLES -->
+<section class="sec" id="wearables" style="background:var(--bg2)">
+  <div class="sec-in">
+    <div class="ey rv">Biometric & wearable sync</div>
+    <div class="grid-2">
+      <div class="rv">
+        <div class="disp" style="margin-bottom:20px">Your body<br>tracks itself.<br><em>We read it.</em></div>
+        <p class="bod" style="margin-bottom:0">Apple Health, Whoop, Oura, Garmin — connect your wearable and LCKD—IN auto-logs sleep, HRV, steps, and activity into your daily rules. Zero manual entry for physical metrics.</p>
+        <div class="wear-grid">
+          <div class="wc"><div class="wc-src">Apple Watch</div><div class="wc-ico">💤</div><div class="wc-val">7h 12m</div><div class="wc-key">Sleep</div><div class="wc-tr up">↑ +42min vs avg</div></div>
+          <div class="wc"><div class="wc-src">Whoop</div><div class="wc-ico">❤️</div><div class="wc-val">72 ms</div><div class="wc-key">HRV</div><div class="wc-tr up">↑ Above baseline</div></div>
+          <div class="wc"><div class="wc-src">Apple Health</div><div class="wc-ico">🔥</div><div class="wc-val">8,420</div><div class="wc-key">Steps</div><div class="wc-tr nu">→ On target</div></div>
+          <div class="wc"><div class="wc-src">Oura</div><div class="wc-ico">⚡</div><div class="wc-val">84</div><div class="wc-key">Readiness</div><div class="wc-tr dn">↓ Rest today</div></div>
+        </div>
+      </div>
+      <div class="rv d2" style="padding-top:16px">
+        <div style="border:1px solid var(--line2);padding:28px">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px">Coming in Phase 2</div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:10px;letter-spacing:-.01em">Connect your devices</div>
+          <p class="bod" style="font-size:13px;margin-bottom:24px">Submit your email to be first when Apple Health, Whoop, Oura, and Garmin integrations go live.</p>
+          <button class="btn-fill" onclick="goto('waitlist')" style="width:100%"><span>Get early access</span></button>
+        </div>
+        <div style="margin-top:1px;border:1px solid var(--line);border-top:none">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+            <div style="padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--text)">Apple Health</div>
+            <div style="padding:14px 16px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--text)">Whoop 4.0</div>
+            <div style="padding:14px 16px;border-right:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--text)">Oura Ring</div>
+            <div style="padding:14px 16px;font-family:var(--mono);font-size:11px;color:var(--text)">Garmin</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WAITLIST -->
+<section id="waitlist">
+  <div class="wl-in rv">
+    <div class="wl-tag">Early access · beta</div>
+    <div class="wl-h">Ready to<br><em>lock in?</em></div>
+    <p class="wl-sub">First 500 users get lifetime AI coach access. No trial. No paywall. One ping when we ship.</p>
+    <div class="wl-form" id="wl-form">
+      <input class="wl-input" id="wl-email" type="email" placeholder="your@email.com">
+      <button class="wl-go" onclick="submitWL()"><span>Lock me in</span></button>
+    </div>
+    <div class="wl-note">No spam. No weekly tips. One email when we're live.</div>
+    <div id="wl-done">✓ &nbsp;Locked in. We'll ping you when we ship.</div>
+    <div class="wl-soc">
+      <div class="wl-avs"><div class="wl-av">J</div><div class="wl-av">M</div><div class="wl-av">K</div><div class="wl-av">R</div><div class="wl-av">+</div></div>
+      <div class="wl-soc-txt"><strong>247 people</strong> already on the list</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-in">
+    <div class="foot-logo">LCKD<em>—</em>IN</div>
+    <div class="foot-r">Execute without excuses &nbsp;·&nbsp; © 2026</div>
+  </div>
+</footer>
+
+<script>
+// ── CURSOR ──
+const cur=document.getElementById('cur'),cur2=document.getElementById('cur2');
+let mx=0,my=0,cx=0,cy=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+(function loop(){cx+=(mx-cx)*.15;cy+=(my-cy)*.15;cur2.style.left=cx+'px';cur2.style.top=cy+'px';requestAnimationFrame(loop)})();
+
+// ── SCROLL ──
+function goto(id){document.getElementById(id).scrollIntoView({behavior:'smooth'})}
+
+// ── REVEAL ──
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.1});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+
+// ── MARQUEE ──
+const MQ=['No excuses','Zero dopamine','120 days','Execute daily','Public grid','Snap & track','AI coach','Pivot protocol','Locked in','Consistency over perfection','Wearable sync','Rule-matched music'];
+const mq=document.getElementById('mq');
+[...MQ,...MQ].forEach(t=>{const s=document.createElement('span');s.className='mi';s.innerHTML=`${t} <span class="sep">·</span>`;mq.appendChild(s)});
+
+// ── QUOTES + TYPEWRITER ──
+const QUOTES=[
+  {q:"The man who moves a mountain begins by carrying away small stones.",a:"Confucius",bg:"linear-gradient(135deg,#0C0A1A 0%,#1A0E30 50%,#0C0A1A 100%)"},
+  {q:"We are what we repeatedly do. Excellence is not an act, but a habit.",a:"Aristotle",bg:"linear-gradient(135deg,#081200 0%,#0E2200 50%,#040804 100%)"},
+  {q:"Discipline is the bridge between goals and accomplishment.",a:"Jim Rohn",bg:"linear-gradient(135deg,#150800 0%,#281400 50%,#0C0600 100%)"},
+  {q:"The successful warrior is the average man with laser-like focus.",a:"Bruce Lee",bg:"linear-gradient(135deg,#030812 0%,#061020 50%,#030812 100%)"},
+  {q:"Do not wait for the perfect moment. Take the moment and make it perfect.",a:"Unknown",bg:"linear-gradient(135deg,#120008 0%,#200010 50%,#0C0006 100%)"},
+  {q:"Consistency over Perfection.",a:"The 120 S.I. Challenge",bg:"linear-gradient(135deg,#0A0C04 0%,#141A06 50%,#0A0C04 100%)"},
+];
+let qi=0,typeTimer=null;
+const qtxt=document.getElementById('q-text');
+const qauth=document.getElementById('q-author');
+const qbg=document.getElementById('q-bg');
+const qdots=document.getElementById('q-dots');
+
+function typeText(str,el,cb){
+  clearTimeout(typeTimer);
+  el.textContent='"';
+  let i=0;
+  function next(){
+    if(i<str.length){el.textContent='"'+str.slice(0,++i)+(i<str.length?'|':'"');typeTimer=setTimeout(next,i<str.length?28:0)}
+    else{el.textContent=`"${str}"`;if(cb)cb()}
+  }
+  next();
+}
+
+function renderQ(){
+  const q=QUOTES[qi];
+  qbg.style.background=q.bg;
+  qauth.style.opacity=0;
+  typeText(q.q,qtxt,()=>{qauth.textContent=`— ${q.a}`;qauth.style.opacity=1;qauth.style.transition='opacity .4s'});
+  document.querySelectorAll('.q-dot').forEach((d,i)=>d.classList.toggle('on',i===qi));
+}
+function nextQ(){qi=(qi+1)%QUOTES.length;renderQ()}
+function prevQ(){qi=(qi-1+QUOTES.length)%QUOTES.length;renderQ()}
+QUOTES.forEach((_,i)=>{const b=document.createElement('button');b.className='q-dot'+(i===0?' on':'');b.onclick=()=>{qi=i;renderQ()};qdots.appendChild(b)});
+renderQ();
+setInterval(nextQ,7000);
+
+// ── CHALLENGE SELECTOR ──
+let selDay=120;
+function updateHeroTag(d){
+  document.getElementById('hero-tag').textContent=`${d}-day discipline protocol · zero dopamine`;
+  document.getElementById('htotal').textContent=d;
+  document.getElementById('hb-days').textContent=d;
+  document.getElementById('sel-readout').textContent=d;
+}
+function selDays(d,card){
+  selDay=d;
+  document.querySelectorAll('.ch-card').forEach(c=>c.classList.remove('on'));
+  card.classList.add('on');
+  const cr=document.getElementById('ch-custom-row');
+  cr.classList.toggle('show',d===0);
+  if(d>0)updateHeroTag(d);
+}
+function updateCustom(v){
+  const n=parseInt(v)||0;
+  document.getElementById('ch-custom-preview').textContent=n||'—';
+  if(n>0)updateHeroTag(n);
+}
+
+// ── DISC GRID with staggered animation ──
+const G=Array.from({length:120},(_,i)=>i===0?{tier:3,today:true}:{tier:0,future:true});
+const dg=document.getElementById('disc-grid');
+const dcEls=[];
+G.forEach((d,i)=>{
+  const c=document.createElement('div');
+  let cls='dc';
+  if(d.today)cls+=' today';
+  if(d.future)cls+=' future';
+  if(d.tier>0)cls+=` v${d.tier}`;
+  c.className=cls;
+  c.title=`Day ${i+1}${d.today?' (today — 70%)':d.future?' — upcoming':''}`;
+  dg.appendChild(c);
+  dcEls.push(c);
+});
+// Stagger reveal when grid scrolls into view
+const gridObs=new IntersectionObserver(es=>{
+  if(es[0].isIntersecting){
+    dcEls.forEach((c,i)=>setTimeout(()=>c.classList.add('show'),i*8));
+    gridObs.disconnect();
+  }
+},{threshold:.1});
+gridObs.observe(dg);
+
+// ── COPY LINK ──
+function copyLink(){
+  navigator.clipboard.writeText('https://lckd-in.com/jashwanth').catch(()=>{});
+  const b=document.getElementById('copy-btn');
+  b.textContent='✓ Copied';
+  setTimeout(()=>b.textContent='Copy link',2000);
+}
+
+// ── MUSIC TRACKS ──
+const TRACKS=[
+  {n:'Pursuit of Happiness',a:'Steve Aoki',rule:'Workout',playing:true},
+  {n:'Eye of the Tiger',a:'Survivor',rule:'Deep Work'},
+  {n:'Weightless',a:'Marconi Union',rule:'Meditation'},
+  {n:'Lose Yourself',a:'Eminem',rule:'Morning'},
+  {n:'Breathe',a:'Pink Floyd',rule:'Evening Walk'},
+];
+const mt=document.getElementById('mw-tracks');
+TRACKS.forEach(t=>{
+  const div=document.createElement('div');
+  div.className='mw-track'+(t.playing?' playing':'');
+  div.innerHTML=`<div class="mw-art">🎵</div>
+    <div class="mw-info"><div class="mw-tn">${t.n}</div><div class="mw-ta">${t.a} · ${t.rule}</div></div>
+    <div class="mw-bars"><div class="mb"></div><div class="mb"></div><div class="mb"></div></div>`;
+  div.onclick=()=>{document.querySelectorAll('.mw-track').forEach(x=>x.classList.remove('playing'));div.classList.add('playing')};
+  mt.appendChild(div);
+});
+
+// ── RULES ──
+const RULES=[
+  {t:'No Porn',done:true},{t:'Zero Sugar',done:true},{t:'0% Junk Food',done:true},
+  {t:'3L Water Intake (Monsoon)',done:true},{t:'3 Adequate Meals',done:true},
+  {t:'Eat Dry Fruits',done:true},{t:'Sleep at 11:30 PM',done:false,flag:true},
+  {t:'Wake up at 7:30 AM',done:true},{t:'Business 9AM–8PM',done:true},
+  {t:'20 min walk & 30 sec sprint',done:true},{t:'15 mins Looks-maxing',done:true},
+  {t:'Screen Time < 3 hours',done:false,flag:true},{t:'Social Media < 30 min',done:false,flag:true},
+  {t:'10 min Meditation',done:true},{t:'Pray, Be Calm, Be Kind',done:true},
+  {t:'Be Productive 8hr/Day',done:false,flag:true},{t:'Learn English & Spanish',done:false,flag:true},
+  {t:'Avoid Phone before 12pm & after 10pm',done:true},
+  {t:'Learn a Digital Skill',done:false,flag:true},
+  {t:'20 pushups | 20 squats | 77s plank | 20 leg raises',done:true},
+];
+const pb=document.getElementById('ph-prog');
+for(let i=0;i<40;i++){const s=document.createElement('div');s.className='ps'+(i===0?' c':'');pb.appendChild(s)}
+function countDone(){return RULES.filter(r=>r.done).length}
+function updateRing(){
+  const p=Math.round(countDone()/RULES.length*100);
+  const c=2*Math.PI*26;
+  document.getElementById('ring-arc').setAttribute('stroke-dashoffset',(c*(1-p/100)).toFixed(1));
+  document.getElementById('ring-arc').setAttribute('stroke-dasharray',c.toFixed(1));
+  document.getElementById('ring-pct').textContent=p+'%';
+  document.getElementById('ph-score').textContent=`Score: ${countDone()} / ${RULES.length} · ${p}%`;
+}
+const rw=document.getElementById('rules-wrap');
+function buildRules(){
+  rw.innerHTML='';
+  RULES.forEach((r,i)=>{
+    const div=document.createElement('div');
+    div.className='rrow'+(r.done?' ck':'');
+    div.innerHTML=`<span class="rn">${String(i+1).padStart(2,'0')}</span>
+      <span class="rbox">${r.done?'✓':''}</span>
+      <span class="rtxt">${r.t}</span>
+      ${r.flag&&!r.done?'<span class="rflag">RISK</span>':''}`;
+    div.onclick=()=>{
+      r.done=!r.done;div.classList.toggle('ck',r.done);
+      div.querySelector('.rbox').textContent=r.done?'✓':'';
+      div.querySelector('.rtxt').className='rtxt'+(r.done?' done':'');
+      const f=div.querySelector('.rflag');if(f)f.style.display=r.done?'none':'';
+      updateRing();
+    };
+    rw.appendChild(div);
+  });
+}
+buildRules();updateRing();
+
+// ── TABS ──
+function switchTab(n){
+  ['day','snap'].forEach(x=>{
+    document.getElementById('tab-'+x).classList.toggle('on',x===n);
+    document.getElementById('panel-'+x).classList.toggle('on',x===n);
+  });
+  document.getElementById('conf').style.display='none';
+}
+
+// ── SNAP CONFIDENCE ──
+const CS=[0,1,6,7,11,12,15,16,18,19].map(i=>({...RULES[i],idx:i}));
+function showConf(){
+  document.getElementById('conf').style.display='block';
+  const cl=document.getElementById('cr-list');cl.innerHTML='';
+  CS.forEach(r=>{
+    const row=document.createElement('div');row.className='cr';
+    row.innerHTML=`<span class="crb${r.done?' y':''}">${r.done?'✓':''}</span>
+      <span class="crtxt${r.done?' y':''}">${r.t.length>30?r.t.slice(0,30)+'…':r.t}</span>
+      ${r.flag&&!r.done?'<span class="cr-low">LOW</span>':''}`;
+    const b=row.querySelector('.crb');
+    row.onclick=()=>{r.done=!r.done;b.className='crb'+(r.done?' y':'');b.textContent=r.done?'✓':'';row.querySelector('.crtxt').className='crtxt'+(r.done?' y':'')};
+    cl.appendChild(row);
+  });
+}
+function confirmLog(){CS.forEach(r=>{RULES[r.idx].done=r.done});buildRules();updateRing();switchTab('day')}
+
+// ── PHONE TILT on mouse ──
+const phone=document.getElementById('phone');
+if(window.innerWidth>1024){
+  phone.addEventListener('mousemove',e=>{
+    const r=phone.getBoundingClientRect();
+    const x=((e.clientX-r.left)/r.width-.5)*10;
+    const y=((e.clientY-r.top)/r.height-.5)*-6;
+    phone.style.transform=`perspective(1000px) rotateY(${x}deg) rotateX(${y}deg)`;
+  });
+  phone.addEventListener('mouseleave',()=>{phone.style.transform='perspective(1000px) rotateY(-4deg) rotateX(2deg)'});
+}
+
+// ── FEAT SCROLL drag ──
+const fs=document.getElementById('feat-scroll');
+let isDown=false,startX,scrollLeft;
+fs.addEventListener('mousedown',e=>{isDown=true;startX=e.pageX-fs.offsetLeft;scrollLeft=fs.scrollLeft});
+fs.addEventListener('mouseleave',()=>isDown=false);
+fs.addEventListener('mouseup',()=>isDown=false);
+fs.addEventListener('mousemove',e=>{if(!isDown)return;e.preventDefault();const x=e.pageX-fs.offsetLeft;fs.scrollLeft=scrollLeft-(x-startX)*1.5});
+
+// ── WAITLIST ──
+document.getElementById('wl-email').addEventListener('keydown',e=>{if(e.key==='Enter')submitWL()});
+function submitWL(){
+  const v=document.getElementById('wl-email').value.trim();
+  if(!v||!v.includes('@'))return;
+  document.getElementById('wl-form').style.display='none';
+  document.getElementById('wl-done').style.display='block';
+}
+</script>
+</body>
+</html>
