@@ -740,8 +740,20 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
     <div class="foot-r">Execute without excuses &nbsp;·&nbsp; © 2026</div>
   </div>
 </footer>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  // ── SUPABASE CLIENT (Phase 3.1) ──
+const SUPABASE_URL = 'https://qtlhpaqsmbyneivdsiei.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_uAVtjygNy4z2A1_9YJ3-8w_llPXXonE';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+sb.auth.getSession().then(({ data, error }) => {
+  if (error) {
+    console.error('Supabase connection failed:', error);
+  } else {
+    console.log('Supabase connected. Current session:', data.session);
+  }
+});
 // ── CURSOR ──
 const cur=document.getElementById('cur'),cur2=document.getElementById('cur2');
 let mx=0,my=0,cx=0,cy=0;
