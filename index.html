@@ -418,6 +418,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
       <button class="nl" onclick="goto('grid')">Grid</button>
       <button class="nl" onclick="goto('dashboard')">Dashboard</button>
       <button class="nl" onclick="goto('coach')">AI Coach</button>
+      <button class="nl" id="auth-btn" onclick="handleAuthClick()">Sign in</button>
       <button class="nav-cta" onclick="goto('waitlist')"><span>Join waitlist</span></button>
     </div>
   </div>
@@ -754,6 +755,32 @@ sb.auth.getSession().then(({ data, error }) => {
     console.log('Supabase connected. Current session:', data.session);
   }
 });
+// ── AUTH UI (Phase 3.1) ──
+const authBtn = document.getElementById('auth-btn');
+
+function handleAuthClick() {
+  const email = prompt('Enter your email for a magic sign-in link:');
+  if (!email) return;
+  sb.auth.signInWithOtp({ email }).then(({ error }) => {
+    if (error) alert('Sign-in failed: ' + error.message);
+    else alert('Magic link sent — check your inbox.');
+  });
+}
+
+function handleSignOut() {
+  sb.auth.signOut();
+}
+
+sb.auth.onAuthStateChange((event, session) => {
+  if (session) {
+    authBtn.textContent = session.user.email;
+    authBtn.onclick = handleSignOut;
+  } else {
+    authBtn.textContent = 'Sign in';
+    authBtn.onclick = handleAuthClick;
+  }
+});
+
 // ── CURSOR ──
 const cur=document.getElementById('cur'),cur2=document.getElementById('cur2');
 let mx=0,my=0,cx=0,cy=0;
