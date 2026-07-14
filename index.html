@@ -886,6 +886,34 @@ const RULES=[
   {t:'Learn a Digital Skill',done:false,flag:true},
   {t:'20 pushups | 20 squats | 77s plank | 20 leg raises',done:true},
 ];
+
+// ── PROTOCOL STATE (Phase 1: local only, feeds the disc-grid) ──
+const protocolState = {
+  currentDay: 1,
+  totalDays: 120,
+  pivotsUsed: 0,
+  pivotsMax: 3
+};
+
+function scoreToTier(score) {
+  if (score === 0) return 0;
+  if (score < 40) return 1;
+  if (score < 60) return 2;
+  if (score < 85) return 3;
+  if (score < 100) return 4;
+  return 5;
+}
+
+function updateTodayCell() {
+  const idx = protocolState.currentDay - 1;
+  const cell = dcEls[idx];
+  if (!cell) return;
+  const score = Math.round(countDone() / RULES.length * 100);
+  const tier = scoreToTier(score);
+  cell.className = 'dc show today' + (tier > 0 ? ` v${tier}` : '');
+  cell.title = `Day ${protocolState.currentDay} (today — ${score}%)`;
+}
+
 const pb=document.getElementById('ph-prog');
 for(let i=0;i<40;i++){const s=document.createElement('div');s.className='ps'+(i===0?' c':'');pb.appendChild(s)}
 function countDone(){return RULES.filter(r=>r.done).length}
@@ -896,6 +924,7 @@ function updateRing(){
   document.getElementById('ring-arc').setAttribute('stroke-dasharray',c.toFixed(1));
   document.getElementById('ring-pct').textContent=p+'%';
   document.getElementById('ph-score').textContent=`Score: ${countDone()} / ${RULES.length} · ${p}%`;
+  updateTodayCell();
 }
 const rw=document.getElementById('rules-wrap');
 function buildRules(){
