@@ -808,6 +808,21 @@ async function ensureProfile(user) {
     console.log('Profile created:', username);
   }
 }
+async function ensureProfile(user) {
+  const { data: existing } = await sb
+    .from('profiles')
+    .select('username')
+    .eq('id', user.id)
+    .single();
+
+  if (existing) {
+    console.log('Profile found:', existing.username);
+    return;
+  }
+
+  const username = prompt('Pick a username for your public grid (lckd-in.com/<username>):');
+  if (!username) return;
+
   const { error } = await sb.from('profiles').insert({ id: user.id, username });
   if (error) {
     alert('Could not create profile: ' + error.message);
@@ -816,9 +831,6 @@ async function ensureProfile(user) {
   }
 }
 
-// ── CURSOR ──
-Click right after that closing } (the one right before the blank line and // ── CURSOR ──), and paste this in between:
-js
 async function loadTodayLog(user) {
   const { data } = await sb
     .from('daily_logs')
@@ -857,7 +869,6 @@ async function saveTodayLog() {
   if (error) console.error('Save failed:', error);
   else console.log('Saved day', protocolState.currentDay, '→', score + '%');
 }
-
 // ── CURSOR ──
 const cur=document.getElementById('cur'),cur2=document.getElementById('cur2');
 let mx=0,my=0,cx=0,cy=0;
