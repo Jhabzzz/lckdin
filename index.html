@@ -757,6 +757,7 @@ sb.auth.getSession().then(({ data, error }) => {
 });
 // ── AUTH UI (Phase 3.1) ──
 const authBtn = document.getElementById('auth-btn');
+let currentUser = null;
 
 function handleAuthClick() {
   const email = prompt('Enter your email for a magic sign-in link:');
@@ -775,10 +776,13 @@ sb.auth.onAuthStateChange(async (event, session) => {
   if (session) {
     authBtn.textContent = session.user.email;
     authBtn.onclick = handleSignOut;
+    currentUser = session.user;
     await ensureProfile(session.user);
+    await loadTodayLog(session.user);
   } else {
     authBtn.textContent = 'Sign in';
     authBtn.onclick = handleAuthClick;
+    currentUser = null;
   }
 });
  
@@ -988,7 +992,9 @@ function updateRing(){
   document.getElementById('ring-pct').textContent=p+'%';
   document.getElementById('ph-score').textContent=`Score: ${countDone()} / ${RULES.length} · ${p}%`;
   updateTodayCell();
+  saveTodayLog();
 }
+
 const rw=document.getElementById('rules-wrap');
 function buildRules(){
   rw.innerHTML='';
