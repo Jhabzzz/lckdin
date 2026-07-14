@@ -808,6 +808,55 @@ async function ensureProfile(user) {
     console.log('Profile created:', username);
   }
 }
+  const { error } = await sb.from('profiles').insert({ id: user.id, username });
+  if (error) {
+    alert('Could not create profile: ' + error.message);
+  } else {
+    console.log('Profile created:', username);
+  }
+}
+
+// ── CURSOR ──
+Click right after that closing } (the one right before the blank line and // ── CURSOR ──), and paste this in between:
+js
+async function loadTodayLog(user) {
+  const { data } = await sb
+    .from('daily_logs')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('day_number', protocolState.currentDay)
+    .single();
+
+  if (data) {
+    data.rules.forEach((savedRule, i) => {
+      if (RULES[i]) RULES[i].done = savedRule.done;
+    });
+    buildRules();
+    updateRing();
+    console.log('Loaded saved log for today:', data);
+  } else {
+    console.log('No saved log for today yet — starting fresh.');
+  }
+}
+
+async function saveTodayLog() {
+  if (!currentUser) return;
+
+  const score = Math.round(countDone() / RULES.length * 100);
+  const tier = scoreToTier(score);
+  const status = tier === 5 ? 'PERFECT' : tier === 0 ? 'MISS' : 'PARTIAL';
+
+  const { error } = await sb.from('daily_logs').upsert({
+    user_id: currentUser.id,
+    day_number: protocolState.currentDay,
+    rules: RULES,
+    score: score,
+    status: status
+  }, { onConflict: 'user_id,day_number' });
+
+  if (error) console.error('Save failed:', error);
+  else console.log('Saved day', protocolState.currentDay, '→', score + '%');
+}
 
 // ── CURSOR ──
 const cur=document.getElementById('cur'),cur2=document.getElementById('cur2');
