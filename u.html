@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LCKD—IN · Public Grid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0B0A08; --bg2:#111009; --bg3:#171612; --bg4:#1D1C16;
+  --line:#222118; --line2:#2E2D24;
+  --text:#F2F0E6; --text2:#B4B2A8; --text3:#6A6960;
+  --lime:#C8FF00; --lime2:#A8D600;
+  --g1:#111A02; --g2:#1C2E04; --g3:#2E4A08; --g4:#4A7410; --g5:#C8FF00;
+  --mono:'JetBrains Mono',monospace; --sans:'Space Grotesk',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh}
+.wrap{max-width:760px;margin:0 auto;padding:60px 24px}
+.logo{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.06em;margin-bottom:48px;display:inline-block;color:var(--text);text-decoration:none}
+.logo em{font-style:normal;color:var(--lime)}
+.prof-name{font-size:clamp(32px,6vw,48px);font-weight:800;letter-spacing:-.03em;margin-bottom:8px}
+.prof-sub{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:40px}
+.disc-grid{display:grid;grid-template-columns:repeat(20,1fr);gap:4px;margin-bottom:24px}
+.dc{aspect-ratio:1;border-radius:2px;background:var(--bg4);border:1px solid rgba(255,255,255,.04)}
+.dc.v1{background:var(--g1)}.dc.v2{background:var(--g2)}.dc.v3{background:var(--g3)}
+.dc.v4{background:var(--g4)}.dc.v5{background:var(--g5)}
+.dc.today{box-shadow:0 0 0 1.5px var(--lime),0 0 12px rgba(200,255,0,.3)}
+.dc.future{opacity:.14}
+.g-legend{display:flex;align-items:center;gap:7px;margin-bottom:32px;flex-wrap:wrap}
+.gl{font-family:var(--mono);font-size:9px;color:var(--text3)}
+.glc{width:11px;height:11px;border-radius:2px}
+.g-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.gst{background:var(--bg);padding:16px}
+.gst-v{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--text)}
+.gst-k{font-family:var(--mono);font-size:8px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-top:5px}
+.state-msg{font-family:var(--mono);font-size:13px;color:var(--text3);padding:60px 0;text-align:center}
+.cta{margin-top:48px;text-align:center}
+.cta a{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--bg);background:var(--text);padding:14px 28px;text-decoration:none;display:inline-block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="logo" href="/">LCKD<em>—</em>IN</a>
+  <div id="content">
+    <div class="state-msg">Loading...</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://qtlhpaqsmbyneivdsiei.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_uAVtjygNy4z2A1_9YJ3-8w_llPXXonE';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const TOTAL_DAYS = 120;
+
+function scoreToTier(score) {
+  if (score === 0) return 0;
+  if (score < 40) return 1;
+  if (score < 60) return 2;
+  if (score < 85) return 3;
+  if (score < 100) return 4;
+  return 5;
+}
+
+function showState(html) {
+  document.getElementById('content').innerHTML = html;
+}
+
+async function renderPublicGrid() {
+  const parts = location.pathname.split('/u/');
+  const username = parts[1] ? decodeURIComponent(parts[1]).replace(/\/$/, '') : '';
+
+  if (!username) {
+    showState('<div class="state-msg">No username specified.</div>');
+    return;
+  }
+
+  const { data: profile, error: profileError } = await sb
+    .from('profiles')
+    .select('id, username')
+    .eq('username', username)
+    .single();
+
+  if (profileError || !profile) {
+    showState(`
+      <div class="state-msg">No user found for "${username}".</div>
+      <div class="cta"><a href="/">← Back to LCKD—IN</a></div>
+    `);
+    return;
+  }
+
+  const { data: logs } = await sb
+    .from('daily_logs')
+    .select('day_number, score, rules')
+    .eq('user_id', profile.id)
+    .order('day_number', { ascending: true });
+
+  const logsByDay = {};
+  (logs || []).forEach(l => { logsByDay[l.day_number] = l; });
+
+  const loggedDays = Object.keys(logsByDay).map(Number);
+  const currentDay = loggedDays.length ? Math.max(...loggedDays) : 1;
+
+  let gridHtml = '';
+  for (let day = 1; day <= TOTAL_DAYS; day++) {
+    const log = logsByDay[day];
+    let cls = 'dc';
+    let title = `Day ${day}`;
+    if (day === currentDay) cls += ' today';
+    if (log) {
+      const tier = scoreToTier(log.score);
+      if (tier > 0) cls += ` v${tier}`;
+      title += ` · ${log.score}%`;
+    } else if (day > currentDay) {
+      cls += ' future';
+      title += ' — upcoming';
+    } else {
+      title += ' · miss';
+    }
+    gridHtml += `<div class="${cls}" title="${title}"></div>`;
+  }
+
+  const todayLog = logsByDay[currentDay];
+  const todayScore = todayLog ? todayLog.score : 0;
+  const doneCount = todayLog ? todayLog.rules.filter(r => r.done).length : 0;
+
+  showState(`
+    <div class="prof-name">@${profile.username}</div>
+    <div class="prof-sub">Day ${currentDay} / ${TOTAL_DAYS}</div>
+    <div class="disc-grid">${gridHtml}</div>
+    <div class="g-legend">
+      <span class="gl">Miss</span>
+      <div class="glc" style="background:var(--bg4)"></div>
+      <div class="glc" style="background:var(--g1)"></div>
+      <div class="glc" style="background:var(--g2)"></div>
+      <div class="glc" style="background:var(--g3)"></div>
+      <div class="glc" style="background:var(--g4)"></div>
+      <div class="glc" style="background:var(--g5)"></div>
+      <span class="gl">Perfect</span>
+    </div>
+    <div class="g-stats">
+      <div class="gst"><div class="gst-v">${currentDay}</div><div class="gst-k">Current day</div></div>
+      <div class="gst"><div class="gst-v">${todayScore}%</div><div class="gst-k">Today's score</div></div>
+      <div class="gst"><div class="gst-v">${doneCount}/20</div><div class="gst-k">Rules done</div></div>
+    </div>
+  `);
+}
+
+renderPublicGrid();
+</script>
+</body>
+</html>
