@@ -771,15 +771,39 @@ function handleSignOut() {
   sb.auth.signOut();
 }
 
-sb.auth.onAuthStateChange((event, session) => {
+sb.auth.onAuthStateChange(async (event, session) => {
   if (session) {
     authBtn.textContent = session.user.email;
     authBtn.onclick = handleSignOut;
+    await ensureProfile(session.user);
   } else {
     authBtn.textContent = 'Sign in';
     authBtn.onclick = handleAuthClick;
   }
 });
+ 
+async function ensureProfile(user) {
+  const { data: existing } = await sb
+    .from('profiles')
+    .select('username')
+    .eq('id', user.id)
+    .single();
+ 
+  if (existing) {
+    console.log('Profile found:', existing.username);
+    return;
+  }
+ 
+  const username = prompt('Pick a username for your public grid (lckd-in.com/<username>):');
+  if (!username) return;
+ 
+  const { error } = await sb.from('profiles').insert({ id: user.id, username });
+  if (error) {
+    alert('Could not create profile: ' + error.message);
+  } else {
+    console.log('Profile created:', username);
+  }
+}
 
 // ── CURSOR ──
 const cur=document.getElementById('cur'),cur2=document.getElementById('cur2');
