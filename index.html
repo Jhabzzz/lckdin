@@ -641,10 +641,11 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
               <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px">Snap &amp; Track · AI Vision</div>
               <div style="font-size:12px;font-weight:300;color:var(--text2);line-height:1.7">Upload your handwritten log. AI reads checkmarks and maps them to your 20 rules.</div>
             </div>
-            <div class="snap-drop" onclick="showConf()"><p>↑ &nbsp;Drop image or tap to browse</p><small>JPG · PNG · HEIC · screenshot</small></div>
-            <div class="conf" id="conf">
-              <div class="conf-hd"><div class="conf-dot"></div><div class="conf-ttl">AI confidence — 87%</div></div>
-              <div class="conf-sub">Detected 14/20 rules completed (70%). Tap to correct — then confirm.</div>
+            <input type="file" id="snap-file" accept="image/*" capture="environment" style="display:none" onchange="handleSnapUpload(this.files[0])">
+            <div class="snap-drop" id="snap-drop" onclick="document.getElementById('snap-file').click()"><p>↑ &nbsp;Drop image or tap to browse</p><small>JPG · PNG · HEIC · screenshot</small></div>
+            <div class="conf" id="conf" style="display:none">
+              <div class="conf-hd"><div class="conf-dot"></div><div class="conf-ttl" id="conf-ttl">AI confidence — —%</div></div>
+              <div class="conf-sub" id="conf-sub">Analyzing…</div>
               <div class="cr-list" id="cr-list"></div>
               <button class="cbtn" onclick="confirmLog()"><span>Confirm &amp; log day</span></button>
               <button class="cbtn2" onclick="document.getElementById('conf').style.display='none'">Edit manually</button>
@@ -664,22 +665,20 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
       <div class="rv">
         <div class="disp" style="margin-bottom:20px">Not motivation.<br><em>Pattern</em><br>analysis.</div>
         <p class="bod" style="margin-bottom:0">Seven-day rolling data across all 20 rules. The coach finds the causal chain — not the symptom — and gives one concrete fix per briefing.</p>
-        <div class="insights">
-          <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>Rule 7 (Sleep 11:30 PM) is your cascade trigger.</strong> Every time it's missed, Rules 8, 12, 13, 16 fail on the same day. 100% correlation across 7 days.</div></div>
-          <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>Screen time & social spike at night.</strong> Not willpower — it's the downstream effect of a missed sleep window. Fix the night, not the apps.</div></div>
-          <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>Tonight's fix:</strong> Phone in drawer by 10 PM. This one change resolves Rules 12, 13, 17, and 19 downstream.</div></div>
+        <div class="insights" id="ai-insights">
+          <div class="ins"><div class="ins-dot"></div><div class="ins-txt" id="ai-loading">Sign in and log a few days to unlock your personalized pattern analysis.</div></div>
         </div>
       </div>
       <div class="rv d2">
         <div class="ai-card">
-          <div class="ai-ch"><div class="ai-pulse"></div><div class="ai-ttl">AI briefing · day 1 · 26 jun 2026</div></div>
+          <div class="ai-ch"><div class="ai-pulse"></div><div class="ai-ttl" id="ai-ttl">AI briefing</div></div>
           <div class="ai-body">
-            <div class="ai-msg"><strong>6 rules missed today. Root cause: Rule 7.</strong>You went to sleep late → woke groggy → productivity collapsed → screen time spiked to compensate. This is a chain, not random failure. "Consistency over Perfection" — your own words on that journal. Tonight: act on them. Phone in drawer by 10 PM. One change. Everything else follows.</div>
+            <div class="ai-msg" id="ai-msg">Sign in to generate today's briefing.</div>
             <div class="ai-stats">
-              <div class="ast"><div class="ast-v">6</div><div class="ast-k">Rules missed</div></div>
-              <div class="ast"><div class="ast-v">70%</div><div class="ast-k">Today's score</div></div>
-              <div class="ast"><div class="ast-v">R7</div><div class="ast-k">Root cause</div></div>
-              <div class="ast"><div class="ast-v">5×</div><div class="ast-k">Downstream</div></div>
+              <div class="ast"><div class="ast-v" id="ast-missed">—</div><div class="ast-k">Rules missed</div></div>
+              <div class="ast"><div class="ast-v" id="ast-score">—</div><div class="ast-k">Today's score</div></div>
+              <div class="ast"><div class="ast-v" id="ast-root">—</div><div class="ast-k">Root cause</div></div>
+              <div class="ast"><div class="ast-v" id="ast-downstream">—</div><div class="ast-k">Downstream</div></div>
             </div>
           </div>
         </div>
@@ -807,35 +806,14 @@ sb.auth.onAuthStateChange(async (event, session) => {
     currentUser = session.user;
     await ensureProfile(session.user);
     await loadTodayLog(session.user);
+    await runAICoach(session.user);
   } else {
     authBtn.textContent = 'Sign in';
     authBtn.onclick = handleAuthClick;
     currentUser = null;
   }
 });
- 
-async function ensureProfile(user) {
-  const { data: existing } = await sb
-    .from('profiles')
-    .select('username')
-    .eq('id', user.id)
-    .single();
- 
-  if (existing) {
-    console.log('Profile found:', existing.username);
-    return;
-  }
- 
-  const username = prompt('Pick a username for your public grid (lckd-in.com/<username>):');
-  if (!username) return;
- 
-  const { error } = await sb.from('profiles').insert({ id: user.id, username });
-  if (error) {
-    alert('Could not create profile: ' + error.message);
-  } else {
-    console.log('Profile created:', username);
-  }
-}
+
 async function ensureProfile(user) {
   const { data: existing } = await sb
     .from('profiles')
@@ -895,7 +873,10 @@ async function saveTodayLog() {
   }, { onConflict: 'user_id,day_number' });
 
   if (error) console.error('Save failed:', error);
-  else console.log('Saved day', protocolState.currentDay, '→', score + '%');
+  else {
+    console.log('Saved day', protocolState.currentDay, '→', score + '%');
+    runAICoach(currentUser);
+  }
 }
 // ── MESH GRADIENT + DOT ORBIT (waitlist ambient bg) ──
 (function(){
@@ -1252,10 +1233,49 @@ function switchTab(n){
   document.getElementById('conf').style.display='none';
 }
 
-// ── SNAP CONFIDENCE ──
-const CS=[0,1,6,7,11,12,15,16,18,19].map(i=>({...RULES[i],idx:i}));
-function showConf(){
+// ── SNAP & TRACK · REAL GEMINI VISION ──
+// Uses sb.functions.invoke so the user's auth JWT is attached automatically —
+// the analyze-journal edge function requires a signed-in caller.
+let CS = [];
+
+function fileToBase64(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleSnapUpload(file){
+  if(!file) return;
+  if(!currentUser){ alert('Sign in first to use Snap & Track.'); return; }
+  const dropTxt = document.querySelector('#snap-drop p');
+  const originalTxt = dropTxt.textContent;
+  dropTxt.textContent = 'Analyzing photo…';
+  try{
+    const b64 = await fileToBase64(file);
+    const { data, error } = await sb.functions.invoke('analyze-journal', {
+      body: { image: b64, rules: RULES.map(r=>r.t) }
+    });
+    if (error) throw error;
+    if (data.error) throw new Error(data.error);
+
+    CS = data.results.map(r => ({ ...RULES[r.idx], idx: r.idx, done: r.done }));
+    document.getElementById('conf-ttl').textContent = `AI confidence — ${data.confidence}%`;
+    renderConf();
+  }catch(err){
+    alert('Snap & Track failed: ' + (err.message || err));
+  }finally{
+    dropTxt.textContent = originalTxt;
+  }
+}
+
+function renderConf(){
   document.getElementById('conf').style.display='block';
+  const doneCount = CS.filter(r=>r.done).length;
+  document.getElementById('conf-sub').textContent =
+    `Detected ${doneCount}/${RULES.length} rules completed (${Math.round(doneCount/RULES.length*100)}%). Tap to correct — then confirm.`;
   const cl=document.getElementById('cr-list');cl.innerHTML='';
   CS.forEach(r=>{
     const row=document.createElement('div');row.className='cr';
@@ -1263,11 +1283,82 @@ function showConf(){
       <span class="crtxt${r.done?' y':''}">${r.t.length>30?r.t.slice(0,30)+'…':r.t}</span>
       ${r.flag&&!r.done?'<span class="cr-low">LOW</span>':''}`;
     const b=row.querySelector('.crb');
-    row.onclick=()=>{r.done=!r.done;b.className='crb'+(r.done?' y':'');b.textContent=r.done?'✓':'';row.querySelector('.crtxt').className='crtxt'+(r.done?' y':'')};
+    row.onclick=()=>{
+      r.done=!r.done;
+      b.className='crb'+(r.done?' y':'');
+      b.textContent=r.done?'✓':'';
+      row.querySelector('.crtxt').className='crtxt'+(r.done?' y':'');
+      const dc=CS.filter(x=>x.done).length;
+      document.getElementById('conf-sub').textContent=`Detected ${dc}/${RULES.length} rules completed (${Math.round(dc/RULES.length*100)}%). Tap to correct — then confirm.`;
+    };
     cl.appendChild(row);
   });
 }
-function confirmLog(){CS.forEach(r=>{RULES[r.idx].done=r.done});buildRules();updateRing();switchTab('day')}
+function confirmLog(){CS.forEach(r=>{RULES[r.idx].done=r.done});buildRules();updateRing();switchTab('day');saveTodayLog()}
+
+// ── AI COACH · REAL 7-DAY CORRELATION ANALYSIS ──
+async function runAICoach(user){
+  const { data: logs } = await sb
+    .from('daily_logs')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('day_number', { ascending: false })
+    .limit(7);
+
+  if (!logs || logs.length < 2) {
+    document.getElementById('ai-msg').textContent = 'Log a few more days to unlock pattern analysis — need at least 2 days of history.';
+    return;
+  }
+
+  const n = RULES.length;
+  const failCount = Array(n).fill(0);
+  const coFail = Array.from({length:n}, () => Array(n).fill(0));
+
+  logs.forEach(log => {
+    log.rules.forEach((r, i) => { if (!r.done) failCount[i]++; });
+    for (let i=0;i<n;i++){
+      if (log.rules[i] && !log.rules[i].done){
+        for (let j=0;j<n;j++){
+          if (j!==i && log.rules[j] && !log.rules[j].done) coFail[i][j]++;
+        }
+      }
+    }
+  });
+
+  let rootIdx = 0, rootScore = -1;
+  for (let i=0;i<n;i++){
+    const dragCount = coFail[i].filter(c => c >= Math.ceil(failCount[i]*0.5) && failCount[i] > 0).length;
+    const score = failCount[i] * 10 + dragCount;
+    if (score > rootScore){ rootScore = score; rootIdx = i; }
+  }
+
+  const downstream = coFail[rootIdx]
+    .map((c,j)=>({j,c}))
+    .filter(x => x.j!==rootIdx && failCount[rootIdx]>0 && x.c >= Math.ceil(failCount[rootIdx]*0.5))
+    .map(x => x.j);
+
+  const today = logs[0];
+  const missedToday = today.rules.filter(r=>!r.done).length;
+
+  document.getElementById('ai-ttl').textContent = `AI briefing · day ${today.day_number}`;
+  document.getElementById('ast-missed').textContent = missedToday;
+  document.getElementById('ast-score').textContent = today.score + '%';
+  document.getElementById('ast-root').textContent = 'R' + (rootIdx+1);
+  document.getElementById('ast-downstream').textContent = downstream.length + '×';
+
+  const rootName = RULES[rootIdx].t;
+  const downstreamNames = downstream.map(j => RULES[j].t).join(', ') || 'no strongly linked rules yet';
+
+  document.getElementById('ai-msg').innerHTML =
+    `<strong>${missedToday} rules missed today. Root cause: R${rootIdx+1} — ${rootName}.</strong> ` +
+    `Across your last ${logs.length} days, missing this rule correlates with ${downstream.length} other rule(s) failing on the same day (${downstreamNames}). Fix this one first.`;
+
+  document.getElementById('ai-insights').innerHTML = `
+    <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>${rootName} is your cascade trigger.</strong> Fails alongside ${downstream.length} other rule(s) across your last ${logs.length} logged days.</div></div>
+    <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>Downstream rules:</strong> ${downstreamNames}.</div></div>
+    <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>Tonight's fix:</strong> Protect "${rootName}" first — the rest tends to follow.</div></div>
+  `;
+}
 
 // ── PHONE TILT on mouse ──
 const phone=document.getElementById('phone');
@@ -1291,9 +1382,14 @@ fs.addEventListener('mousemove',e=>{if(!isDown)return;e.preventDefault();const x
 
 // ── WAITLIST ──
 document.getElementById('wl-email').addEventListener('keydown',e=>{if(e.key==='Enter')submitWL()});
-function submitWL(){
+async function submitWL(){
   const v=document.getElementById('wl-email').value.trim();
   if(!v||!v.includes('@'))return;
+  const { error } = await sb.from('waitlist_emails').insert({ email: v });
+  if (error && error.code !== '23505') { // 23505 = duplicate email, treat as success
+    alert('Something went wrong — try again: ' + error.message);
+    return;
+  }
   document.getElementById('wl-form').style.display='none';
   document.getElementById('wl-done').style.display='block';
 }
