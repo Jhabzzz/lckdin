@@ -263,6 +263,9 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .lb-stat{font-family:var(--mono);font-size:10px;color:var(--text3);text-align:right;letter-spacing:.02em;white-space:nowrap}
 .lb-stat b{color:var(--text);font-weight:600}
 .lb-empty,.lb-loading{padding:44px 24px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
+.lb-row.placeholder{opacity:.4}
+.lb-row.placeholder .lb-user{color:var(--text3);font-weight:400;font-style:italic}
+.lb-row.placeholder .lb-rank{color:var(--text4)}
 
 /* ── HORIZONTAL FEATURE STRIP ── */
 #features{padding:0;border-top:1px solid var(--line);overflow:hidden}
@@ -1531,22 +1534,32 @@ function escapeHtml(str){
   d.textContent = str;
   return d.innerHTML;
 }
+const LB_MIN_ROWS = 6; // pad with open placeholder slots so the board never looks empty pre-launch
 async function loadLeaderboard(){
   const el = document.getElementById('lb-list');
   if (!el) return;
   try{
     const { data, error } = await sb.rpc('get_leaderboard');
     if (error) throw error;
-    if (!data || !data.length){
-      el.innerHTML = '<div class="lb-empty">No entries yet — be the first to log a perfect day.</div>';
-      return;
-    }
-    el.innerHTML = data.map((r,i)=>`
+    const real = data || [];
+
+    let rows = real.map((r,i)=>`
       <div class="lb-row${i<3?' top':''}">
         <div class="lb-rank">${i+1}</div>
         <div class="lb-user">${escapeHtml(r.username)}</div>
         <div class="lb-stat">Day <b>${r.current_day}</b>/120 · <b>${r.perfect_days}</b> perfect · <b>${r.avg_score}%</b> avg</div>
-      </div>`).join('');
+      </div>`);
+
+    for (let i = real.length; i < LB_MIN_ROWS; i++){
+      rows.push(`
+        <div class="lb-row placeholder">
+          <div class="lb-rank">${i+1}</div>
+          <div class="lb-user">Open rank — claim it</div>
+          <div class="lb-stat">Sign in and log day 1</div>
+        </div>`);
+    }
+
+    el.innerHTML = rows.join('');
   }catch(err){
     el.innerHTML = '<div class="lb-empty">Leaderboard unavailable right now.</div>';
     console.error('Leaderboard load failed:', err);
