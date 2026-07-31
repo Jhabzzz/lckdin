@@ -139,8 +139,8 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 
 /* ── QUOTES ── */
 #quotes{min-height:60vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-top:1px solid var(--line)}
-.q-bg{position:absolute;inset:0;transition:background 1s ease}
-.q-overlay{position:absolute;inset:0;background:rgba(11,10,8,.55)}
+.q-bg{position:absolute;inset:0;transition:background 1s ease,opacity 1s ease;background-size:cover;background-position:center}
+.q-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,10,8,.35),rgba(11,10,8,.55) 60%,rgba(11,10,8,.75))}
 .q-content{position:relative;z-index:1;max-width:760px;padding:80px 40px;text-align:center}
 .q-tag{font-family:var(--mono);font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:rgba(200,255,0,.6);margin-bottom:32px}
 .q-text{font-family:var(--serif);font-style:italic;font-size:clamp(22px,4vw,50px);line-height:1.35;color:var(--text);margin-bottom:24px;min-height:160px;display:flex;align-items:center;justify-content:center}
@@ -1111,12 +1111,12 @@ const mq=document.getElementById('mq');
 
 // ── QUOTES + TYPEWRITER ──
 const QUOTES=[
-  {q:"The man who moves a mountain begins by carrying away small stones.",a:"Confucius",bg:"linear-gradient(135deg,#0C0A1A 0%,#1A0E30 50%,#0C0A1A 100%)"},
-  {q:"We are what we repeatedly do. Excellence is not an act, but a habit.",a:"Aristotle",bg:"linear-gradient(135deg,#081200 0%,#0E2200 50%,#040804 100%)"},
-  {q:"Discipline is the bridge between goals and accomplishment.",a:"Jim Rohn",bg:"linear-gradient(135deg,#150800 0%,#281400 50%,#0C0600 100%)"},
-  {q:"The successful warrior is the average man with laser-like focus.",a:"Bruce Lee",bg:"linear-gradient(135deg,#030812 0%,#061020 50%,#030812 100%)"},
-  {q:"Do not wait for the perfect moment. Take the moment and make it perfect.",a:"Unknown",bg:"linear-gradient(135deg,#120008 0%,#200010 50%,#0C0006 100%)"},
-  {q:"Consistency over Perfection.",a:"The 120 S.I. Challenge",bg:"linear-gradient(135deg,#0A0C04 0%,#141A06 50%,#0A0C04 100%)"},
+  {q:"The man who moves a mountain begins by carrying away small stones.",a:"Confucius",bg:"linear-gradient(135deg,#0C0A1A 0%,#1A0E30 50%,#0C0A1A 100%)",img:"assets/quote-bgs/q1-violet.jpg"},
+  {q:"We are what we repeatedly do. Excellence is not an act, but a habit.",a:"Aristotle",bg:"linear-gradient(135deg,#081200 0%,#0E2200 50%,#040804 100%)",img:"assets/quote-bgs/q2-green.jpg"},
+  {q:"Discipline is the bridge between goals and accomplishment.",a:"Jim Rohn",bg:"linear-gradient(135deg,#150800 0%,#281400 50%,#0C0600 100%)",img:"assets/quote-bgs/q3-amber.jpg"},
+  {q:"The successful warrior is the average man with laser-like focus.",a:"Bruce Lee",bg:"linear-gradient(135deg,#030812 0%,#061020 50%,#030812 100%)",img:"assets/quote-bgs/q4-blue.jpg"},
+  {q:"Do not wait for the perfect moment. Take the moment and make it perfect.",a:"Unknown",bg:"linear-gradient(135deg,#120008 0%,#200010 50%,#0C0006 100%)",img:"assets/quote-bgs/q5-magenta.jpg"},
+  {q:"Consistency over Perfection.",a:"The 120 S.I. Challenge",bg:"linear-gradient(135deg,#0A0C04 0%,#141A06 50%,#0A0C04 100%)",img:"assets/quote-bgs/q6-lime.jpg"},
 ];
 let qi=0,typeTimer=null;
 const qtxt=document.getElementById('q-text');
@@ -1137,7 +1137,11 @@ function typeText(str,el,cb){
 
 function renderQ(){
   const q=QUOTES[qi];
-  qbg.style.background=q.bg;
+  qbg.style.opacity=0;
+  setTimeout(()=>{
+    qbg.style.background=q.img?`url('${q.img}') center/cover no-repeat, ${q.bg}`:q.bg;
+    qbg.style.opacity=1;
+  },350);
   qauth.style.opacity=0;
   typeText(q.q,qtxt,()=>{qauth.textContent=`— ${q.a}`;qauth.style.opacity=1;qauth.style.transition='opacity .4s'});
   document.querySelectorAll('.q-dot').forEach((d,i)=>d.classList.toggle('on',i===qi));
