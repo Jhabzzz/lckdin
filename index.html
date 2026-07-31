@@ -224,7 +224,9 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 /* ── MOTIVATION WALL ── */
 
 /* ── CHALLENGE ── */
-#challenge{padding:100px 40px;border-top:1px solid var(--line)}
+#challenge{padding:100px 40px;border-top:1px solid var(--line);background:radial-gradient(ellipse 60% 50% at 12% 0%,rgba(200,255,0,.05),transparent 60%),var(--bg)}
+#dashboard{background:radial-gradient(ellipse 55% 45% at 88% 8%,rgba(124,255,196,.05),transparent 60%),var(--bg)}
+#pivot{background:radial-gradient(ellipse 55% 45% at 90% 15%,rgba(255,159,10,.06),transparent 60%),var(--bg)}
 .ch-in{max-width:1320px;margin:0 auto}
 .ch-top{display:grid;grid-template-columns:1fr auto;align-items:end;margin-bottom:48px;gap:40px}
 .ch-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--glass-brd);border-radius:var(--r-md);overflow:hidden;background:var(--glass);backdrop-filter:blur(16px)}
@@ -468,7 +470,7 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .step:last-child{border-bottom:none}
 .step:hover{background:var(--glass2)}
 .step-n{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--lime);flex-shrink:0;line-height:1.5;display:flex;flex-direction:column;align-items:center;gap:8px}
-.step-icon{width:38px;height:38px;border-radius:var(--r-xs);background:var(--glass2);border:1px solid var(--glass-brd2);display:flex;align-items:center;justify-content:center;color:var(--lime)}
+.step-icon{width:38px;height:38px;border-radius:var(--r-xs);background:var(--glass2);border:1px solid var(--glass-brd2);display:flex;align-items:center;justify-content:center;color:var(--amber);transition:all .3s var(--ease)}
 .step-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .step-h{font-size:15px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px}
 .step-b{font-size:13px;font-weight:300;color:var(--text2);line-height:1.7}
@@ -879,7 +881,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 </section>
 
 <!-- AI COACH -->
-<section class="sec" id="coach" style="background:var(--bg2)">
+<section class="sec" id="coach" style="background:radial-gradient(ellipse 50% 50% at 8% 90%,rgba(200,255,0,.06),transparent 60%),var(--bg2)">
   <div class="sec-in">
     <div class="ey rv">Behavioral AI coach</div>
     <div class="ai-2">
@@ -929,7 +931,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
       <div class="rv d2">
         <div class="steps">
           <div class="step"><div class="step-n"><div class="step-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".5" fill="currentColor" stroke="none"/></svg></div>01</div><div><div class="step-h">Intercept</div><div class="step-b">The AI activates the moment a day is missed — not to shame, but to diagnose. It pulls your 7-day history and identifies the exact failure before morning.</div></div></div>
-          <div class="step"><div class="step-n"><div class="step-icon"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 13.7-5.7L20 9"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-13.7 5.7L4 15"/><path d="M4 20v-5h5"/></svg></div>02</div><div><div class="step-h">Adapt</div><div class="step-b">Your protocol adjusts — not resets. The failing rule is restructured. The grid marks an amber pivot square. Your streak is preserved.</div></div></div>
+          <div class="step"><div class="step-n"><div class="step-icon"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 13.7-5.7L20 9"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-13.7 5.7L4 15"/><path d="M4 20v-5h5"/></svg></div>02</div><div><div class="step-h">Adapt</div><div class="step-b">Your protocol adjusts — not resets. The failing rule is restructured. The grid marks an <span style="color:var(--amber)">amber pivot square</span>. Your streak is preserved.</div></div></div>
           <div class="step"><div class="step-n"><div class="step-icon"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>03</div><div><div class="step-h">Re-lock</div><div class="step-b">You're back executing the same day. Every square you've earned stays. Three pivots across the full protocol — use them with intention, not habit.</div></div></div>
         </div>
       </div>
@@ -938,7 +940,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 </section>
 
 <!-- WEARABLES -->
-<section class="sec" id="wearables" style="background:var(--bg2)">
+<section class="sec" id="wearables" style="background:radial-gradient(ellipse 50% 40% at 15% 10%,rgba(124,255,196,.05),transparent 60%),var(--bg2)">
   <div class="sec-in">
     <div class="ey rv">Biometric & wearable sync</div>
     <div class="grid-2">
