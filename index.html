@@ -184,6 +184,19 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .scroll-line{width:1px;height:48px;background:linear-gradient(to bottom,var(--lime),transparent);animation:scrollDown 2s ease-in-out infinite}
 @keyframes scrollDown{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
 .scroll-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--text4)}
+/* ── HERO EDITORIAL OVERLAY ── */
+.hero-top-row{position:absolute;top:100px;left:0;right:0;z-index:2;display:flex;justify-content:space-between;align-items:flex-start;padding:0 44px;gap:24px;opacity:0;animation:fadeUp .7s var(--ease) .15s forwards}
+.hero-tags{display:flex;flex-direction:column;gap:9px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--text3)}
+.hero-intro{max-width:270px;font-size:13px;line-height:1.6;color:var(--text3);text-align:right}
+.hero-proof{position:absolute;bottom:150px;right:44px;z-index:2;display:flex;align-items:center;gap:12px;padding:10px 16px 10px 10px;border-radius:var(--r-md);background:var(--glass2);border:1px solid var(--glass-brd2);backdrop-filter:blur(16px);box-shadow:var(--shadow-soft);opacity:0;animation:fadeUp .7s var(--ease) 1.05s forwards}
+.hero-proof-avs{display:flex}
+.hero-proof-av{width:24px;height:24px;border-radius:50%;border:2px solid var(--bg2);background:var(--bg4);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text);margin-left:-8px}
+.hero-proof-av:first-child{margin-left:0}
+.hero-proof-txt{font-size:12px;color:var(--text3)}
+.hero-proof-txt strong{color:var(--text)}
+.hero-proof-cta{display:block;margin-top:4px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--lime);background:none;border:none;padding:0;cursor:none;transition:opacity .2s}
+.hero-proof-cta:hover{opacity:.65}
+@media(max-width:760px){.hero-top-row,.hero-proof{display:none}}
 
 /* ── MARQUEE ── */
 .marquee-wrap{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0;overflow:hidden;background:var(--bg2)}
@@ -616,6 +629,14 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 <!-- HERO -->
 <section id="hero">
   <div class="beam-field" id="beam-field" role="img" aria-label="Ambient rising light animation"></div>
+  <div class="hero-top-row">
+    <div class="hero-tags">
+      <div>/ 120-DAY PROTOCOL</div>
+      <div>/ AI COACH</div>
+      <div>/ PUBLIC GRID</div>
+    </div>
+    <div class="hero-intro">We built the discipline app for people done starting over — log your day, let AI catch the pattern, keep the streak public.</div>
+  </div>
   <div class="hero-main">
     <div class="hero-ticker"><div class="ticker-dot"></div><span>Coming soon · join the waitlist</span></div>
     <div class="hero-count">DAY <span id="hday">001</span><span class="sl"> / </span><span id="htotal">120</span><span class="blink-cur"></span></div>
@@ -624,6 +645,13 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
     <div class="hero-btns">
       <button class="btn-fill magnet" onclick="goto('waitlist')"><span>Join the waitlist</span></button>
       <button class="btn-stroke" onclick="goto('dashboard')">See it in action</button>
+    </div>
+  </div>
+  <div class="hero-proof">
+    <div class="hero-proof-avs"><div class="hero-proof-av">J</div><div class="hero-proof-av">M</div><div class="hero-proof-av">K</div><div class="hero-proof-av">+</div></div>
+    <div class="hero-proof-txt">
+      <div><strong>247 people</strong> already locked in</div>
+      <button class="hero-proof-cta" onclick="goto('waitlist')" type="button">Join waitlist →</button>
     </div>
   </div>
   <div class="scroll-hint"><div class="scroll-line"></div><div class="scroll-lbl">Scroll</div></div>
