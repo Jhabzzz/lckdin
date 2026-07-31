@@ -288,7 +288,8 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 
 /* ── LEADERBOARD ── */
 .lb-list{border:1px solid var(--glass-brd);border-radius:var(--r-md);overflow:hidden;background:var(--glass);backdrop-filter:blur(16px);box-shadow:var(--shadow-soft)}
-.lb-row{display:flex;align-items:center;gap:16px;padding:16px 22px;border-bottom:1px solid var(--glass-brd);transition:background .25s var(--ease)}
+.lb-row{display:flex;align-items:center;gap:16px;padding:16px 22px;border-bottom:1px solid var(--glass-brd);opacity:0;transform:translateX(-14px);transition:background .25s var(--ease),opacity .5s var(--ease),transform .5s var(--ease)}
+.lb-row.show{opacity:1;transform:none}
 .lb-row:last-child{border-bottom:none}
 .lb-row:hover{background:var(--glass2)}
 .lb-rank{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text3);width:26px;flex-shrink:0}
@@ -307,13 +308,13 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .feat-scroll{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;cursor:grab;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .feat-scroll:active{cursor:grabbing}
 .feat-scroll::-webkit-scrollbar{display:none}
-.feat-card{min-width:360px;padding:48px 40px;border-right:1px solid var(--line);flex-shrink:0;transition:background .2s;position:relative}
-.feat-card:hover{background:var(--bg2)}
+.feat-card{min-width:360px;padding:48px 40px;border-right:1px solid var(--line);flex-shrink:0;transition:background .3s var(--ease),transform .3s var(--ease);position:relative}
+.feat-card:hover{background:var(--bg2);transform:translateY(-6px)}
 .feat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:transparent;transition:background .3s}
 .feat-card:hover::after{background:var(--lime)}
 .feat-icon{width:44px;height:44px;border-radius:var(--r-xs);background:var(--glass);border:1px solid var(--glass-brd2);display:flex;align-items:center;justify-content:center;margin-bottom:28px;color:var(--lime);transition:all .3s var(--ease)}
 .feat-icon svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-.feat-card:hover .feat-icon{background:var(--grad);color:var(--bg);box-shadow:var(--shadow-glow);border-color:transparent}
+.feat-card:hover .feat-icon{background:var(--grad);color:var(--bg);box-shadow:var(--shadow-glow);border-color:transparent;transform:scale(1.08) rotate(-4deg)}
 .feat-tag{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);margin-bottom:32px}
 .feat-n{font-family:var(--mono);font-size:11px;color:var(--lime);font-weight:600;margin-bottom:10px}
 .feat-h{font-size:26px;font-weight:700;letter-spacing:-.025em;line-height:1.1;margin-bottom:16px}
@@ -341,6 +342,7 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .ph-day-n span{color:var(--text3);font-weight:300}
 .ring{position:relative;width:64px;height:64px;flex-shrink:0}
 .ring svg{transform:rotate(-90deg)}
+#ring-arc{transition:stroke-dashoffset .8s var(--ease),stroke-dasharray .8s var(--ease)}
 .ring-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .ring-p{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--lime);line-height:1}
 .ring-s{font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:1px}
@@ -490,8 +492,14 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 #wl-done{display:none;font-family:var(--mono);font-size:12px;color:var(--lime);letter-spacing:.16em;text-transform:uppercase;margin-top:20px}
 .wl-soc{margin-top:40px;display:flex;align-items:center;justify-content:center;gap:14px}
 .wl-avs{display:flex}
-.wl-av{width:30px;height:30px;border-radius:50%;border:2px solid var(--bg);background:var(--bg4);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text);margin-left:-9px}
+.wl-av{width:30px;height:30px;border-radius:50%;border:2px solid var(--bg);background:var(--bg4);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text);margin-left:-9px;opacity:0;transform:scale(.4);transition:opacity .4s var(--ease),transform .4s var(--spring)}
 .wl-av:first-child{margin-left:0}
+.wl-in.in .wl-av{opacity:1;transform:scale(1)}
+.wl-in.in .wl-av:nth-child(1){transition-delay:.5s}
+.wl-in.in .wl-av:nth-child(2){transition-delay:.58s}
+.wl-in.in .wl-av:nth-child(3){transition-delay:.66s}
+.wl-in.in .wl-av:nth-child(4){transition-delay:.74s}
+.wl-in.in .wl-av:nth-child(5){transition-delay:.82s}
 .wl-soc-txt{font-family:var(--mono);font-size:10px;color:var(--text3)}
 .wl-soc-txt strong{color:var(--text)}
 
@@ -620,8 +628,8 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
   </div>
   <div class="scroll-hint"><div class="scroll-line"></div><div class="scroll-lbl">Scroll</div></div>
   <div class="hero-bar">
-    <div class="hb"><div class="hb-v" id="hb-days">120</div><div class="hb-k">Day protocol</div></div>
-    <div class="hb"><div class="hb-v">20</div><div class="hb-k">Daily rules</div></div>
+    <div class="hb"><div class="hb-v" id="hb-days">0</div><div class="hb-k">Day protocol</div></div>
+    <div class="hb"><div class="hb-v" id="hb-rules">0</div><div class="hb-k">Daily rules</div></div>
     <div class="hb"><div class="hb-v">Zero</div><div class="hb-k">Gamification</div></div>
     <div class="hb"><div class="hb-v">Public</div><div class="hb-k">Discipline grid</div></div>
   </div>
@@ -1447,6 +1455,24 @@ document.getElementById('auth-btn').addEventListener('click', closeMobileNav);
 const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.1});
 document.querySelectorAll('.rv').forEach(el=>io.observe(el));
 
+// ── HERO STAT COUNT-UP ──
+function countUp(el,target,duration){
+  if(!el||window.matchMedia('(prefers-reduced-motion: reduce)').matches){ if(el)el.textContent=target; return; }
+  const start=performance.now();
+  function tick(now){
+    const p=Math.min((now-start)/duration,1);
+    const eased=1-Math.pow(1-p,3);
+    el.textContent=Math.round(target*eased);
+    if(p<1)requestAnimationFrame(tick);
+    else el.textContent=target;
+  }
+  requestAnimationFrame(tick);
+}
+setTimeout(()=>{
+  countUp(document.getElementById('hb-days'),120,1100);
+  countUp(document.getElementById('hb-rules'),20,900);
+},950);
+
 // ── MARQUEE ──
 const MQ=['No excuses','Zero dopamine','120 days','Execute daily','Public grid','Snap & track','AI coach','Pivot protocol','Locked in','Consistency over perfection','Wearable sync','Rule-matched music'];
 const mq=document.getElementById('mq');
@@ -1842,6 +1868,14 @@ async function loadLeaderboard(){
         <div class="lb-user">${escapeHtml(r.username)}</div>
         <div class="lb-stat">Day <b>${r.current_day}</b>/120 · <b>${r.perfect_days}</b> perfect · <b>${r.avg_score}%</b> avg</div>
       </div>`).join('');
+    const rows = el.querySelectorAll('.lb-row');
+    const lbObs = new IntersectionObserver(es=>{
+      if(es[0].isIntersecting){
+        rows.forEach((r,i)=>setTimeout(()=>r.classList.add('show'), i*70));
+        lbObs.disconnect();
+      }
+    },{threshold:.1});
+    lbObs.observe(el);
   }catch(err){
     el.innerHTML = '<div class="lb-empty">Leaderboard unavailable right now.</div>';
     console.error('Leaderboard load failed:', err);
