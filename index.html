@@ -120,7 +120,8 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 #hday{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .blink-cur{display:inline-block;width:clamp(4px,.8vw,13px);height:clamp(36px,8vw,102px);background:var(--lime);vertical-align:middle;margin-left:2px;animation:blink 1s step-end infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-.hero-serif{font-family:var(--serif);font-style:italic;font-size:clamp(16px,2.2vw,26px);color:var(--text3);margin-top:18px;letter-spacing:.02em;opacity:0;animation:fadeUp .7s var(--ease) .55s forwards}
+.hero-value{font-family:var(--sans);font-weight:600;font-size:clamp(17px,2.6vw,26px);color:var(--text2);margin-top:22px;letter-spacing:-.01em;max-width:560px;line-height:1.35;opacity:0;animation:fadeUp .7s var(--ease) .4s forwards}
+.hero-serif{font-family:var(--serif);font-style:italic;font-size:clamp(13px,1.6vw,17px);color:var(--text4);margin-top:14px;letter-spacing:.02em;opacity:0;animation:fadeUp .7s var(--ease) .55s forwards}
 .hero-btns{display:flex;gap:10px;margin-top:40px;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeUp .7s var(--ease) .7s forwards}
 .btn-fill{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:15px 36px;background:var(--grad);background-size:160% 160%;background-position:0% 50%;color:var(--bg);border:none;border-radius:var(--r-sm);cursor:none;font-weight:700;transition:background-position .5s var(--ease),box-shadow .3s var(--ease),transform .2s var(--ease);position:relative;overflow:hidden}
 .btn-fill:hover{background-position:100% 50%;box-shadow:var(--shadow-glow);transform:translateY(-1px)}
@@ -526,9 +527,10 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 <section id="hero">
   <div class="beam-field" id="beam-field" role="img" aria-label="Ambient rising light animation"></div>
   <div class="hero-main">
-    <div class="hero-ticker"><div class="ticker-dot"></div><span id="hero-tag">120-day discipline protocol · zero dopamine</span></div>
+    <div class="hero-ticker"><div class="ticker-dot"></div><span>Coming soon · join the waitlist</span></div>
     <div class="hero-count">DAY <span id="hday">001</span><span class="sl"> / </span><span id="htotal">120</span><span class="blink-cur"></span></div>
-    <div class="hero-serif" id="hero-quote-mini">"Consistency over Perfection"</div>
+    <div class="hero-value">The app for your next 120 days of discipline — log your day in 5 seconds, let AI catch what's breaking your streak.</div>
+    <div class="hero-serif" id="hero-tag">120-day protocol · zero dopamine · public accountability</div>
     <div class="hero-btns">
       <button class="btn-fill magnet" onclick="goto('waitlist')"><span>Join the waitlist</span></button>
       <button class="btn-stroke" onclick="goto('dashboard')">See it in action</button>
@@ -695,12 +697,12 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
     <div class="disp">Built different.<br><em>Works different.</em></div>
   </div>
   <div class="feat-scroll" id="feat-scroll">
-    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg></div><div class="feat-tag">Vision AI</div><div class="feat-n">01</div><div class="feat-h">Snap &amp; Track</div><div class="feat-b">Photo your handwritten journal. AI reads every checkmark and maps them to your rules — with a confidence review so you control what gets logged. No manual entry.</div></div>
-    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg></div><div class="feat-tag">Pattern analysis</div><div class="feat-n">02</div><div class="feat-h">Behavioral AI Coach</div><div class="feat-b">Seven-day rolling analysis finds your causal bottleneck. If screen time fails every time you sleep past 11:30 PM — the coach names that correlation and fixes the root.</div></div>
-    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 4v4h-4"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 20v-4h4"/></svg></div><div class="feat-tag">Streak integrity</div><div class="feat-n">03</div><div class="feat-h">Pivot Protocol</div><div class="feat-b">Break your streak on Day 34? You don't reset to zero. The AI adapts your protocol, marks a pivot on your grid, and keeps you executing. Three pivots per protocol.</div></div>
-    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="7" y="8" width="10" height="8" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M12 11v2"/></svg></div><div class="feat-tag">Biometric data</div><div class="feat-n">04</div><div class="feat-h">Wearable Sync</div><div class="feat-b">Apple Health, Whoop, Oura, Garmin — connect your device and LCKD—IN auto-logs sleep, HRV, steps, and activity into your daily rules. Zero manual entry.</div></div>
-    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M4 14v-3M8 17v-9M12 19v-14M16 17v-9M20 14v-3"/></svg></div><div class="feat-tag">Ambient sound</div><div class="feat-n">05</div><div class="feat-h">Rule-matched Music</div><div class="feat-b">Connect Spotify or Apple Music. The app detects your active rule — workout, deep work, meditation — and queues the right playlist automatically. Context-aware audio.</div></div>
-    <div class="feat-card" style="border-right:none"><div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="6" height="6" rx="1"/><rect x="14.5" y="3.5" width="6" height="6" rx="1"/><rect x="3.5" y="14.5" width="6" height="6" rx="1"/><rect x="14.5" y="14.5" width="6" height="6" rx="1"/></svg></div><div class="feat-tag">Social proof</div><div class="feat-n">06</div><div class="feat-h">Public Grid Profile</div><div class="feat-b">Your discipline grid lives at lckd-in.com/yourname. Link it in your bio. Every square you earn is permanent — public accountability with no way to hide.</div></div>
+    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg></div><div class="feat-tag">Vision AI</div><div class="feat-n">01</div><div class="feat-h">Snap &amp; Track</div><div class="feat-b">Photo your journal. AI reads it and logs it — you approve.</div></div>
+    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg></div><div class="feat-tag">Pattern analysis</div><div class="feat-n">02</div><div class="feat-h">Behavioral AI Coach</div><div class="feat-b">Finds the one habit that's quietly breaking all the others.</div></div>
+    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 4v4h-4"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 20v-4h4"/></svg></div><div class="feat-tag">Streak integrity</div><div class="feat-n">03</div><div class="feat-h">Pivot Protocol</div><div class="feat-b">Break your streak? AI adapts your plan — no reset to zero.</div></div>
+    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="7" y="8" width="10" height="8" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M12 11v2"/></svg></div><div class="feat-tag">Biometric data</div><div class="feat-n">04</div><div class="feat-h">Wearable Sync</div><div class="feat-b">Apple Health, Whoop, Oura, Garmin — auto-logged, zero typing.</div></div>
+    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M4 14v-3M8 17v-9M12 19v-14M16 17v-9M20 14v-3"/></svg></div><div class="feat-tag">Ambient sound</div><div class="feat-n">05</div><div class="feat-h">Rule-matched Music</div><div class="feat-b">Detects your active rule, queues the right playlist. Automatically.</div></div>
+    <div class="feat-card" style="border-right:none"><div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="6" height="6" rx="1"/><rect x="14.5" y="3.5" width="6" height="6" rx="1"/><rect x="3.5" y="14.5" width="6" height="6" rx="1"/><rect x="14.5" y="14.5" width="6" height="6" rx="1"/></svg></div><div class="feat-tag">Social proof</div><div class="feat-n">06</div><div class="feat-h">Public Grid Profile</div><div class="feat-b">Your grid, live at lckd-in.com/you. Public. Permanent.</div></div>
   </div>
   <div class="feat-hint rv">Drag to explore all features</div>
 </section>
@@ -1285,7 +1287,7 @@ setInterval(nextQ,7000);
 // ── CHALLENGE SELECTOR ──
 let selDay=120;
 function updateHeroTag(d){
-  document.getElementById('hero-tag').textContent=`${d}-day discipline protocol · zero dopamine`;
+  document.getElementById('hero-tag').textContent=`${d}-day protocol · zero dopamine · public accountability`;
   document.getElementById('htotal').textContent=d;
   document.getElementById('hb-days').textContent=d;
   document.getElementById('sel-readout').textContent=d;
