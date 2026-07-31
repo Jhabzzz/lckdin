@@ -58,7 +58,10 @@
   --shadow-soft:0 1px 0 rgba(255,255,255,.04) inset,0 30px 70px -40px rgba(0,0,0,.7);
 }
 html{scroll-behavior:smooth;overflow-x:hidden}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased;cursor:none;overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased;cursor:none;overflow-x:hidden;opacity:0;animation:pageIn .7s var(--ease) forwards}
+@keyframes pageIn{to{opacity:1}}
+@keyframes panelIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){body{animation:none;opacity:1}}
 ::selection{background:var(--lime);color:var(--bg)}
 /* ── GRAIN + GLOW SYSTEM ── */
 #grain{position:fixed;inset:-100px;z-index:9000;pointer-events:none;opacity:.035;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
@@ -162,13 +165,15 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 /* ── MOTIVATION WALL ── */
 .mwall-head{padding:100px 40px 0;max-width:1320px;margin:0 auto}
 .mwall{margin-top:56px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--glass-brd);border-top:1px solid var(--glass-brd);border-bottom:1px solid var(--glass-brd)}
-.mwall-card{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;padding:36px;text-align:center;position:relative;overflow:hidden;background:var(--bg2);transition:background .3s var(--ease)}
-.mwall-card:hover{background:var(--bg3)}
-.mwall-card.accent{background:linear-gradient(155deg,#1c0606,#0a0202)}
-.mwall-card.accent:hover{background:linear-gradient(155deg,#240808,#0a0202)}
-.mwall-txt{font-family:var(--sans);font-weight:800;font-size:clamp(16px,1.8vw,21px);line-height:1.3;letter-spacing:-.01em;color:var(--text)}
-.mwall-card.accent .mwall-txt{color:#FF4433;font-style:italic}
-.mwall-n{position:absolute;top:16px;left:18px;font-family:var(--mono);font-size:9px;color:var(--text4);letter-spacing:.1em}
+.mwall-card{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;padding:36px;text-align:center;position:relative;overflow:hidden;background-size:cover;background-position:center;transition:transform .4s var(--ease)}
+.mwall-card::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,10,8,.5),rgba(11,10,8,.72));transition:background .35s var(--ease);z-index:0}
+.mwall-card:hover{transform:scale(1.02)}
+.mwall-card:hover::before{background:linear-gradient(180deg,rgba(11,10,8,.28),rgba(11,10,8,.5))}
+.mwall-card.accent::before{background:linear-gradient(180deg,rgba(20,4,4,.55),rgba(10,2,2,.78))}
+.mwall-card.accent:hover::before{background:linear-gradient(180deg,rgba(20,4,4,.32),rgba(10,2,2,.55))}
+.mwall-txt{position:relative;z-index:1;font-family:var(--sans);font-weight:800;font-size:clamp(16px,1.8vw,21px);line-height:1.3;letter-spacing:-.01em;color:var(--text)}
+.mwall-card.accent .mwall-txt{color:#FF6650;font-style:italic}
+.mwall-n{position:absolute;top:16px;left:18px;z-index:1;font-family:var(--mono);font-size:9px;color:rgba(242,240,230,.45);letter-spacing:.1em}
 @media(max-width:1024px){.mwall{grid-template-columns:repeat(2,1fr)}.mwall-head{padding:80px 24px 0}}
 @media(max-width:560px){.mwall{grid-template-columns:1fr}}
 
@@ -193,7 +198,7 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .ch-sel-badge{position:absolute;top:14px;right:14px;font-family:var(--mono);font-size:7px;letter-spacing:.14em;text-transform:uppercase;padding:3px 7px;background:var(--lime);color:var(--bg);font-weight:700;opacity:0;transition:opacity .2s}
 .ch-card.on .ch-sel-badge{opacity:1}
 .ch-custom-row{border:1px solid var(--glass-brd);border-top:none;border-radius:0 0 var(--r-md) var(--r-md);padding:20px 28px;display:none;align-items:center;gap:20px;background:var(--glass2)}
-.ch-custom-row.show{display:flex}
+.ch-custom-row.show{display:flex;animation:panelIn .35s var(--ease)}
 .ch-ci{background:transparent;border:none;border-bottom:1px solid var(--line2);color:var(--lime);font-family:var(--mono);font-size:32px;font-weight:700;width:90px;outline:none;padding:4px 0;transition:border-color .2s}
 .ch-ci:focus{border-color:var(--lime)}
 .ch-cu{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:.12em}
@@ -219,23 +224,24 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:center}
 .prof-bar{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.1em;margin-bottom:14px;display:flex;justify-content:space-between}
 .prof-bar span{color:var(--text)}
-.disc-grid{display:grid;grid-template-columns:repeat(20,1fr);gap:4px}
-.dc{aspect-ratio:1;border-radius:4px;background:var(--bg4);border:1px solid rgba(255,255,255,.04);cursor:none;transition:transform .12s var(--spring),filter .12s,border-radius .12s;opacity:0}
-.dc:hover{border-radius:3px}
+.disc-grid{display:grid;grid-template-columns:repeat(20,1fr);gap:5px 4px;padding:14px;border-radius:var(--r-md);background:radial-gradient(circle at 30% 20%,rgba(200,255,0,.03),transparent 60%),var(--glass);border:1px solid var(--glass-brd)}
+.dc{aspect-ratio:1;background:var(--bg4);border:1px solid rgba(255,255,255,.04);cursor:none;transition:transform .15s var(--spring),filter .12s,clip-path .15s var(--ease);opacity:0;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)}
+.dc:hover{clip-path:polygon(50% -8%,112% 25%,112% 75%,50% 108%,-12% 75%,-12% 25%)}
 .dc.show{opacity:1;transition:opacity .4s ease,transform .12s var(--spring),filter .12s}
-.dc:hover{transform:scale(1.5);z-index:10;position:relative;filter:brightness(1.6);box-shadow:0 0 20px rgba(200,255,0,.5)}
+.dc:hover{transform:scale(1.45);z-index:10;position:relative;filter:brightness(1.6) drop-shadow(0 0 10px rgba(200,255,0,.55))}
 .dc.v1{background:var(--g1);border-color:#1C2804}
 .dc.v2{background:var(--g2);border-color:#2E4208}
 .dc.v3{background:var(--g3);border-color:#3E600A}
 .dc.v4{background:var(--g4);border-color:#588C14}
 .dc.v5{background:var(--g5);border-color:var(--lime2)}
-.dc.today{box-shadow:0 0 0 1.5px var(--lime),0 0 16px rgba(200,255,0,.3)}
+.dc.today{filter:drop-shadow(0 0 2px var(--lime)) drop-shadow(0 0 10px rgba(200,255,0,.5));animation:hexPulse 2.4s ease-in-out infinite}
+@keyframes hexPulse{0%,100%{filter:drop-shadow(0 0 2px var(--lime)) drop-shadow(0 0 8px rgba(200,255,0,.4))}50%{filter:drop-shadow(0 0 3px var(--lime)) drop-shadow(0 0 16px rgba(200,255,0,.7))}}
 .dc.future{background:var(--bg2);opacity:0}
 .dc.future.show{opacity:.14}
 .dc.pivot{background:#140E02;border-color:#2E2004}
 .g-legend{display:flex;align-items:center;gap:7px;margin-top:14px;flex-wrap:wrap}
 .gl{font-family:var(--mono);font-size:9px;color:var(--text3)}
-.glc{width:11px;height:11px;border-radius:2px;flex-shrink:0}
+.glc{width:12px;height:12px;flex-shrink:0;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)}
 .g-stats{margin-top:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--glass-brd);border:1px solid var(--glass-brd);border-radius:var(--r-sm);overflow:hidden}
 .gst{background:var(--bg2);padding:16px}
 .gst-v{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--text)}
@@ -245,6 +251,18 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .share-url b{color:var(--text);font-weight:400}
 .share-copy{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:12px 18px;background:transparent;color:var(--text3);border:none;border-left:1px solid var(--glass-brd2);cursor:none;transition:all .25s var(--ease);white-space:nowrap}
 .share-copy:hover{background:var(--grad);color:var(--bg);font-weight:600}
+
+/* ── LEADERBOARD ── */
+.lb-list{border:1px solid var(--glass-brd);border-radius:var(--r-md);overflow:hidden;background:var(--glass);backdrop-filter:blur(16px);box-shadow:var(--shadow-soft)}
+.lb-row{display:flex;align-items:center;gap:16px;padding:16px 22px;border-bottom:1px solid var(--glass-brd);transition:background .25s var(--ease)}
+.lb-row:last-child{border-bottom:none}
+.lb-row:hover{background:var(--glass2)}
+.lb-rank{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text3);width:26px;flex-shrink:0}
+.lb-row.top .lb-rank{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.lb-user{flex:1;font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-stat{font-family:var(--mono);font-size:10px;color:var(--text3);text-align:right;letter-spacing:.02em;white-space:nowrap}
+.lb-stat b{color:var(--text);font-weight:600}
+.lb-empty,.lb-loading{padding:44px 24px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
 
 /* ── HORIZONTAL FEATURE STRIP ── */
 #features{padding:0;border-top:1px solid var(--line);overflow:hidden}
@@ -310,14 +328,14 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .snap-btn{width:100%;border:1px solid var(--glass-brd2);border-radius:var(--r-xs);background:var(--glass);color:var(--text3);font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:12px;cursor:none;transition:all .3s var(--ease);display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden}
 .snap-btn:hover{color:var(--bg);border-color:transparent;background:var(--grad);box-shadow:var(--shadow-glow)}
 .snap-btn span{position:relative;z-index:1}
-.spnl{display:none}.spnl.on{display:block}
+.spnl{display:none}.spnl.on{display:block;animation:panelIn .4s var(--ease)}
 .snap-drop{margin:20px;border:1px dashed var(--glass-brd2);border-radius:var(--r-sm);padding:44px 24px;text-align:center;cursor:none;transition:all .25s var(--ease);position:relative;overflow:hidden}
 .snap-drop::before{content:'';position:absolute;inset:0;background:rgba(200,255,0,.03);opacity:0;transition:opacity .2s}
 .snap-drop:hover::before{opacity:1}
 .snap-drop:hover{border-color:var(--lime)}
 .snap-drop p{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
 .snap-drop small{font-family:var(--mono);font-size:8px;color:var(--text4)}
-.conf{display:none;padding:20px}
+.conf{display:none;padding:20px;animation:panelIn .45s var(--ease)}
 .conf-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .conf-dot{width:6px;height:6px;background:var(--lime);border-radius:50%;animation:pulse 2s ease-in-out infinite;flex-shrink:0}
 .conf-ttl{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--lime)}
@@ -491,6 +509,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
     <div class="nav-links">
       <button class="nl" onclick="goto('challenge')">Challenge</button>
       <button class="nl" onclick="goto('grid')">Grid</button>
+      <button class="nl" onclick="goto('leaderboard')">Leaderboard</button>
       <button class="nl" onclick="goto('dashboard')">Dashboard</button>
       <button class="nl" onclick="goto('coach')">AI Coach</button>
       <button class="nl" id="auth-btn" onclick="handleAuthClick()">Sign in</button>
@@ -548,15 +567,15 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
     <div class="disp">Words that keep<br>you <em>locked in.</em></div>
   </div>
   <div class="mwall rv d1">
-    <div class="mwall-card"><div class="mwall-n">01</div><div class="mwall-txt">Discipline is the only flex nobody can fake.</div></div>
-    <div class="mwall-card"><div class="mwall-n">02</div><div class="mwall-txt">You don't need motivation. You need the next 24 hours.</div></div>
-    <div class="mwall-card accent"><div class="mwall-n">03</div><div class="mwall-txt">Nobody's coming to save your streak.</div></div>
-    <div class="mwall-card"><div class="mwall-n">04</div><div class="mwall-txt">Talk less. Log more.</div></div>
-    <div class="mwall-card accent"><div class="mwall-n">05</div><div class="mwall-txt">Day 120 you is watching what Day 1 you does right now.</div></div>
-    <div class="mwall-card"><div class="mwall-n">06</div><div class="mwall-txt">Comfort has the best PR team. Don't hire them.</div></div>
-    <div class="mwall-card"><div class="mwall-n">07</div><div class="mwall-txt">Show up ugly. Show up anyway.</div></div>
-    <div class="mwall-card accent"><div class="mwall-n">08</div><div class="mwall-txt">Your only competition clocked in yesterday.</div></div>
-    <div class="mwall-card"><div class="mwall-n">09</div><div class="mwall-txt">Consistency doesn't care how you feel today.</div></div>
+    <div class="mwall-card" style="background-image:url('assets/mwall-bgs/m1-padlock.jpg')"><div class="mwall-n">01</div><div class="mwall-txt">Discipline is the only flex nobody can fake.</div></div>
+    <div class="mwall-card" style="background-image:url('assets/mwall-bgs/m2-clock.jpg')"><div class="mwall-n">02</div><div class="mwall-txt">You don't need motivation. You need the next 24 hours.</div></div>
+    <div class="mwall-card accent" style="background-image:url('assets/mwall-bgs/m3-flare.jpg')"><div class="mwall-n">03</div><div class="mwall-txt">Nobody's coming to save your streak.</div></div>
+    <div class="mwall-card" style="background-image:url('assets/mwall-bgs/m4-checklist.jpg')"><div class="mwall-n">04</div><div class="mwall-txt">Talk less. Log more.</div></div>
+    <div class="mwall-card accent" style="background-image:url('assets/mwall-bgs/m5-eye.jpg')"><div class="mwall-n">05</div><div class="mwall-txt">Day 120 you is watching what Day 1 you does right now.</div></div>
+    <div class="mwall-card" style="background-image:url('assets/mwall-bgs/m6-armchair.jpg')"><div class="mwall-n">06</div><div class="mwall-txt">Comfort has the best PR team. Don't hire them.</div></div>
+    <div class="mwall-card" style="background-image:url('assets/mwall-bgs/m7-footprints.jpg')"><div class="mwall-n">07</div><div class="mwall-txt">Show up ugly. Show up anyway.</div></div>
+    <div class="mwall-card accent" style="background-image:url('assets/mwall-bgs/m8-stopwatch.jpg')"><div class="mwall-n">08</div><div class="mwall-txt">Your only competition clocked in yesterday.</div></div>
+    <div class="mwall-card" style="background-image:url('assets/mwall-bgs/m9-calendar.jpg')"><div class="mwall-n">09</div><div class="mwall-txt">Consistency doesn't care how you feel today.</div></div>
   </div>
 </section>
 
@@ -640,6 +659,24 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
           <div class="gst"><div class="gst-v">1</div><div class="gst-k">Current day</div></div>
           <div class="gst"><div class="gst-v">70%</div><div class="gst-k">Today's score</div></div>
           <div class="gst"><div class="gst-v">14/20</div><div class="gst-k">Rules done</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LEADERBOARD -->
+<section class="sec" id="leaderboard" style="background:var(--bg2)">
+  <div class="sec-in">
+    <div class="ey rv">Public leaderboard</div>
+    <div class="grid-2">
+      <div class="rv">
+        <div class="disp" style="margin-bottom:24px">Discipline<br>is <em>ranked.</em></div>
+        <p class="bod">Every perfect day counts toward your rank. The leaderboard tracks who's actually locked in across every protocol running right now — real data, updated live.</p>
+      </div>
+      <div class="rv d2">
+        <div class="lb-list" id="lb-list">
+          <div class="lb-loading">Loading leaderboard…</div>
         </div>
       </div>
     </div>
@@ -1487,6 +1524,35 @@ fs.addEventListener('mousedown',e=>{isDown=true;startX=e.pageX-fs.offsetLeft;scr
 fs.addEventListener('mouseleave',()=>isDown=false);
 fs.addEventListener('mouseup',()=>isDown=false);
 fs.addEventListener('mousemove',e=>{if(!isDown)return;e.preventDefault();const x=e.pageX-fs.offsetLeft;fs.scrollLeft=scrollLeft-(x-startX)*1.5});
+
+// ── LEADERBOARD · real public data via get_leaderboard() RPC ──
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+async function loadLeaderboard(){
+  const el = document.getElementById('lb-list');
+  if (!el) return;
+  try{
+    const { data, error } = await sb.rpc('get_leaderboard');
+    if (error) throw error;
+    if (!data || !data.length){
+      el.innerHTML = '<div class="lb-empty">No entries yet — be the first to log a perfect day.</div>';
+      return;
+    }
+    el.innerHTML = data.map((r,i)=>`
+      <div class="lb-row${i<3?' top':''}">
+        <div class="lb-rank">${i+1}</div>
+        <div class="lb-user">${escapeHtml(r.username)}</div>
+        <div class="lb-stat">Day <b>${r.current_day}</b>/120 · <b>${r.perfect_days}</b> perfect · <b>${r.avg_score}%</b> avg</div>
+      </div>`).join('');
+  }catch(err){
+    el.innerHTML = '<div class="lb-empty">Leaderboard unavailable right now.</div>';
+    console.error('Leaderboard load failed:', err);
+  }
+}
+loadLeaderboard();
 
 // ── WAITLIST ──
 document.getElementById('wl-email').addEventListener('keydown',e=>{if(e.key==='Enter')submitWL()});
