@@ -132,6 +132,32 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .hero-bar{border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);opacity:0;animation:fadeUp .7s var(--ease) .9s forwards}
 .hb{padding:18px 24px;border-right:1px solid var(--line)}
 .hb:last-child{border-right:none}
+/* ── AUTH MODAL ── */
+.auth-overlay{position:fixed;inset:0;z-index:3000;background:rgba(11,10,8,.8);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
+.auth-overlay.on{display:flex}
+.auth-modal{width:100%;max-width:400px;background:var(--bg2);border:1px solid var(--glass-brd2);border-radius:var(--r-lg);padding:36px 32px;position:relative;box-shadow:var(--shadow-card);animation:panelIn .4s var(--ease)}
+.auth-close{position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:50%;border:1px solid var(--glass-brd);background:var(--glass);color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:none;transition:all .2s;font-size:13px}
+.auth-close:hover{color:var(--text);border-color:var(--line3)}
+.auth-ttl{font-family:var(--sans);font-weight:700;font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+.auth-sub{font-size:13px;color:var(--text3);margin-bottom:26px;line-height:1.4}
+.auth-oauth{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
+.auth-oauth-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px;border-radius:var(--r-sm);border:1px solid var(--glass-brd2);background:var(--glass);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:600;cursor:none;transition:all .25s var(--ease)}
+.auth-oauth-btn:hover{background:var(--glass2);border-color:var(--line3);transform:translateY(-1px)}
+.auth-oauth-btn svg{width:18px;height:18px;flex-shrink:0}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:22px 0;color:var(--text4);font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--line2)}
+.auth-field{margin-bottom:14px}
+.auth-field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.auth-field input{width:100%;background:var(--bg3);border:1px solid var(--glass-brd2);border-radius:var(--r-sm);padding:13px 14px;color:var(--text);font-family:var(--sans);font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s}
+.auth-field input:focus{border-color:rgba(200,255,0,.4);box-shadow:0 0 0 3px rgba(200,255,0,.08)}
+.auth-submit{width:100%;margin-top:4px;display:block}
+.auth-msg{font-size:12px;margin-top:14px;text-align:center;min-height:16px}
+.auth-msg.err{color:#FF6B6B}
+.auth-msg.ok{color:var(--lime)}
+.auth-switch{text-align:center;margin-top:20px;font-size:13px;color:var(--text3)}
+.auth-switch button{background:none;border:none;color:var(--lime);cursor:none;font-weight:600;font-family:var(--sans);font-size:13px;padding:0}
+.auth-switch button:hover{text-decoration:underline}
+@media(max-width:460px){.auth-modal{padding:28px 22px}}
 .hb-v{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--text);line-height:1}
 .hb-k{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-top:4px}
 /* scroll hint */
@@ -522,6 +548,48 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
     </div>
   </div>
 </nav>
+
+<!-- AUTH MODAL -->
+<div class="auth-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuthModal()">
+  <div class="auth-modal">
+    <button class="auth-close" onclick="closeAuthModal()" aria-label="Close" type="button">✕</button>
+    <div class="auth-ttl" id="auth-ttl">Welcome back</div>
+    <div class="auth-sub" id="auth-sub">Sign in to track your protocol.</div>
+
+    <div class="auth-oauth">
+      <button class="auth-oauth-btn" type="button" onclick="oauthSignIn('apple')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.9-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.572-2.27 1.206-2.98.804-.94 2.142-1.64 3.248-1.68.03.13.05.28.05.43zm4.565 15.71c-.03.07-.463 1.58-1.518 3.12-.94 1.36-1.92 2.72-3.45 2.75-1.51.03-2-.88-3.73-.88-1.73 0-2.27.85-3.7.91-1.47.06-2.6-1.47-3.55-2.82-1.93-2.78-3.4-7.85-1.42-11.27.98-1.7 2.73-2.77 4.63-2.79 1.44-.03 2.79.97 3.67.97.87 0 2.51-1.2 4.23-1.02.72.03 2.74.29 4.04 2.18-.1.07-2.41 1.41-2.39 4.2.03 3.34 2.93 4.45 2.96 4.46-.02.07-.46 1.61-1.58 3.16z"/></svg>
+        <span>Continue with Apple</span>
+      </button>
+      <button class="auth-oauth-btn" type="button" onclick="oauthSignIn('google')">
+        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.07 5.07 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.28-1.93-6.14-4.53H2.18v2.85A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.86 14.1a6.6 6.6 0 0 1 0-4.2V7.05H2.18a11 11 0 0 0 0 9.9l3.68-2.85z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1a11 11 0 0 0-9.82 6.05l3.68 2.85C6.72 7.3 9.14 5.38 12 5.38z"/></svg>
+        <span>Continue with Google</span>
+      </button>
+    </div>
+
+    <div class="auth-divider">or</div>
+
+    <form id="auth-form" onsubmit="return handleAuthSubmit(event)">
+      <div class="auth-field" id="auth-username-field" style="display:none">
+        <label>Username</label>
+        <input type="text" id="auth-username" placeholder="your-name" autocomplete="username">
+      </div>
+      <div class="auth-field" id="auth-email-field">
+        <label>Email</label>
+        <input type="email" id="auth-email" placeholder="you@email.com" autocomplete="email" required>
+      </div>
+      <div class="auth-field" id="auth-password-field">
+        <label>Password</label>
+        <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" required minlength="6">
+      </div>
+      <button type="submit" class="btn-fill auth-submit" id="auth-submit-btn"><span>Sign in</span></button>
+    </form>
+
+    <div class="auth-msg" id="auth-msg"></div>
+
+    <div class="auth-switch" id="auth-switch">New here? <button type="button" onclick="setAuthMode('signup')">Create an account</button></div>
+  </div>
+</div>
 
 <!-- HERO -->
 <section id="hero">
@@ -920,21 +988,141 @@ sb.auth.getSession().then(({ data, error }) => {
     console.log('Supabase connected. Current session:', data.session);
   }
 });
-// ── AUTH UI (Phase 3.1) ──
+// ── AUTH UI ──
 const authBtn = document.getElementById('auth-btn');
 let currentUser = null;
+let authMode = 'signin';
+let pendingProfileUser = null;
+const USERNAME_RE = /^[a-zA-Z0-9_-]{3,30}$/;
 
-function handleAuthClick() {
-  const email = prompt('Enter your email for a magic sign-in link:');
-  if (!email) return;
-  sb.auth.signInWithOtp({ email }).then(({ error }) => {
-    if (error) alert('Sign-in failed: ' + error.message);
-    else alert('Magic link sent — check your inbox.');
-  });
+function handleAuthClick() { openAuthModal('signin'); }
+function handleSignOut() { sb.auth.signOut(); }
+
+function openAuthModal(mode) {
+  setAuthMode(mode || 'signin');
+  document.getElementById('auth-overlay').classList.add('on');
+}
+function closeAuthModal() {
+  document.getElementById('auth-overlay').classList.remove('on');
+  document.getElementById('auth-form').reset();
+  showAuthMsg('', '');
+}
+function showAuthMsg(text, type) {
+  const el = document.getElementById('auth-msg');
+  el.textContent = text;
+  el.className = 'auth-msg' + (type ? ' ' + type : '');
 }
 
-function handleSignOut() {
-  sb.auth.signOut();
+function setAuthMode(mode) {
+  authMode = mode;
+  const oauthEl = document.querySelector('.auth-oauth');
+  const divEl = document.querySelector('.auth-divider');
+  const uf = document.getElementById('auth-username-field');
+  const emailF = document.getElementById('auth-email-field');
+  const pwF = document.getElementById('auth-password-field');
+  const emailIn = document.getElementById('auth-email');
+  const pwIn = document.getElementById('auth-password');
+  const uIn = document.getElementById('auth-username');
+  const ttl = document.getElementById('auth-ttl');
+  const sub = document.getElementById('auth-sub');
+  const btnSpan = document.querySelector('#auth-submit-btn span');
+  const sw = document.getElementById('auth-switch');
+
+  uf.style.display = (mode === 'signup' || mode === 'username') ? 'block' : 'none';
+
+  if (mode === 'username') {
+    oauthEl.style.display = 'none';
+    divEl.style.display = 'none';
+    emailF.style.display = 'none';
+    pwF.style.display = 'none';
+    emailIn.required = false;
+    pwIn.required = false;
+    uIn.required = true;
+    ttl.textContent = 'One last thing';
+    sub.textContent = "Pick a username for your public grid — lckd-in.com/username.";
+    btnSpan.textContent = 'Save username';
+    sw.style.display = 'none';
+  } else {
+    oauthEl.style.display = 'flex';
+    divEl.style.display = 'flex';
+    emailF.style.display = 'block';
+    pwF.style.display = 'block';
+    emailIn.required = true;
+    pwIn.required = true;
+    uIn.required = (mode === 'signup');
+    sw.style.display = 'block';
+    if (mode === 'signup') {
+      ttl.textContent = 'Create your account';
+      sub.textContent = 'Start your 120-day protocol.';
+      btnSpan.textContent = 'Create account';
+      pwIn.autocomplete = 'new-password';
+      sw.innerHTML = 'Already have an account? <button type="button" onclick="setAuthMode(\'signin\')">Sign in</button>';
+    } else {
+      ttl.textContent = 'Welcome back';
+      sub.textContent = 'Sign in to track your protocol.';
+      btnSpan.textContent = 'Sign in';
+      pwIn.autocomplete = 'current-password';
+      sw.innerHTML = 'New here? <button type="button" onclick="setAuthMode(\'signup\')">Create an account</button>';
+    }
+  }
+  showAuthMsg('', '');
+}
+
+async function oauthSignIn(provider) {
+  showAuthMsg('Redirecting to ' + provider + '…', '');
+  const { error } = await sb.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin } });
+  if (error) showAuthMsg(error.message, 'err');
+}
+
+async function handleAuthSubmit(e) {
+  e.preventDefault();
+  const btn = document.getElementById('auth-submit-btn');
+  btn.disabled = true;
+
+  if (authMode === 'username') {
+    const username = document.getElementById('auth-username').value.trim();
+    if (!USERNAME_RE.test(username)) {
+      showAuthMsg('3-30 characters: letters, numbers, _ or - only.', 'err');
+      btn.disabled = false; return false;
+    }
+    const { data: taken } = await sb.from('profiles').select('username').ilike('username', username).maybeSingle();
+    if (taken) { showAuthMsg('That username is already taken.', 'err'); btn.disabled = false; return false; }
+    const { error } = await sb.from('profiles').insert({ id: pendingProfileUser.id, username });
+    if (error) { showAuthMsg(error.message, 'err'); btn.disabled = false; return false; }
+    showAuthMsg('Saved — welcome in.', 'ok');
+    setTimeout(closeAuthModal, 700);
+    btn.disabled = false;
+    return false;
+  }
+
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+
+  if (authMode === 'signup') {
+    const username = document.getElementById('auth-username').value.trim();
+    if (!USERNAME_RE.test(username)) {
+      showAuthMsg('Username must be 3-30 characters: letters, numbers, _ or - only.', 'err');
+      btn.disabled = false; return false;
+    }
+    const { data: taken } = await sb.from('profiles').select('username').ilike('username', username).maybeSingle();
+    if (taken) { showAuthMsg('That username is already taken.', 'err'); btn.disabled = false; return false; }
+    const { data, error } = await sb.auth.signUp({ email, password, options: { data: { username } } });
+    if (error) { showAuthMsg(error.message, 'err'); btn.disabled = false; return false; }
+    if (data.session) {
+      const { error: pErr } = await sb.from('profiles').insert({ id: data.user.id, username });
+      if (pErr) showAuthMsg("Account created, but couldn't save username: " + pErr.message, 'err');
+      else { showAuthMsg("Account created — you're in.", 'ok'); setTimeout(closeAuthModal, 900); }
+    } else {
+      showAuthMsg('Check your email to confirm your account, then sign in.', 'ok');
+    }
+  } else {
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) { showAuthMsg(error.message, 'err'); btn.disabled = false; return false; }
+    showAuthMsg('Welcome back.', 'ok');
+    setTimeout(closeAuthModal, 600);
+  }
+  btn.disabled = false;
+  return false;
 }
 
 sb.auth.onAuthStateChange(async (event, session) => {
@@ -957,22 +1145,21 @@ async function ensureProfile(user) {
     .from('profiles')
     .select('username')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   if (existing) {
     console.log('Profile found:', existing.username);
     return;
   }
 
-  const username = prompt('Pick a username for your public grid (lckd-in.com/<username>):');
-  if (!username) return;
-
-  const { error } = await sb.from('profiles').insert({ id: user.id, username });
-  if (error) {
-    alert('Could not create profile: ' + error.message);
-  } else {
-    console.log('Profile created:', username);
+  const suggested = user.user_metadata && user.user_metadata.username;
+  if (suggested && USERNAME_RE.test(suggested)) {
+    const { error } = await sb.from('profiles').insert({ id: user.id, username: suggested });
+    if (!error) { console.log('Profile created:', suggested); return; }
   }
+
+  pendingProfileUser = user;
+  openAuthModal('username');
 }
 
 async function loadTodayLog(user) {
