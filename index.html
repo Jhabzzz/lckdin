@@ -162,6 +162,9 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .ch-card.on{background:var(--bg2)}.ch-card.on::before{background:var(--lime)}
 .ch-card:hover{background:var(--bg3);box-shadow:inset 0 30px 50px -30px rgba(200,255,0,.15)}
 .ch-card:hover::before{background:rgba(200,255,0,.4);box-shadow:0 0 16px rgba(200,255,0,.6)}
+.ch-icon{width:30px;height:30px;border-radius:var(--r-xs);background:var(--glass2);border:1px solid var(--glass-brd2);display:flex;align-items:center;justify-content:center;margin-bottom:18px;color:var(--text3);transition:all .3s var(--ease)}
+.ch-icon svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.ch-card.on .ch-icon{color:var(--lime);background:var(--glass)}
 .ch-num{font-family:var(--mono);font-size:52px;font-weight:700;letter-spacing:-.03em;line-height:1;color:var(--text);margin-bottom:8px;transition:color .2s}
 .ch-card.on .ch-num{color:var(--lime)}
 .ch-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
@@ -232,6 +235,9 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .feat-card:hover{background:var(--bg2)}
 .feat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:transparent;transition:background .3s}
 .feat-card:hover::after{background:var(--lime)}
+.feat-icon{width:44px;height:44px;border-radius:var(--r-xs);background:var(--glass);border:1px solid var(--glass-brd2);display:flex;align-items:center;justify-content:center;margin-bottom:28px;color:var(--lime);transition:all .3s var(--ease)}
+.feat-icon svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.feat-card:hover .feat-icon{background:var(--grad);color:var(--bg);box-shadow:var(--shadow-glow);border-color:transparent}
 .feat-tag{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);margin-bottom:32px}
 .feat-n{font-family:var(--mono);font-size:11px;color:var(--lime);font-weight:600;margin-bottom:10px}
 .feat-h{font-size:26px;font-weight:700;letter-spacing:-.025em;line-height:1.1;margin-bottom:16px}
@@ -353,6 +359,11 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .ai-ttl{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--lime)}
 .ai-body{padding:24px}
 .ai-msg{font-size:13px;line-height:1.85;color:var(--text2);margin-bottom:24px}
+.ai-chart{display:flex;align-items:flex-end;gap:6px;height:64px;margin-bottom:24px;padding:12px 10px;border:1px solid var(--glass-brd);border-radius:var(--r-xs);background:var(--glass2)}
+.ai-bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px}
+.ai-bar-track{width:100%;height:100%;display:flex;align-items:flex-end}
+.ai-bar-fill{width:100%;border-radius:3px 3px 0 0;background:var(--grad);min-height:3px;transition:height .8s var(--ease)}
+.ai-bar-lbl{font-family:var(--mono);font-size:7px;color:var(--text3);letter-spacing:.05em}
 .ai-msg strong{color:var(--text);font-weight:600;display:block;margin-bottom:8px}
 .ai-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--glass-brd);border-top:1px solid var(--glass-brd)}
 .ast{background:var(--bg3);padding:16px}
@@ -365,7 +376,9 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .step{padding:28px 32px;border-bottom:1px solid var(--line);display:flex;gap:20px;transition:background .2s}
 .step:last-child{border-bottom:none}
 .step:hover{background:var(--glass2)}
-.step-n{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--lime);flex-shrink:0;line-height:1.5}
+.step-n{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--lime);flex-shrink:0;line-height:1.5;display:flex;flex-direction:column;align-items:center;gap:8px}
+.step-icon{width:38px;height:38px;border-radius:var(--r-xs);background:var(--glass2);border:1px solid var(--glass-brd2);display:flex;align-items:center;justify-content:center;color:var(--lime)}
+.step-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .step-h{font-size:15px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px}
 .step-b{font-size:13px;font-weight:300;color:var(--text2);line-height:1.7}
 
@@ -374,7 +387,8 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .wc{background:var(--bg3);padding:24px;position:relative;overflow:hidden;transition:background .25s var(--ease)}
 .wc:hover{background:var(--bg4)}
 .wc-src{position:absolute;top:14px;right:14px;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border:1px solid var(--line);color:var(--text3)}
-.wc-ico{font-size:18px;margin-bottom:12px}
+.wc-ico{width:36px;height:36px;border-radius:var(--r-xs);background:var(--glass2);border:1px solid var(--glass-brd2);display:flex;align-items:center;justify-content:center;margin-bottom:14px;color:var(--lime)}
+.wc-ico svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .wc-val{font-family:var(--mono);font-size:26px;font-weight:600;color:var(--text);line-height:1;margin-bottom:3px}
 .wc-key{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase}
 .wc-tr{font-family:var(--mono);font-size:10px;margin-top:8px}
@@ -519,21 +533,25 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
     <div class="ch-cards rv d1">
       <div class="ch-card" onclick="selDays(30,this)">
         <div class="ch-sel-badge">Selected</div>
+        <div class="ch-icon"><svg viewBox="0 0 24 24"><path d="M5 21V4l1-1h9l1 1v6l-1 1h-9"/><path d="M5 12h6"/></svg></div>
         <div class="ch-num">30</div><div class="ch-lbl">Days · Starter</div>
         <div class="ch-desc">Test the system. Build the habit. One month of locked-in execution.</div>
       </div>
       <div class="ch-card" onclick="selDays(75,this)">
         <div class="ch-sel-badge">Selected</div>
+        <div class="ch-icon"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M5 20 11 6l3 5 2-3 3 12"/></svg></div>
         <div class="ch-num">75</div><div class="ch-lbl">Days · Hard</div>
         <div class="ch-desc">The 75 Hard standard. No off days, no substitutions, no excuses.</div>
       </div>
       <div class="ch-card on" onclick="selDays(120,this)">
         <div class="ch-sel-badge">Selected</div>
+        <div class="ch-icon"><svg viewBox="0 0 24 24"><path d="M6 4h12v4a6 6 0 0 1-12 0V4z"/><path d="M6 6H3v1a4 4 0 0 0 4 4M18 6h3v1a4 4 0 0 1-4 4"/><path d="M12 14v4M9 21h6"/></svg></div>
         <div class="ch-num">120</div><div class="ch-lbl">Days · S.I. Challenge</div>
         <div class="ch-desc">The full self-improvement protocol. Where identities change permanently.</div>
       </div>
       <div class="ch-card" onclick="selDays(0,this)">
         <div class="ch-sel-badge">Selected</div>
+        <div class="ch-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 6a2 2 0 1 0 4 0 2 2 0 1 0-4 0zM4 18h16M16 18a2 2 0 1 0 4 0 2 2 0 1 0-4 0zM4 12h16M10 12a2 2 0 1 0 4 0 2 2 0 1 0-4 0z"/></svg></div>
         <div class="ch-num" id="ch-custom-preview">—</div><div class="ch-lbl">Days · Custom</div>
         <div class="ch-desc">Your number. Your protocol. No templates, no limits.</div>
       </div>
@@ -591,12 +609,12 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
     <div class="disp">Built different.<br><em>Works different.</em></div>
   </div>
   <div class="feat-scroll" id="feat-scroll">
-    <div class="feat-card"><div class="feat-tag">Vision AI</div><div class="feat-n">01</div><div class="feat-h">Snap &amp; Track</div><div class="feat-b">Photo your handwritten journal. AI reads every checkmark and maps them to your rules — with a confidence review so you control what gets logged. No manual entry.</div></div>
-    <div class="feat-card"><div class="feat-tag">Pattern analysis</div><div class="feat-n">02</div><div class="feat-h">Behavioral AI Coach</div><div class="feat-b">Seven-day rolling analysis finds your causal bottleneck. If screen time fails every time you sleep past 11:30 PM — the coach names that correlation and fixes the root.</div></div>
-    <div class="feat-card"><div class="feat-tag">Streak integrity</div><div class="feat-n">03</div><div class="feat-h">Pivot Protocol</div><div class="feat-b">Break your streak on Day 34? You don't reset to zero. The AI adapts your protocol, marks a pivot on your grid, and keeps you executing. Three pivots per protocol.</div></div>
-    <div class="feat-card"><div class="feat-tag">Biometric data</div><div class="feat-n">04</div><div class="feat-h">Wearable Sync</div><div class="feat-b">Apple Health, Whoop, Oura, Garmin — connect your device and LCKD—IN auto-logs sleep, HRV, steps, and activity into your daily rules. Zero manual entry.</div></div>
-    <div class="feat-card"><div class="feat-tag">Ambient sound</div><div class="feat-n">05</div><div class="feat-h">Rule-matched Music</div><div class="feat-b">Connect Spotify or Apple Music. The app detects your active rule — workout, deep work, meditation — and queues the right playlist automatically. Context-aware audio.</div></div>
-    <div class="feat-card" style="border-right:none"><div class="feat-tag">Social proof</div><div class="feat-n">06</div><div class="feat-h">Public Grid Profile</div><div class="feat-b">Your discipline grid lives at lckd-in.com/yourname. Link it in your bio. Every square you earn is permanent — public accountability with no way to hide.</div></div>
+    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg></div><div class="feat-tag">Vision AI</div><div class="feat-n">01</div><div class="feat-h">Snap &amp; Track</div><div class="feat-b">Photo your handwritten journal. AI reads every checkmark and maps them to your rules — with a confidence review so you control what gets logged. No manual entry.</div></div>
+    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg></div><div class="feat-tag">Pattern analysis</div><div class="feat-n">02</div><div class="feat-h">Behavioral AI Coach</div><div class="feat-b">Seven-day rolling analysis finds your causal bottleneck. If screen time fails every time you sleep past 11:30 PM — the coach names that correlation and fixes the root.</div></div>
+    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 4v4h-4"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 20v-4h4"/></svg></div><div class="feat-tag">Streak integrity</div><div class="feat-n">03</div><div class="feat-h">Pivot Protocol</div><div class="feat-b">Break your streak on Day 34? You don't reset to zero. The AI adapts your protocol, marks a pivot on your grid, and keeps you executing. Three pivots per protocol.</div></div>
+    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="7" y="8" width="10" height="8" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M12 11v2"/></svg></div><div class="feat-tag">Biometric data</div><div class="feat-n">04</div><div class="feat-h">Wearable Sync</div><div class="feat-b">Apple Health, Whoop, Oura, Garmin — connect your device and LCKD—IN auto-logs sleep, HRV, steps, and activity into your daily rules. Zero manual entry.</div></div>
+    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M4 14v-3M8 17v-9M12 19v-14M16 17v-9M20 14v-3"/></svg></div><div class="feat-tag">Ambient sound</div><div class="feat-n">05</div><div class="feat-h">Rule-matched Music</div><div class="feat-b">Connect Spotify or Apple Music. The app detects your active rule — workout, deep work, meditation — and queues the right playlist automatically. Context-aware audio.</div></div>
+    <div class="feat-card" style="border-right:none"><div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="6" height="6" rx="1"/><rect x="14.5" y="3.5" width="6" height="6" rx="1"/><rect x="3.5" y="14.5" width="6" height="6" rx="1"/><rect x="14.5" y="14.5" width="6" height="6" rx="1"/></svg></div><div class="feat-tag">Social proof</div><div class="feat-n">06</div><div class="feat-h">Public Grid Profile</div><div class="feat-b">Your discipline grid lives at lckd-in.com/yourname. Link it in your bio. Every square you earn is permanent — public accountability with no way to hide.</div></div>
   </div>
   <div class="feat-hint rv">Drag to explore all features</div>
 </section>
@@ -690,6 +708,15 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
           <div class="ai-ch"><div class="ai-pulse"></div><div class="ai-ttl" id="ai-ttl">AI briefing</div></div>
           <div class="ai-body">
             <div class="ai-msg" id="ai-msg">Sign in to generate today's briefing.</div>
+            <div class="ai-chart" id="ai-chart">
+              <div class="ai-bar"><div class="ai-bar-track"><div class="ai-bar-fill" style="height:4%"></div></div><div class="ai-bar-lbl">—</div></div>
+              <div class="ai-bar"><div class="ai-bar-track"><div class="ai-bar-fill" style="height:4%"></div></div><div class="ai-bar-lbl">—</div></div>
+              <div class="ai-bar"><div class="ai-bar-track"><div class="ai-bar-fill" style="height:4%"></div></div><div class="ai-bar-lbl">—</div></div>
+              <div class="ai-bar"><div class="ai-bar-track"><div class="ai-bar-fill" style="height:4%"></div></div><div class="ai-bar-lbl">—</div></div>
+              <div class="ai-bar"><div class="ai-bar-track"><div class="ai-bar-fill" style="height:4%"></div></div><div class="ai-bar-lbl">—</div></div>
+              <div class="ai-bar"><div class="ai-bar-track"><div class="ai-bar-fill" style="height:4%"></div></div><div class="ai-bar-lbl">—</div></div>
+              <div class="ai-bar"><div class="ai-bar-track"><div class="ai-bar-fill" style="height:4%"></div></div><div class="ai-bar-lbl">—</div></div>
+            </div>
             <div class="ai-stats">
               <div class="ast"><div class="ast-v" id="ast-missed">—</div><div class="ast-k">Rules missed</div></div>
               <div class="ast"><div class="ast-v" id="ast-score">—</div><div class="ast-k">Today's score</div></div>
@@ -714,9 +741,9 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
       </div>
       <div class="rv d2">
         <div class="steps">
-          <div class="step"><div class="step-n">01</div><div><div class="step-h">Intercept</div><div class="step-b">The AI activates the moment a day is missed — not to shame, but to diagnose. It pulls your 7-day history and identifies the exact failure before morning.</div></div></div>
-          <div class="step"><div class="step-n">02</div><div><div class="step-h">Adapt</div><div class="step-b">Your protocol adjusts — not resets. The failing rule is restructured. The grid marks an amber pivot square. Your streak is preserved.</div></div></div>
-          <div class="step"><div class="step-n">03</div><div><div class="step-h">Re-lock</div><div class="step-b">You're back executing the same day. Every square you've earned stays. Three pivots across the full protocol — use them with intention, not habit.</div></div></div>
+          <div class="step"><div class="step-n"><div class="step-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".5" fill="currentColor" stroke="none"/></svg></div>01</div><div><div class="step-h">Intercept</div><div class="step-b">The AI activates the moment a day is missed — not to shame, but to diagnose. It pulls your 7-day history and identifies the exact failure before morning.</div></div></div>
+          <div class="step"><div class="step-n"><div class="step-icon"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 13.7-5.7L20 9"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-13.7 5.7L4 15"/><path d="M4 20v-5h5"/></svg></div>02</div><div><div class="step-h">Adapt</div><div class="step-b">Your protocol adjusts — not resets. The failing rule is restructured. The grid marks an amber pivot square. Your streak is preserved.</div></div></div>
+          <div class="step"><div class="step-n"><div class="step-icon"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>03</div><div><div class="step-h">Re-lock</div><div class="step-b">You're back executing the same day. Every square you've earned stays. Three pivots across the full protocol — use them with intention, not habit.</div></div></div>
         </div>
       </div>
     </div>
@@ -732,10 +759,10 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
         <div class="disp" style="margin-bottom:20px">Your body<br>tracks itself.<br><em>We read it.</em></div>
         <p class="bod" style="margin-bottom:0">Apple Health, Whoop, Oura, Garmin — connect your wearable and LCKD—IN auto-logs sleep, HRV, steps, and activity into your daily rules. Zero manual entry for physical metrics.</p>
         <div class="wear-grid">
-          <div class="wc"><div class="wc-src">Apple Watch</div><div class="wc-ico">💤</div><div class="wc-val">7h 12m</div><div class="wc-key">Sleep</div><div class="wc-tr up">↑ +42min vs avg</div></div>
-          <div class="wc"><div class="wc-src">Whoop</div><div class="wc-ico">❤️</div><div class="wc-val">72 ms</div><div class="wc-key">HRV</div><div class="wc-tr up">↑ Above baseline</div></div>
-          <div class="wc"><div class="wc-src">Apple Health</div><div class="wc-ico">🔥</div><div class="wc-val">8,420</div><div class="wc-key">Steps</div><div class="wc-tr nu">→ On target</div></div>
-          <div class="wc"><div class="wc-src">Oura</div><div class="wc-ico">⚡</div><div class="wc-val">84</div><div class="wc-key">Readiness</div><div class="wc-tr dn">↓ Rest today</div></div>
+          <div class="wc"><div class="wc-src">Apple Watch</div><div class="wc-ico"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 10.5 4a6.5 6.5 0 0 0 9.5 10.5z"/></svg></div><div class="wc-val">7h 12m</div><div class="wc-key">Sleep</div><div class="wc-tr up">↑ +42min vs avg</div></div>
+          <div class="wc"><div class="wc-src">Whoop</div><div class="wc-ico"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg></div><div class="wc-val">72 ms</div><div class="wc-key">HRV</div><div class="wc-tr up">↑ Above baseline</div></div>
+          <div class="wc"><div class="wc-src">Apple Health</div><div class="wc-ico"><svg viewBox="0 0 24 24"><path d="M12 21c-4 0-7-2.5-7-6.5C5 10 8 8 8 4c3 1 5 4 4.5 7 2-.5 3-2 3-4 2 1.5 3.5 4 3.5 7 0 4-3.5 7-7 7z"/></svg></div><div class="wc-val">8,420</div><div class="wc-key">Steps</div><div class="wc-tr nu">→ On target</div></div>
+          <div class="wc"><div class="wc-src">Oura</div><div class="wc-ico"><svg viewBox="0 0 24 24"><path d="M13 3 4 14h6l-1 7 9-11h-6l1-7z"/></svg></div><div class="wc-val">84</div><div class="wc-key">Readiness</div><div class="wc-tr dn">↓ Rest today</div></div>
         </div>
       </div>
       <div class="rv d2" style="padding-top:16px">
@@ -1352,6 +1379,16 @@ async function runAICoach(user){
     .map((c,j)=>({j,c}))
     .filter(x => x.j!==rootIdx && failCount[rootIdx]>0 && x.c >= Math.ceil(failCount[rootIdx]*0.5))
     .map(x => x.j);
+
+  const chrono = [...logs].reverse();
+  const chartEl = document.getElementById('ai-chart');
+  if (chartEl) {
+    chartEl.innerHTML = chrono.map(log => `
+      <div class="ai-bar">
+        <div class="ai-bar-track"><div class="ai-bar-fill" style="height:${Math.max(log.score,4)}%"></div></div>
+        <div class="ai-bar-lbl">D${log.day_number}</div>
+      </div>`).join('');
+  }
 
   const today = logs[0];
   const missedToday = today.rules.filter(r=>!r.done).length;
