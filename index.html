@@ -151,6 +151,19 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .q-arrow{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:8px 16px;border-radius:var(--r-xs);border:1px solid var(--glass-brd2);background:var(--glass);backdrop-filter:blur(10px);color:var(--text3);cursor:none;transition:all .25s var(--ease)}
 .q-arrow:hover{border-color:rgba(200,255,0,.4);color:var(--text);background:var(--glass2)}
 
+/* ── MOTIVATION WALL ── */
+.mwall-head{padding:100px 40px 0;max-width:1320px;margin:0 auto}
+.mwall{margin-top:56px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--glass-brd);border-top:1px solid var(--glass-brd);border-bottom:1px solid var(--glass-brd)}
+.mwall-card{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;padding:36px;text-align:center;position:relative;overflow:hidden;background:var(--bg2);transition:background .3s var(--ease)}
+.mwall-card:hover{background:var(--bg3)}
+.mwall-card.accent{background:linear-gradient(155deg,#1c0606,#0a0202)}
+.mwall-card.accent:hover{background:linear-gradient(155deg,#240808,#0a0202)}
+.mwall-txt{font-family:var(--sans);font-weight:800;font-size:clamp(16px,1.8vw,21px);line-height:1.3;letter-spacing:-.01em;color:var(--text)}
+.mwall-card.accent .mwall-txt{color:#FF4433;font-style:italic}
+.mwall-n{position:absolute;top:16px;left:18px;font-family:var(--mono);font-size:9px;color:var(--text4);letter-spacing:.1em}
+@media(max-width:1024px){.mwall{grid-template-columns:repeat(2,1fr)}.mwall-head{padding:80px 24px 0}}
+@media(max-width:560px){.mwall{grid-template-columns:1fr}}
+
 /* ── CHALLENGE ── */
 #challenge{padding:100px 40px;border-top:1px solid var(--line)}
 .ch-in{max-width:1320px;margin:0 auto}
@@ -513,6 +526,25 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
       <div id="q-dots"></div>
       <button class="q-arrow" onclick="nextQ()">Next →</button>
     </div>
+  </div>
+</section>
+
+<!-- MOTIVATION WALL -->
+<section id="motivation">
+  <div class="mwall-head rv">
+    <div class="ey" style="margin-bottom:16px">Motivation wall</div>
+    <div class="disp">Words that keep<br>you <em>locked in.</em></div>
+  </div>
+  <div class="mwall rv d1">
+    <div class="mwall-card"><div class="mwall-n">01</div><div class="mwall-txt">Discipline is the only flex nobody can fake.</div></div>
+    <div class="mwall-card"><div class="mwall-n">02</div><div class="mwall-txt">You don't need motivation. You need the next 24 hours.</div></div>
+    <div class="mwall-card accent"><div class="mwall-n">03</div><div class="mwall-txt">Nobody's coming to save your streak.</div></div>
+    <div class="mwall-card"><div class="mwall-n">04</div><div class="mwall-txt">Talk less. Log more.</div></div>
+    <div class="mwall-card accent"><div class="mwall-n">05</div><div class="mwall-txt">Day 120 you is watching what Day 1 you does right now.</div></div>
+    <div class="mwall-card"><div class="mwall-n">06</div><div class="mwall-txt">Comfort has the best PR team. Don't hire them.</div></div>
+    <div class="mwall-card"><div class="mwall-n">07</div><div class="mwall-txt">Show up ugly. Show up anyway.</div></div>
+    <div class="mwall-card accent"><div class="mwall-n">08</div><div class="mwall-txt">Your only competition clocked in yesterday.</div></div>
+    <div class="mwall-card"><div class="mwall-n">09</div><div class="mwall-txt">Consistency doesn't care how you feel today.</div></div>
   </div>
 </section>
 
