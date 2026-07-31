@@ -469,7 +469,11 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 @media(max-width:560px){
   .ch-cards{grid-template-columns:1fr 1fr}
   .wl-form{flex-direction:column}
-  .hero-count{font-size:clamp(44px,14vw,90px)}
+  .hero-count{font-size:clamp(30px,11vw,72px);letter-spacing:-.03em}
+  .blink-cur{height:clamp(26px,9vw,72px)}
+}
+@media(max-width:380px){
+  .hero-count{font-size:clamp(24px,10vw,54px)}
 }
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
 </style>
