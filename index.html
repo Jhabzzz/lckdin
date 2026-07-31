@@ -190,19 +190,6 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .q-arrow:hover{border-color:rgba(200,255,0,.4);color:var(--text);background:var(--glass2)}
 
 /* ── MOTIVATION WALL ── */
-.mwall-head{padding:100px 40px 0;max-width:1320px;margin:0 auto}
-.mwall{margin-top:56px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--glass-brd);border-top:1px solid var(--glass-brd);border-bottom:1px solid var(--glass-brd)}
-.mwall-card{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;padding:36px;text-align:center;position:relative;overflow:hidden;background-size:cover;background-position:center;transition:transform .4s var(--ease)}
-.mwall-card::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,10,8,.5),rgba(11,10,8,.72));transition:background .35s var(--ease);z-index:0}
-.mwall-card:hover{transform:scale(1.02)}
-.mwall-card:hover::before{background:linear-gradient(180deg,rgba(11,10,8,.28),rgba(11,10,8,.5))}
-.mwall-card.accent::before{background:linear-gradient(180deg,rgba(20,4,4,.55),rgba(10,2,2,.78))}
-.mwall-card.accent:hover::before{background:linear-gradient(180deg,rgba(20,4,4,.32),rgba(10,2,2,.55))}
-.mwall-txt{position:relative;z-index:1;font-family:var(--sans);font-weight:800;font-size:clamp(16px,1.8vw,21px);line-height:1.3;letter-spacing:-.01em;color:var(--text)}
-.mwall-card.accent .mwall-txt{color:#FF6650;font-style:italic}
-.mwall-n{position:absolute;top:16px;left:18px;z-index:1;font-family:var(--mono);font-size:9px;color:rgba(242,240,230,.45);letter-spacing:.1em}
-@media(max-width:1024px){.mwall{grid-template-columns:repeat(2,1fr)}.mwall-head{padding:80px 24px 0}}
-@media(max-width:560px){.mwall{grid-template-columns:1fr}}
 
 /* ── CHALLENGE ── */
 #challenge{padding:100px 40px;border-top:1px solid var(--line)}
@@ -631,25 +618,6 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
       <div id="q-dots"></div>
       <button class="q-arrow" onclick="nextQ()">Next →</button>
     </div>
-  </div>
-</section>
-
-<!-- MOTIVATION WALL -->
-<section id="motivation">
-  <div class="mwall-head rv">
-    <div class="ey" style="margin-bottom:16px">Motivation wall</div>
-    <div class="disp">Words that keep<br>you <em>locked in.</em></div>
-  </div>
-  <div class="mwall rv d1">
-    <div class="mwall-card" style="background-image:url('assets/mwall-bgs/m1-padlock.jpg')"><div class="mwall-n">01</div><div class="mwall-txt">Discipline is the only flex nobody can fake.</div></div>
-    <div class="mwall-card" style="background-image:url('assets/mwall-bgs/m2-clock.jpg')"><div class="mwall-n">02</div><div class="mwall-txt">You don't need motivation. You need the next 24 hours.</div></div>
-    <div class="mwall-card accent" style="background-image:url('assets/mwall-bgs/m3-flare.jpg')"><div class="mwall-n">03</div><div class="mwall-txt">Nobody's coming to save your streak.</div></div>
-    <div class="mwall-card" style="background-image:url('assets/mwall-bgs/m4-checklist.jpg')"><div class="mwall-n">04</div><div class="mwall-txt">Talk less. Log more.</div></div>
-    <div class="mwall-card accent" style="background-image:url('assets/mwall-bgs/m5-eye.jpg')"><div class="mwall-n">05</div><div class="mwall-txt">Day 120 you is watching what Day 1 you does right now.</div></div>
-    <div class="mwall-card" style="background-image:url('assets/mwall-bgs/m6-armchair.jpg')"><div class="mwall-n">06</div><div class="mwall-txt">Comfort has the best PR team. Don't hire them.</div></div>
-    <div class="mwall-card" style="background-image:url('assets/mwall-bgs/m7-footprints.jpg')"><div class="mwall-n">07</div><div class="mwall-txt">Show up ugly. Show up anyway.</div></div>
-    <div class="mwall-card accent" style="background-image:url('assets/mwall-bgs/m8-stopwatch.jpg')"><div class="mwall-n">08</div><div class="mwall-txt">Your only competition clocked in yesterday.</div></div>
-    <div class="mwall-card" style="background-image:url('assets/mwall-bgs/m9-calendar.jpg')"><div class="mwall-n">09</div><div class="mwall-txt">Consistency doesn't care how you feel today.</div></div>
   </div>
 </section>
 
