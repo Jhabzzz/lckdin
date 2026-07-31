@@ -237,8 +237,8 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .dc.today{filter:drop-shadow(0 0 3px var(--lime)) drop-shadow(0 0 16px rgba(200,255,0,.7));animation:hexPulse 2.2s ease-in-out infinite;z-index:5;position:relative}
 .dc.today:hover{animation-play-state:paused}
 @keyframes hexPulse{0%,100%{filter:drop-shadow(0 0 3px var(--lime)) drop-shadow(0 0 12px rgba(200,255,0,.5))}50%{filter:drop-shadow(0 0 5px var(--lime)) drop-shadow(0 0 24px rgba(200,255,0,.85))}}
-.dc.future{background:var(--bg2);opacity:0}
-.dc.future.show{opacity:.14}
+.dc.future{background:var(--bg4);border-color:rgba(255,255,255,.07);opacity:0}
+.dc.future.show{opacity:var(--fop,.32)}
 .dc.pivot{background:#140E02;border-color:#2E2004}
 .g-legend{display:flex;align-items:center;gap:7px;margin-top:14px;flex-wrap:wrap}
 .gl{font-family:var(--mono);font-size:9px;color:var(--text3)}
@@ -632,8 +632,9 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 </section>
 
 <!-- GRID -->
-<section class="sec" id="grid">
-  <div class="sec-in">
+<section class="sec" id="grid" style="position:relative;overflow:hidden">
+  <canvas id="grid-fx" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.55;pointer-events:none"></canvas>
+  <div class="sec-in" style="position:relative;z-index:1">
     <div class="ey rv">Public discipline grid</div>
     <div class="grid-2">
       <div class="rv">
@@ -1013,6 +1014,75 @@ async function saveTodayLog() {
     runAICoach(currentUser);
   }
 }
+// ── DIAGONAL NOISE GRID (public discipline grid ambient bg) ──
+(function(){
+  const canvas=document.getElementById('grid-fx');
+  if(!canvas)return;
+  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ctx=canvas.getContext('2d');
+  const section=document.getElementById('grid');
+  let w,h,dpr=Math.min(window.devicePixelRatio||1,2);
+  const cell=44;
+  let offset=0;
+
+  function resize(){
+    const r=section.getBoundingClientRect();
+    w=r.width;h=r.height;
+    canvas.width=w*dpr;canvas.height=h*dpr;
+    canvas.style.width=w+'px';canvas.style.height=h+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  resize();
+  window.addEventListener('resize',resize);
+
+  function drawGrain(){
+    const gw=160,gh=160;
+    const img=ctx.createImageData(gw,gh);
+    const d=img.data;
+    for(let i=0;i<d.length;i+=4){
+      const v=Math.random()*255;
+      d[i]=v;d[i+1]=v;d[i+2]=v;d[i+3]=10;
+    }
+    ctx.putImageData(img,0,0);
+  }
+
+  function frame(){
+    ctx.clearRect(0,0,w,h);
+
+    // radial lime spotlight, top-right toward the grid card
+    const g=ctx.createRadialGradient(w*0.72,h*0.35,0,w*0.72,h*0.35,Math.max(w,h)*0.55);
+    g.addColorStop(0,'rgba(200,255,0,.07)');
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g;
+    ctx.fillRect(0,0,w,h);
+
+    // diagonal moving grid lines
+    ctx.strokeStyle='rgba(255,255,255,.05)';
+    ctx.lineWidth=1;
+    const off=((offset%cell)+cell)%cell;
+    for(let x=-off-h; x<w+h; x+=cell){
+      ctx.beginPath();
+      ctx.moveTo(x,0);
+      ctx.lineTo(x+h,h);
+      ctx.stroke();
+    }
+
+    // bottom vignette so it fades into the section
+    const vg=ctx.createLinearGradient(0,h*0.5,0,h);
+    vg.addColorStop(0,'rgba(11,10,8,0)');
+    vg.addColorStop(1,'rgba(11,10,8,.5)');
+    ctx.fillStyle=vg;
+    ctx.fillRect(0,0,w,h);
+
+    if(!reduced){
+      offset+=0.15;
+      requestAnimationFrame(frame);
+    }
+  }
+  frame();
+  if(!reduced) setInterval(drawGrain, 90);
+})();
+
 // ── MESH GRADIENT + DOT ORBIT (waitlist ambient bg) ──
 (function(){
   const canvas=document.getElementById('mesh-canvas');
@@ -1245,6 +1315,7 @@ G.forEach((d,i)=>{
   if(d.future)cls+=' future';
   if(d.tier>0)cls+=` v${d.tier}`;
   c.className=cls;
+  if(d.future)c.style.setProperty('--fop',Math.max(.14,.4-i*.0022).toFixed(3));
   c.title=`Day ${i+1}${d.today?' (today — 70%)':d.future?' — upcoming':''}`;
   dg.appendChild(c);
   dcEls.push(c);
@@ -1535,7 +1606,14 @@ function escapeHtml(str){
   d.textContent = str;
   return d.innerHTML;
 }
-const LB_MIN_ROWS = 6; // pad with open placeholder slots so the board never looks empty pre-launch
+const LB_MIN_ROWS = 6; // pad with example entries so the board doesn't look empty pre-launch
+const LB_EXAMPLES = [
+  {username:'kabir.d',    current_day:52, perfect_days:41, avg_score:88},
+  {username:'zara.exec',  current_day:38, perfect_days:29, avg_score:82},
+  {username:'the.grindset', current_day:24, perfect_days:17, avg_score:75},
+  {username:'noah_t',     current_day:19, perfect_days:12, avg_score:71},
+  {username:'meera.k',    current_day:9,  perfect_days:6,  avg_score:68},
+];
 async function loadLeaderboard(){
   const el = document.getElementById('lb-list');
   if (!el) return;
@@ -1543,24 +1621,14 @@ async function loadLeaderboard(){
     const { data, error } = await sb.rpc('get_leaderboard');
     if (error) throw error;
     const real = data || [];
+    const combined = [...real, ...LB_EXAMPLES.slice(0, Math.max(0, LB_MIN_ROWS - real.length))];
 
-    let rows = real.map((r,i)=>`
+    el.innerHTML = combined.map((r,i)=>`
       <div class="lb-row${i<3?' top':''}">
         <div class="lb-rank">${i+1}</div>
         <div class="lb-user">${escapeHtml(r.username)}</div>
         <div class="lb-stat">Day <b>${r.current_day}</b>/120 · <b>${r.perfect_days}</b> perfect · <b>${r.avg_score}%</b> avg</div>
-      </div>`);
-
-    for (let i = real.length; i < LB_MIN_ROWS; i++){
-      rows.push(`
-        <div class="lb-row placeholder">
-          <div class="lb-rank">${i+1}</div>
-          <div class="lb-user">Open rank — claim it</div>
-          <div class="lb-stat">Sign in and log day 1</div>
-        </div>`);
-    }
-
-    el.innerHTML = rows.join('');
+      </div>`).join('');
   }catch(err){
     el.innerHTML = '<div class="lb-empty">Leaderboard unavailable right now.</div>';
     console.error('Leaderboard load failed:', err);
