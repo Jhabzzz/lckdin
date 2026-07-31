@@ -1,7 +1,7 @@
-// LCKD—IN service worker — minimal cache so the app installs cleanly
-// and the shell loads instantly on repeat opens. Not a full offline app;
-// Supabase calls always go to the network.
-const CACHE = 'lckdin-shell-v1';
+// LCKD—IN service worker — minimal cache so the app still opens offline.
+// Network-first: always prefer the live site so deploys show up immediately.
+// Cache is only a fallback for when there's no connection.
+const CACHE = 'lckdin-shell-v2';
 const SHELL = ['/', '/index.html', '/manifest.json'];
 
 self.addEventListener('install', (event) => {
@@ -26,17 +26,14 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
 
   event.respondWith(
-    caches.match(req).then((cached) => {
-      const network = fetch(req)
-        .then((res) => {
-          if (res && res.status === 200) {
-            const copy = res.clone();
-            caches.open(CACHE).then((cache) => cache.put(req, copy));
-          }
-          return res;
-        })
-        .catch(() => cached);
-      return cached || network;
-    })
+    fetch(req)
+      .then((res) => {
+        if (res && res.status === 200) {
+          const copy = res.clone();
+          caches.open(CACHE).then((cache) => cache.put(req, copy));
+        }
+        return res;
+      })
+      .catch(() => caches.match(req))
   );
 });
