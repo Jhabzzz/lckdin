@@ -1037,6 +1037,16 @@ async function saveTodayLog() {
   resize();
   window.addEventListener('resize',resize);
 
+  const mouse={x:null,y:null};
+  if(!reduced){
+    section.addEventListener('mousemove',(e)=>{
+      const r=canvas.getBoundingClientRect();
+      mouse.x=e.clientX-r.left;
+      mouse.y=e.clientY-r.top;
+    });
+    section.addEventListener('mouseleave',()=>{mouse.x=null;mouse.y=null;});
+  }
+
   function drawGrain(){
     const gw=160,gh=160;
     const img=ctx.createImageData(gw,gh);
@@ -1067,6 +1077,15 @@ async function saveTodayLog() {
       ctx.moveTo(x,0);
       ctx.lineTo(x+h,h);
       ctx.stroke();
+    }
+
+    // cursor-follow glow (interactive touch, matches the hover cell in the reference component)
+    if(mouse.x!==null){
+      const mg=ctx.createRadialGradient(mouse.x,mouse.y,0,mouse.x,mouse.y,cell*3.2);
+      mg.addColorStop(0,'rgba(200,255,0,.14)');
+      mg.addColorStop(1,'rgba(200,255,0,0)');
+      ctx.fillStyle=mg;
+      ctx.fillRect(0,0,w,h);
     }
 
     // bottom vignette so it fades into the section
