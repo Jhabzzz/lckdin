@@ -134,10 +134,16 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .hero-ticker{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--text3);margin-bottom:44px;display:flex;align-items:center;gap:12px;opacity:0;animation:fadeUp .6s var(--ease) .1s forwards}
 .ticker-dot{width:5px;height:5px;background:var(--lime);border-radius:50%;animation:pulse 2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
+/* NEW: category eyebrow — names the product plainly before anything clever */
+.hero-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--lime);margin-bottom:14px;opacity:0;animation:fadeUp .6s var(--ease) .12s forwards}
 /* NEW: plain-English headline is now the single dominant hero element */
 .hero-h1{font-family:var(--sans);font-weight:800;font-size:clamp(38px,7vw,84px);line-height:1.02;letter-spacing:-.03em;max-width:840px;opacity:0;animation:fadeUp .9s var(--ease) .2s forwards;transition:transform .4s var(--ease)}
 .hero-h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .hero-value{font-family:var(--sans);font-weight:600;font-size:clamp(16px,2.2vw,21px);color:var(--text2);margin-top:20px;letter-spacing:-.01em;max-width:560px;line-height:1.45;opacity:0;animation:fadeUp .7s var(--ease) .35s forwards;transition:transform .4s var(--ease)}
+/* NEW: literal 3-step mechanic strip — spells out the loop so no one has to guess what "log your day" means */
+.hero-steps{display:flex;align-items:center;gap:10px;margin-top:22px;font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);flex-wrap:wrap;justify-content:center;opacity:0;animation:fadeUp .7s var(--ease) .42s forwards}
+.hero-step-arrow{color:var(--text4)}
+@media(max-width:560px){.hero-steps{font-size:10px;gap:8px}}
 /* NEW: DAY counter demoted from giant display type to a small labeled pill so it can't read as a countdown */
 .hero-day-pill{display:inline-flex;align-items:center;gap:14px;margin-top:28px;padding:9px 20px 9px 16px;background:var(--glass);border:1px solid var(--glass-brd2);border-radius:100px;backdrop-filter:blur(12px);opacity:0;animation:fadeUp .7s var(--ease) .5s forwards}
 .hero-day-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);border-right:1px solid var(--line2);padding-right:14px;white-space:nowrap}
@@ -677,10 +683,14 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
   <div class="beam-field" id="beam-field" role="img" aria-label="Ambient rising light animation"></div>
   <div class="hero-main">
     <div class="hero-ticker"><div class="ticker-dot"></div><span>247 people already locked in · early access open</span></div>
+    <div class="hero-eyebrow">Daily habit tracker</div>
     <div class="hero-h1">Stop <em>starting over.</em></div>
-    <div class="hero-value">LCKD—IN is the 120-day discipline app that catches what's breaking your streak — before you do.</div>
+    <div class="hero-value">Set a few daily rules. Check them off every day for 120 days. Miss one, and AI tells you exactly why — instead of resetting your streak to zero.</div>
+    <div class="hero-steps">
+      <span>Set your rules</span><span class="hero-step-arrow">→</span><span>Check off daily</span><span class="hero-step-arrow">→</span><span>AI catches slips</span>
+    </div>
     <div class="hero-day-pill">
-      <span class="hero-day-lbl">Your protocol</span>
+      <span class="hero-day-lbl">Every run starts at</span>
       <div class="hero-count">DAY <span id="hday">001</span><span class="sl"> / </span><span id="htotal">120</span><span class="blink-cur"></span></div>
     </div>
     <div class="hero-serif" id="hero-tag">120-day protocol · zero dopamine · public accountability</div>
