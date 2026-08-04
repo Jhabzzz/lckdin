@@ -252,6 +252,24 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 /* ── SECTION BASE ── */
 .sec{padding:120px 40px;border-top:1px solid var(--line)}
 .sec-in{max-width:1320px;margin:0 auto}
+/* ── WHAT IS IT ── */
+.wis{text-align:center}
+.wis-in{max-width:1320px;margin:0 auto}
+.wis .disp{max-width:780px;margin:0 auto 24px}
+.wis p{font-size:16px;color:var(--text2);max-width:600px;margin:0 auto;line-height:1.75}
+/* ── PROBLEM / SOLUTION ── */
+.why-row{margin-bottom:64px}
+.why-row:last-child{margin-bottom:0}
+.why-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.why-lbl.sol{color:var(--lime)}
+.why-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--glass-brd);border:1px solid var(--glass-brd);border-radius:var(--r-md);overflow:hidden}
+.why-card{background:var(--bg2);padding:32px 28px;transition:background .25s var(--ease)}
+.why-card:hover{background:var(--bg3)}
+.why-card .n{font-family:var(--mono);font-size:10px;color:var(--text4);letter-spacing:.14em;margin-bottom:18px}
+.why-card h3{font-size:17px;font-weight:600;margin-bottom:10px}
+.why-card p{font-size:13px;color:var(--text3);line-height:1.65}
+.why-card.sol h3{color:var(--lime)}
+@media(max-width:760px){.why-cards{grid-template-columns:1fr}}
 .ey{font-family:var(--mono);font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--text3);margin-bottom:60px;display:flex;align-items:center;gap:12px}
 .ey::after{content:'';flex:0 0 24px;height:1px;background:var(--line2)}
 .disp{font-size:clamp(36px,5vw,62px);font-weight:800;line-height:.98;letter-spacing:-.04em}
@@ -650,6 +668,37 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
     <div class="hb"><div class="hb-v" id="hb-rules">0</div><div class="hb-k">Daily rules</div></div>
     <div class="hb"><div class="hb-v">Zero</div><div class="hb-k">Gamification</div></div>
     <div class="hb"><div class="hb-v">Public</div><div class="hb-k">Discipline grid</div></div>
+  </div>
+</section>
+
+<!-- WHAT IS IT -->
+<section class="sec wis" style="padding-bottom:100px">
+  <div class="wis-in">
+    <div class="ey rv" style="justify-content:center">What is LCKD—IN</div>
+    <div class="disp rv">A 120-day discipline app<br>for people <em>done starting over.</em></div>
+    <p class="rv">You log your day in five seconds. AI tells you what's actually breaking your streak — not just that you missed a day. Your progress lives on a public link, so quitting quietly isn't an option anymore.</p>
+  </div>
+</section>
+
+<!-- WHY -->
+<section class="sec" id="why">
+  <div class="sec-in">
+    <div class="why-row">
+      <div class="why-lbl rv"><div class="ticker-dot"></div>Why discipline apps fail</div>
+      <div class="why-cards">
+        <div class="why-card rv"><div class="n">01</div><h3>Streaks reset</h3><p>Miss one day and the whole thing dies. So people quit the app before they quit the habit.</p></div>
+        <div class="why-card rv"><div class="n">02</div><h3>No real insight</h3><p>You know you failed. You never learn why — so the same failure repeats every time.</p></div>
+        <div class="why-card rv"><div class="n">03</div><h3>Nobody's watching</h3><p>Private trackers make quitting invisible and free. There's no real cost to giving up.</p></div>
+      </div>
+    </div>
+    <div class="why-row">
+      <div class="why-lbl sol rv"><div class="ticker-dot"></div>How LCKD—IN is different</div>
+      <div class="why-cards">
+        <div class="why-card sol rv"><div class="n">01</div><h3>Pivot Protocol</h3><p>Miss a day and your protocol adapts instead of resetting. Your streak survives.</p></div>
+        <div class="why-card sol rv"><div class="n">02</div><h3>AI Coach</h3><p>Finds the one habit quietly breaking all your others, from real 7-day data.</p></div>
+        <div class="why-card sol rv"><div class="n">03</div><h3>Public grid</h3><p>Your discipline lives at a public link. Every day earned is permanent and visible.</p></div>
+      </div>
+    </div>
   </div>
 </section>
 
