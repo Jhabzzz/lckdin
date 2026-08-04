@@ -18,7 +18,7 @@
 <meta name="twitter:description" content="The 120-day discipline protocol. Log your day in 5 seconds, let AI catch what's breaking your streak.">
 <meta name="twitter:image" content="https://lckd-in.com/assets/icons/og-image.jpg">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#FAF8F5" id="theme-color-meta">
+<meta name="theme-color" content="#0C0B09" id="theme-color-meta">
 <link rel="icon" href="/assets/icons/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -32,7 +32,7 @@
   // ── THEME INIT (runs before paint to avoid flash of wrong theme) ──
   (function(){
     var saved = localStorage.getItem('lckdin-theme');
-    var theme = saved === 'dark' ? 'dark' : 'light';
+    var theme = saved === 'light' ? 'light' : 'dark';
     if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
     window.__lckdinTheme = theme;
   })();
@@ -1250,7 +1250,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
     applyThemeIcons(next);
     window.dispatchEvent(new CustomEvent('lckdin-theme-change', {detail: {theme: next}}));
   }
-  applyThemeIcons(window.__lckdinTheme || 'light');
+  applyThemeIcons(window.__lckdinTheme || 'dark');
 
   // ── PWA: register service worker (enables Add to Home Screen / install prompt) ──
 if ('serviceWorker' in navigator) {
