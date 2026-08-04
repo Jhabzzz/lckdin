@@ -32,10 +32,10 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#050505;
-  --bg2:#0D0D0D;
+  --bg2:#111111;
   --bg3:#141414;
   --bg4:#1C1C1C;
-  --line:#242424;
+  --line:#262626;
   --line2:#2F2F2F;
   --line3:#3D3D3D;
   --text:#F5F5F7;
@@ -45,7 +45,7 @@
   --lime:#D4AF37;
   --lime2:#A67F22;
   --amber:#C9821A;
-  --on-accent:#0A0A0A;
+  --on-accent:#000000;
   --g0:#0A0A0A;
   --g1:#1F1A0A;
   --g2:#332911;
@@ -156,8 +156,8 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 .hero-serif{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--text4);margin-top:16px;letter-spacing:.02em;opacity:0;animation:fadeUp .7s var(--ease) .6s forwards}
 .hero-btns{display:flex;gap:10px;margin-top:36px;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeUp .7s var(--ease) .75s forwards}
-.btn-fill{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:15px 36px;background:#F5F5F7;background-size:160% 160%;background-position:0% 50%;color:var(--on-accent);border:none;border-radius:var(--r-sm);cursor:none;font-weight:700;transition:background-position .5s var(--ease),box-shadow .3s var(--ease),transform .2s var(--ease);position:relative;overflow:hidden}
-.btn-fill:hover{background-position:100% 50%;box-shadow:var(--shadow-glow);transform:translateY(-1px)}
+.btn-fill{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:15px 36px;background:#FFFFFF;background-size:160% 160%;background-position:0% 50%;color:var(--on-accent);border:none;border-radius:var(--r-sm);cursor:none;font-weight:700;transition:background-color .3s var(--ease),background-position .5s var(--ease),box-shadow .3s var(--ease),transform .2s var(--ease);position:relative;overflow:hidden}
+.btn-fill:hover{background:var(--lime);background-position:100% 50%;box-shadow:var(--shadow-glow);transform:translateY(-1px)}
 .btn-fill span{position:relative;z-index:1}
 .btn-stroke{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:15px 36px;background:var(--glass);color:var(--text2);border:1px solid var(--glass-brd2);border-radius:var(--r-sm);backdrop-filter:blur(12px);cursor:none;transition:all .3s var(--ease)}
 .btn-stroke:hover{color:var(--text);border-color:var(--line3);background:var(--glass2);transform:translateY(-1px)}
@@ -425,7 +425,7 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .rflag{font-family:var(--mono);font-size:7px;padding:2px 5px;border:1px solid #401818;color:#904040;flex-shrink:0}
 .ph-snap{padding:13px 20px;border-top:1px solid var(--line)}
 .snap-btn{width:100%;border:1px solid var(--glass-brd2);border-radius:var(--r-xs);background:var(--glass);color:var(--text3);font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:12px;cursor:none;transition:all .3s var(--ease);display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden}
-.snap-btn:hover{color:var(--on-accent);border-color:transparent;background:#F5F5F7;box-shadow:var(--shadow-glow)}
+.snap-btn:hover{color:var(--on-accent);border-color:transparent;background:var(--lime);box-shadow:var(--shadow-glow)}
 .snap-btn span{position:relative;z-index:1}
 .spnl{display:none}.spnl.on{display:block;animation:panelIn .4s var(--ease)}
 .snap-drop{margin:20px;border:1px dashed var(--glass-brd2);border-radius:var(--r-sm);padding:44px 24px;text-align:center;cursor:none;transition:all .25s var(--ease);position:relative;overflow:hidden}
@@ -447,8 +447,8 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .crtxt{font-size:11px;flex:1;line-height:1.3;color:rgba(242,240,230,.5)}
 .crtxt.y{color:rgba(242,240,230,.8)}
 .cr-low{font-family:var(--mono);font-size:7px;padding:2px 5px;border:1px solid #401818;color:#904040;flex-shrink:0}
-.cbtn{width:100%;background:#F5F5F7;background-size:160% 160%;background-position:0% 50%;color:var(--on-accent);border:none;border-radius:var(--r-xs);padding:12px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:none;font-weight:700;transition:background-position .4s var(--ease),box-shadow .3s var(--ease);margin-bottom:6px;position:relative;overflow:hidden}
-.cbtn:hover{background-position:100% 50%;box-shadow:var(--shadow-glow)}
+.cbtn{width:100%;background:#FFFFFF;background-size:160% 160%;background-position:0% 50%;color:var(--on-accent);border:none;border-radius:var(--r-xs);padding:12px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:none;font-weight:700;transition:background-position .4s var(--ease),box-shadow .3s var(--ease);margin-bottom:6px;position:relative;overflow:hidden}
+.cbtn:hover{background:var(--lime);background-position:100% 50%;box-shadow:var(--shadow-glow)}
 .cbtn span{position:relative;z-index:1}
 .cbtn2{width:100%;background:var(--glass);color:var(--text3);border:1px solid var(--glass-brd2);border-radius:var(--r-xs);padding:10px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;cursor:none;transition:all .25s var(--ease)}
 .cbtn2:hover{color:var(--text);border-color:var(--line3);background:var(--glass2)}
@@ -545,8 +545,8 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .wl-form:focus-within{border-color:rgba(212,175,55,.4);box-shadow:0 0 0 3px rgba(212,175,55,.08)}
 .wl-input{flex:1;background:transparent;border:none;padding:16px 20px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;position:relative;z-index:1}
 .wl-input::placeholder{color:var(--text3)}
-.wl-go{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:16px 28px;background:#F5F5F7;background-size:160% 160%;background-position:0% 50%;color:var(--on-accent);border:none;cursor:none;font-weight:700;transition:background-position .5s var(--ease),box-shadow .3s var(--ease);white-space:nowrap;position:relative;overflow:hidden;z-index:1}
-.wl-go:hover{background-position:100% 50%;box-shadow:var(--shadow-glow)}
+.wl-go{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:16px 28px;background:#FFFFFF;background-size:160% 160%;background-position:0% 50%;color:var(--on-accent);border:none;cursor:none;font-weight:700;transition:background-position .5s var(--ease),box-shadow .3s var(--ease);white-space:nowrap;position:relative;overflow:hidden;z-index:1}
+.wl-go:hover{background:var(--lime);background-position:100% 50%;box-shadow:var(--shadow-glow)}
 .wl-go span{position:relative;z-index:1}
 .wl-note{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.04em}
 #wl-done{display:none;font-family:var(--mono);font-size:12px;color:var(--lime);letter-spacing:.16em;text-transform:uppercase;margin-top:20px}
