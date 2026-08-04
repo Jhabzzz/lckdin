@@ -27,7 +27,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,400;1,600;1,700;1,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600;1,700;1,800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -54,7 +54,7 @@
   --g5:#D4AF37;
   --mono:'JetBrains Mono',monospace;
   --sans:'Space Grotesk',sans-serif;
-  --serif:'Playfair Display',serif;
+  --serif:'Source Serif 4',serif;
   --spring:cubic-bezier(0.34,1.56,0.64,1);
   --ease:cubic-bezier(0.16,1,0.3,1);
   --ease2:cubic-bezier(0.25,0.46,0.45,0.94);
@@ -129,8 +129,18 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 .light-beam.secondary{background:linear-gradient(to top,rgba(255,159,10,0) 0%,rgba(255,159,10,.3) 45%,rgba(255,159,10,0) 100%)}
 @keyframes beamRise{0%{transform:translateY(15%)}100%{transform:translateY(-135%)}}
 @keyframes beamFade{0%,100%{opacity:0}10%,78%{opacity:1}}
-#hero>*:not(.beam-field):not(.hero-lines):not(.hero-fade){position:relative;z-index:1}
+#hero>*:not(.beam-field):not(.hero-lines):not(.hero-fade):not(.hero-organic){position:relative;z-index:1}
 @media(prefers-reduced-motion:reduce){.light-beam{animation:none;opacity:0}}
+/* ── ORGANIC AMBIENT GLOW (original shapes, not borrowed imagery) ── */
+.hero-organic{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.hero-organic .blob{position:absolute;filter:blur(64px)}
+.hero-organic .blob1{width:420px;height:420px;top:-140px;left:-110px;background:radial-gradient(circle at 30% 30%,var(--lime),transparent 72%);opacity:.28;border-radius:42% 58% 70% 30%/45% 45% 55% 55%;animation:blobDrift1 22s ease-in-out infinite}
+.hero-organic .blob2{width:380px;height:380px;bottom:-160px;right:-110px;background:radial-gradient(circle at 60% 60%,var(--lime2),transparent 72%);opacity:.22;border-radius:60% 40% 35% 65%/55% 60% 40% 45%;animation:blobDrift2 26s ease-in-out infinite}
+.hero-organic .blob3{width:260px;height:260px;top:18%;right:8%;background:radial-gradient(circle at 40% 40%,var(--lime),transparent 70%);opacity:.16;border-radius:50% 50% 40% 60%/60% 40% 60% 40%;animation:blobDrift1 18s ease-in-out infinite reverse}
+@keyframes blobDrift1{0%,100%{transform:translate(0,0) rotate(0deg) scale(1)}50%{transform:translate(24px,-18px) rotate(8deg) scale(1.06)}}
+@keyframes blobDrift2{0%,100%{transform:translate(0,0) rotate(0deg) scale(1)}50%{transform:translate(-20px,16px) rotate(-6deg) scale(1.04)}}
+@media(prefers-reduced-motion:reduce){.hero-organic .blob{animation:none}}
+@media(max-width:760px){.hero-organic{opacity:.5}}
 /* ── CURVED DECORATIVE LINES (ambient hero texture) ── */
 .hero-lines{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .hl{position:absolute;width:0;border:2px solid var(--line3);opacity:0;animation:linePulse 5s ease-in-out infinite}
@@ -691,6 +701,11 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 <!-- HERO -->
 <section id="hero">
   <div class="beam-field" id="beam-field" role="img" aria-label="Ambient rising light animation"></div>
+  <div class="hero-organic" aria-hidden="true">
+    <div class="blob blob1"></div>
+    <div class="blob blob2"></div>
+    <div class="blob blob3"></div>
+  </div>
   <div class="hero-lines" aria-hidden="true">
     <div class="hl hl-l" style="left:24px;top:15%;height:70%;animation-delay:0s"></div>
     <div class="hl hl-l" style="left:52px;top:22%;height:55%;animation-delay:.3s"></div>
