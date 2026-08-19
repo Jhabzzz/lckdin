@@ -2284,16 +2284,17 @@ const CHAT_KB = [
   { k:['bye','goodbye','see ya','cya','later'], a:"Later. Go lock in a streak." },
   { k:['who are you','your name','what are you','what is drek'], a:"I'm Drek \u2014 the assistant built into LCKD\u2014IN. I can walk you through the app, or we can just chat." },
   { k:['lol','haha','lmao','funny','joke'], a:"Ha \u2014 glad you're enjoying it. Anything about LCKD\u2014IN I can help with?" },
-  { k:['what is','whats lckd','about lckd','explain','tell me about'], a:"LCKD\u2014IN is a 120-day discipline app for people done starting over. You log your day in five seconds, AI tells you what's actually breaking your streak, and your progress lives on a public link \u2014 so quitting quietly isn't an option." },
+  { k:['what is','whats this','whats lckd','whats this app','whats the app','what does this do','what does it do','about lckd','about this app','explain','tell me about'], a:"LCKD\u2014IN is a 120-day discipline app for people done starting over. You log your day in five seconds, AI tells you what's actually breaking your streak, and your progress lives on a public link \u2014 so quitting quietly isn't an option." },
   { k:['free','price','pricing','cost','pay'], a:"The waitlist is free. Pricing for the full app will be announced closer to launch \u2014 the first 500 members get lifetime AI Coach access." },
   { k:['miss','skip','reset','streak'], a:"Missing a day doesn't reset your streak to zero. The Pivot Protocol adapts your plan and marks the day on your grid \u2014 you keep executing, not starting over." },
   { k:['public','grid','share','link','private'], a:"Yes \u2014 your progress lives at a shareable public link. That's the accountability mechanism, not an optional setting." },
   { k:['launch','when','release','available','ship'], a:"We're finishing development now. Join the waitlist to get notified the moment early access opens \u2014 no spam, one email when we ship." },
   { k:['wearable','apple health','whoop','oura','garmin'], a:"Wearable sync (Apple Health, Whoop, Oura, Garmin) is coming in Phase 2. Join the waitlist to be first in line." },
-  { k:['how','work','step','protocol'], a:"Three steps, every day: set your rules \u2014 your daily non-negotiables. Check them off \u2014 five seconds, no journaling. AI catches the slip \u2014 it tells you exactly what's breaking your streak before it resets." },
   { k:['coach','ai coach'], a:"The AI Coach looks at your real 7-day data and finds the one habit quietly breaking all your others \u2014 not just that you missed a day." },
+  { k:['how','work','step','protocol'], a:"Three steps, every day: set your rules \u2014 your daily non-negotiables. Check them off \u2014 five seconds, no journaling. AI catches the slip \u2014 it tells you exactly what's breaking your streak before it resets." },
   { k:['sign in','log in','login','password'], a:"Use the Sign in button in the top nav \u2014 email/password or Google both work." },
   { k:['join','waitlist','sign up','account'], a:"You can join the free waitlist, or create an account now for your public grid link and the same early access.", cta:'waitlist' },
+  { k:['why','motive','purpose','point of this','goal','reason'], a:"Most discipline apps fail for three reasons: streaks reset so people quit the app before they quit the habit, you never learn why you actually failed, and nobody's watching so there's no real cost to giving up. LCKD—IN fixes all three — the Pivot Protocol keeps your streak alive instead of resetting it, the AI Coach finds what's actually breaking your habits, and the public grid gives your discipline a real audience." },
 ];
 const CHAT_CHIPS = ["What is LCKD\u2014IN?","Is it free?","What if I miss a day?","How does AI Coach work?"];
 let chatHasOpened=false;
@@ -2350,7 +2351,7 @@ function chatBotSay(text){
 }
 
 function chatMatch(query){
-  const q=' '+query.toLowerCase().replace(/[^\w\s]/g,' ')+' ';
+  const q=' '+query.toLowerCase().replace(/'/g,'').replace(/[^\w\s]/g,' ')+' ';
   for(const entry of CHAT_KB){
     if(entry.k.some(key=>q.includes(' '+key+' '))) return entry;
   }
