@@ -725,15 +725,6 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
   .chat-panel{right:12px;left:12px;width:auto;bottom:86px;height:min(520px,calc(100vh - 160px))}
   .chat-fab{right:16px;bottom:88px}
 }
-/* ── PALETTE ── */
-.pal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-.pal-span2{grid-column:span 2}
-.pal-card{position:relative;border:none;border-radius:var(--r-lg);padding:24px;height:220px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;text-align:left;cursor:none;overflow:hidden;transition:transform .3s var(--ease),box-shadow .3s var(--ease);font-family:inherit}
-.pal-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-card)}
-.pal-name{font-family:var(--sans);font-weight:700;font-size:17px}
-.pal-hex{font-family:var(--mono);font-size:12px;letter-spacing:.04em;opacity:.75;transition:opacity .2s}
-.pal-card.copied .pal-hex{opacity:1}
-@media(max-width:560px){.pal-grid{grid-template-columns:1fr}.pal-span2{grid-column:span 1}.pal-card{height:180px}}
 </style>
 </head>
 <body>
@@ -1295,32 +1286,6 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
   </div>
 </section>
 
-<!-- PALETTE -->
-<section class="sec" id="palette">
-  <div class="sec-in">
-    <div class="ey rv" style="justify-content:center">Brand</div>
-    <div class="disp rv" style="text-align:center;margin:0 auto 56px;max-width:640px">The palette<br>behind LCKD—IN.</div>
-    <div class="pal-grid">
-      <button class="pal-card pal-span2 rv" style="background:#F9F9F9;color:#111111" onclick="copyHex(this,'#F9F9F9')">
-        <span class="pal-name">White</span>
-        <span class="pal-hex">#F9F9F9</span>
-      </button>
-      <button class="pal-card rv" style="background:#004E72;color:#F5F2EC" onclick="copyHex(this,'#004E72')">
-        <span class="pal-name">Blue</span>
-        <span class="pal-hex">#004E72</span>
-      </button>
-      <button class="pal-card rv" style="background:#092634;color:#F5F2EC" onclick="copyHex(this,'#092634')">
-        <span class="pal-name">Navy Blue</span>
-        <span class="pal-hex">#092634</span>
-      </button>
-      <button class="pal-card pal-span2 rv" style="background:#FF6E42;color:#111111" onclick="copyHex(this,'#FF6E42')">
-        <span class="pal-name">Orange</span>
-        <span class="pal-hex">#FF6E42</span>
-      </button>
-    </div>
-    <div class="rv" style="text-align:center;margin-top:28px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--text3)">Tap a swatch to copy its hex</div>
-  </div>
-</section>
 
 <footer>
   <div class="foot-in">
@@ -2438,20 +2403,6 @@ function handleChatSubmit(e){
   const val=input.value;
   input.value='';
   sendChatText(val);
-}
-
-// ── PALETTE SWATCH COPY ──
-function copyHex(el,hex){
-  const hexEl=el.querySelector('.pal-hex');
-  const original=hexEl.textContent;
-  navigator.clipboard.writeText(hex).then(()=>{
-    el.classList.add('copied');
-    hexEl.textContent='Copied';
-    setTimeout(()=>{
-      hexEl.textContent=original;
-      el.classList.remove('copied');
-    },1200);
-  }).catch(()=>{});
 }
 
 </script>
