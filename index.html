@@ -726,14 +726,14 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
   .chat-fab{right:16px;bottom:88px}
 }
 /* ── PALETTE ── */
-.pal-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
-.pal-card{position:relative;border:none;border-radius:var(--r-lg);padding:20px;height:180px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;text-align:left;cursor:none;overflow:hidden;transition:transform .3s var(--ease),box-shadow .3s var(--ease);font-family:inherit}
+.pal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.pal-span2{grid-column:span 2}
+.pal-card{position:relative;border:none;border-radius:var(--r-lg);padding:24px;height:220px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;text-align:left;cursor:none;overflow:hidden;transition:transform .3s var(--ease),box-shadow .3s var(--ease);font-family:inherit}
 .pal-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-card)}
-.pal-name{font-family:var(--sans);font-weight:700;font-size:15px}
-.pal-hex{font-family:var(--mono);font-size:11px;letter-spacing:.04em;opacity:.75;transition:opacity .2s}
+.pal-name{font-family:var(--sans);font-weight:700;font-size:17px}
+.pal-hex{font-family:var(--mono);font-size:12px;letter-spacing:.04em;opacity:.75;transition:opacity .2s}
 .pal-card.copied .pal-hex{opacity:1}
-@media(max-width:900px){.pal-grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:560px){.pal-grid{grid-template-columns:repeat(2,1fr)}.pal-card{height:150px}}
+@media(max-width:560px){.pal-grid{grid-template-columns:1fr}.pal-span2{grid-column:span 1}.pal-card{height:180px}}
 </style>
 </head>
 <body>
@@ -1301,25 +1301,21 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
     <div class="ey rv" style="justify-content:center">Brand</div>
     <div class="disp rv" style="text-align:center;margin:0 auto 56px;max-width:640px">The palette<br>behind LCKD—IN.</div>
     <div class="pal-grid">
-      <button class="pal-card rv" style="background:#FAF8F5;color:#111111" onclick="copyHex(this,'#FAF8F5')">
-        <span class="pal-name">Off-White</span>
-        <span class="pal-hex">#FAF8F5</span>
+      <button class="pal-card pal-span2 rv" style="background:#F9F9F9;color:#111111" onclick="copyHex(this,'#F9F9F9')">
+        <span class="pal-name">White</span>
+        <span class="pal-hex">#F9F9F9</span>
       </button>
-      <button class="pal-card rv" style="background:#0C0B09;color:#F5F2EC" onclick="copyHex(this,'#0C0B09')">
-        <span class="pal-name">Obsidian</span>
-        <span class="pal-hex">#0C0B09</span>
+      <button class="pal-card rv" style="background:#004E72;color:#F5F2EC" onclick="copyHex(this,'#004E72')">
+        <span class="pal-name">Blue</span>
+        <span class="pal-hex">#004E72</span>
       </button>
-      <button class="pal-card rv" style="background:#F46A38;color:#111111" onclick="copyHex(this,'#F46A38')">
-        <span class="pal-name">Rust Orange</span>
-        <span class="pal-hex">#F46A38</span>
+      <button class="pal-card rv" style="background:#092634;color:#F5F2EC" onclick="copyHex(this,'#092634')">
+        <span class="pal-name">Navy Blue</span>
+        <span class="pal-hex">#092634</span>
       </button>
-      <button class="pal-card rv" style="background:#111111;color:#F5F2EC" onclick="copyHex(this,'#111111')">
-        <span class="pal-name">Ink</span>
-        <span class="pal-hex">#111111</span>
-      </button>
-      <button class="pal-card rv" style="background:#F5F2EC;color:#111111" onclick="copyHex(this,'#F5F2EC')">
-        <span class="pal-name">Bone</span>
-        <span class="pal-hex">#F5F2EC</span>
+      <button class="pal-card pal-span2 rv" style="background:#FF6E42;color:#111111" onclick="copyHex(this,'#FF6E42')">
+        <span class="pal-name">Orange</span>
+        <span class="pal-hex">#FF6E42</span>
       </button>
     </div>
     <div class="rv" style="text-align:center;margin-top:28px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--text3)">Tap a swatch to copy its hex</div>
