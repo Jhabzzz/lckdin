@@ -773,8 +773,8 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 <div class="chat-panel" id="chat-panel">
   <div class="chat-head">
     <div class="chat-head-t">
-      <b>LCKD—IN Assistant</b>
-      <span><span class="dot"></span>Ask about features, pricing, how it works</span>
+      <b>Drek</b>
+      <span><span class="dot"></span>LCKD—IN Assistant</span>
     </div>
     <button class="chat-close" onclick="toggleChatWidget()" aria-label="Close chat" type="button">✕</button>
   </div>
@@ -2278,6 +2278,12 @@ async function submitWL(){
 
 // ── AI CHAT WIDGET ──
 const CHAT_KB = [
+  { k:['hi','hey','hello','sup','yo','howdy','hii','heyy','yo yo'], a:"Hey \u2014 I'm Drek. Good to see you. Ask me anything about LCKD\u2014IN, or just say what's up." },
+  { k:['how are you','hows it going','how r u','how you doing'], a:"Doing well, thanks for asking. Locked in and ready to help \u2014 what do you want to know?" },
+  { k:['thank you','thanks','thx','appreciate it'], a:"Anytime. Let me know if anything else comes up." },
+  { k:['bye','goodbye','see ya','cya','later'], a:"Later. Go lock in a streak." },
+  { k:['who are you','your name','what are you','what is drek'], a:"I'm Drek \u2014 the assistant built into LCKD\u2014IN. I can walk you through the app, or we can just chat." },
+  { k:['lol','haha','lmao','funny','joke'], a:"Ha \u2014 glad you're enjoying it. Anything about LCKD\u2014IN I can help with?" },
   { k:['what is','whats lckd','about lckd','explain','tell me about'], a:"LCKD\u2014IN is a 120-day discipline app for people done starting over. You log your day in five seconds, AI tells you what's actually breaking your streak, and your progress lives on a public link \u2014 so quitting quietly isn't an option." },
   { k:['free','price','pricing','cost','pay'], a:"The waitlist is free. Pricing for the full app will be announced closer to launch \u2014 the first 500 members get lifetime AI Coach access." },
   { k:['miss','skip','reset','streak'], a:"Missing a day doesn't reset your streak to zero. The Pivot Protocol adapts your plan and marks the day on your grid \u2014 you keep executing, not starting over." },
@@ -2302,7 +2308,7 @@ function toggleChatWidget(){
     document.getElementById('chat-input').focus();
     if(!chatHasOpened){
       chatHasOpened=true;
-      chatBotSay("Hey \u2014 I'm the LCKD\u2014IN assistant. Ask me about the 120-day protocol, the Pivot Protocol, AI Coach, pricing, or how to join the waitlist.");
+      chatBotSay("Hey \u2014 I'm Drek, the LCKD\u2014IN assistant. Ask me about the 120-day protocol, the Pivot Protocol, AI Coach, pricing, how to join the waitlist \u2014 or just say hi.");
       showChatChips();
     }
   }
@@ -2344,9 +2350,9 @@ function chatBotSay(text){
 }
 
 function chatMatch(query){
-  const q=query.toLowerCase();
+  const q=' '+query.toLowerCase().replace(/[^\w\s]/g,' ')+' ';
   for(const entry of CHAT_KB){
-    if(entry.k.some(key=>q.includes(key))) return entry;
+    if(entry.k.some(key=>q.includes(' '+key+' '))) return entry;
   }
   return null;
 }
@@ -2384,7 +2390,7 @@ function sendChatText(text){
         body2.scrollTop=body2.scrollHeight;
       }
     } else {
-      chatBotSay("I don't have an answer for that yet \u2014 try asking about the 120-day protocol, pricing, missed days, the AI Coach, the public grid, or joining the waitlist.");
+      chatBotSay("Not sure about that one \u2014 I can talk through the 120-day protocol, pricing, missed days, the AI Coach, the public grid, or joining the waitlist. Or we can just chat, I don't mind.");
     }
   }, 500+Math.random()*400);
 }
