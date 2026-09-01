@@ -1457,7 +1457,7 @@ async function handleAuthSubmit(e) {
     if (error) { showAuthMsg(error.message, 'err'); btn.disabled = false; return false; }
     if (data.session) {
       const { error: pErr } = await sb.from('profiles').insert({ id: data.user.id, username });
-      if (pErr) showAuthMsg("Account created, but couldn't save username: " + pErr.message, 'err');
+      if (pErr && pErr.code !== '23505') showAuthMsg("Account created, but couldn't save username: " + pErr.message, 'err');
       else { showAuthMsg("Account created — you're in.", 'ok'); setTimeout(closeAuthModal, 900); }
     } else {
       showAuthMsg('Check your email to confirm your account, then sign in.', 'ok');
@@ -1503,6 +1503,7 @@ async function ensureProfile(user) {
   if (suggested && USERNAME_RE.test(suggested)) {
     const { error } = await sb.from('profiles').insert({ id: user.id, username: suggested });
     if (!error) { console.log('Profile created:', suggested); return; }
+    if (error.code === '23505') { console.log('Profile already created by parallel insert:', suggested); return; }
   }
 
   pendingProfileUser = user;
