@@ -851,18 +851,15 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
     <div class="hero-ticker"><div class="ticker-dot"></div><span>247 people already locked in · early access open</span></div>
     <div class="hero-eyebrow">Daily habit tracker</div>
     <div class="hero-h1">Stop <em>starting over.</em></div>
-    <div class="hero-value">LCKD—IN is a public accountability platform that helps you turn daily habits into an unbreakable, AI-coached streak.</div>
-    <div class="hero-steps">
-      <span>Set your rules</span><span class="hero-step-arrow">→</span><span>Check off daily</span><span class="hero-step-arrow">→</span><span>AI catches slips</span>
-    </div>
+    <div class="hero-value">Build habits. Stay accountable. Understand why you slip.</div>
     <div class="hero-day-pill">
       <span class="hero-day-lbl">Every run starts at</span>
       <div class="hero-count">DAY <span id="hday">001</span><span class="sl"> / </span><span id="htotal">120</span><span class="blink-cur"></span></div>
     </div>
     <div class="hero-serif" id="hero-tag">120-day protocol · zero dopamine · public accountability</div>
     <div class="hero-btns">
-      <button class="btn-fill magnet" onclick="goto('waitlist')"><span>Join the waitlist</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px;vertical-align:-2px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-      <button class="btn-stroke" onclick="goto('dashboard')">See it in action</button>
+      <button class="btn-fill magnet" onclick="goto('waitlist')"><span>Join Early Access</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px;vertical-align:-2px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <button class="btn-stroke" onclick="goto('grid')">See the grid</button>
     </div>
   </div>
   <div class="hero-fade" aria-hidden="true"></div>
@@ -872,6 +869,45 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
     <div class="hb"><div class="hb-v" id="hb-rules">0</div><div class="hb-k">Daily rules</div></div>
     <div class="hb"><div class="hb-v">Zero</div><div class="hb-k">Gamification</div></div>
     <div class="hb"><div class="hb-v">Public</div><div class="hb-k">Discipline grid</div></div>
+  </div>
+</section>
+
+<!-- GRID -->
+<section class="sec" id="grid" style="position:relative;overflow:hidden">
+  <canvas id="grid-fx" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.55;pointer-events:none"></canvas>
+  <div class="sec-in" style="position:relative;z-index:1">
+    <div class="ey rv">Public discipline grid</div>
+    <div class="grid-2">
+      <div class="rv">
+        <div class="disp" style="margin-bottom:24px">Your streak<br>is <em>public.</em><br>Own it.</div>
+        <p class="bod" style="margin-bottom:32px">120 squares. Lime for a perfect day, a green gradient for partial, dark for a miss. One link that says everything about your discipline without a word.</p>
+        <div class="share-bar">
+          <div class="share-url">lckd-in.com/<b>jashwanth</b></div>
+          <button class="share-copy" id="copy-btn" onclick="copyLink()">Copy link</button>
+        </div>
+      </div>
+      <div class="rv d2">
+        <div class="prof-bar"><span>@jashwanth</span><span>day 1 / 120 · 26 jun 2026</span></div>
+        <div class="disc-grid" id="disc-grid"></div>
+        <div class="g-legend" style="margin-top:14px">
+          <span class="gl">Miss</span>
+          <div class="glc" style="background:var(--bg4)"></div>
+          <div class="glc" style="background:var(--g1)"></div>
+          <div class="glc" style="background:var(--g2)"></div>
+          <div class="glc" style="background:var(--g3)"></div>
+          <div class="glc" style="background:var(--g4)"></div>
+          <div class="glc" style="background:var(--g5)"></div>
+          <span class="gl">Perfect</span>
+          <div class="glc" style="background:var(--pivot-bg);position:relative"><div style="width:5px;height:5px;background:var(--amber);border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"></div></div>
+          <span class="gl">Pivot</span>
+        </div>
+        <div class="g-stats">
+          <div class="gst"><div class="gst-v">1</div><div class="gst-k">Current day</div></div>
+          <div class="gst"><div class="gst-v">70%</div><div class="gst-k">Today's score</div></div>
+          <div class="gst"><div class="gst-v">14/20</div><div class="gst-k">Rules done</div></div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -991,45 +1027,6 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
   </div>
 </section>
 
-<!-- GRID -->
-<section class="sec" id="grid" style="position:relative;overflow:hidden">
-  <canvas id="grid-fx" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.55;pointer-events:none"></canvas>
-  <div class="sec-in" style="position:relative;z-index:1">
-    <div class="ey rv">Public discipline grid</div>
-    <div class="grid-2">
-      <div class="rv">
-        <div class="disp" style="margin-bottom:24px">Your streak<br>is <em>public.</em><br>Own it.</div>
-        <p class="bod" style="margin-bottom:32px">120 squares. Lime for a perfect day, a green gradient for partial, dark for a miss. One link that says everything about your discipline without a word.</p>
-        <div class="share-bar">
-          <div class="share-url">lckd-in.com/<b>jashwanth</b></div>
-          <button class="share-copy" id="copy-btn" onclick="copyLink()">Copy link</button>
-        </div>
-      </div>
-      <div class="rv d2">
-        <div class="prof-bar"><span>@jashwanth</span><span>day 1 / 120 · 26 jun 2026</span></div>
-        <div class="disc-grid" id="disc-grid"></div>
-        <div class="g-legend" style="margin-top:14px">
-          <span class="gl">Miss</span>
-          <div class="glc" style="background:var(--bg4)"></div>
-          <div class="glc" style="background:var(--g1)"></div>
-          <div class="glc" style="background:var(--g2)"></div>
-          <div class="glc" style="background:var(--g3)"></div>
-          <div class="glc" style="background:var(--g4)"></div>
-          <div class="glc" style="background:var(--g5)"></div>
-          <span class="gl">Perfect</span>
-          <div class="glc" style="background:var(--pivot-bg);position:relative"><div style="width:5px;height:5px;background:var(--amber);border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"></div></div>
-          <span class="gl">Pivot</span>
-        </div>
-        <div class="g-stats">
-          <div class="gst"><div class="gst-v">1</div><div class="gst-k">Current day</div></div>
-          <div class="gst"><div class="gst-v">70%</div><div class="gst-k">Today's score</div></div>
-          <div class="gst"><div class="gst-v">14/20</div><div class="gst-k">Rules done</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- LEADERBOARD -->
 <section class="sec" id="leaderboard" style="background:var(--bg2)">
   <div class="sec-in">
@@ -1055,11 +1052,11 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
     <div class="disp">Built different.<br><em>Works different.</em></div>
   </div>
   <div class="feat-scroll" id="feat-scroll">
-    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg></div><div class="feat-tag">Vision AI</div><div class="feat-n">01</div><div class="feat-h">Snap &amp; Track</div><div class="feat-b">Photo your journal. AI reads it and logs it — you approve.</div></div>
+    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg></div><div class="feat-tag">Vision AI · Beta</div><div class="feat-n">01</div><div class="feat-h">Snap &amp; Track</div><div class="feat-b">Photo your journal. AI reads it and logs it — you approve.</div></div>
     <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg></div><div class="feat-tag">Pattern analysis</div><div class="feat-n">02</div><div class="feat-h">Behavioral AI Coach</div><div class="feat-b">Finds the one habit that's quietly breaking all the others.</div></div>
     <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 4v4h-4"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 20v-4h4"/></svg></div><div class="feat-tag">Streak integrity</div><div class="feat-n">03</div><div class="feat-h">Pivot Protocol</div><div class="feat-b">Break your streak? AI adapts your plan — no reset to zero.</div></div>
-    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="7" y="8" width="10" height="8" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M12 11v2"/></svg></div><div class="feat-tag">Biometric data</div><div class="feat-n">04</div><div class="feat-h">Wearable Sync</div><div class="feat-b">Apple Health, Whoop, Oura, Garmin — auto-logged, zero typing.</div></div>
-    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M4 14v-3M8 17v-9M12 19v-14M16 17v-9M20 14v-3"/></svg></div><div class="feat-tag">Ambient sound</div><div class="feat-n">05</div><div class="feat-h">Rule-matched Music</div><div class="feat-b">Detects your active rule, queues the right playlist. Automatically.</div></div>
+    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="7" y="8" width="10" height="8" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M12 11v2"/></svg></div><div class="feat-tag">Biometric data · Phase 2</div><div class="feat-n">04</div><div class="feat-h">Wearable Sync</div><div class="feat-b">Apple Health, Whoop, Oura, Garmin — auto-logged, zero typing.</div></div>
+    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M4 14v-3M8 17v-9M12 19v-14M16 17v-9M20 14v-3"/></svg></div><div class="feat-tag">Ambient sound · Phase 2</div><div class="feat-n">05</div><div class="feat-h">Rule-matched Music</div><div class="feat-b">Detects your active rule, queues the right playlist. Automatically.</div></div>
     <div class="feat-card" style="border-right:none"><div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="6" height="6" rx="1"/><rect x="14.5" y="3.5" width="6" height="6" rx="1"/><rect x="3.5" y="14.5" width="6" height="6" rx="1"/><rect x="14.5" y="14.5" width="6" height="6" rx="1"/></svg></div><div class="feat-tag">Social proof</div><div class="feat-n">06</div><div class="feat-h">Public Grid Profile</div><div class="feat-b">Your grid, live at lckd-in.com/you. Public. Permanent.</div></div>
   </div>
   <div class="feat-hint rv">Drag to explore all features</div>
