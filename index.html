@@ -1326,11 +1326,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 sb.auth.getSession().then(({ data, error }) => {
-  if (error) {
-    console.error('Supabase connection failed:', error);
-  } else {
-    console.log('Supabase connected. Current session:', data.session);
-  }
+  if (error) console.error('Supabase connection failed:', error);
 });
 // ── AUTH UI ──
 const authBtn = document.getElementById('auth-btn');
@@ -1491,16 +1487,12 @@ async function ensureProfile(user) {
     .eq('id', user.id)
     .maybeSingle();
 
-  if (existing) {
-    console.log('Profile found:', existing.username);
-    return;
-  }
+  if (existing) return;
 
   const suggested = user.user_metadata && user.user_metadata.username;
   if (suggested && USERNAME_RE.test(suggested)) {
     const { error } = await sb.from('profiles').insert({ id: user.id, username: suggested });
-    if (!error) { console.log('Profile created:', suggested); return; }
-    if (error.code === '23505') { console.log('Profile already created by parallel insert:', suggested); return; }
+    if (!error || error.code === '23505') return;
   }
 
   pendingProfileUser = user;
@@ -1521,9 +1513,6 @@ async function loadTodayLog(user) {
     });
     buildRules();
     updateRing();
-    console.log('Loaded saved log for today:', data);
-  } else {
-    console.log('No saved log for today yet — starting fresh.');
   }
 }
 
@@ -1543,10 +1532,7 @@ async function saveTodayLog() {
   }, { onConflict: 'user_id,day_number' });
 
   if (error) console.error('Save failed:', error);
-  else {
-    console.log('Saved day', protocolState.currentDay, '→', score + '%');
-    runAICoach(currentUser);
-  }
+  else runAICoach(currentUser);
 }
 // ── DIAGONAL NOISE GRID (public discipline grid ambient bg) ──
 (function(){
