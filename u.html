@@ -15,6 +15,7 @@
   --text:#F2F0E6; --text2:#B4B2A8; --text3:#6A6960;
   --lime:#C8FF00; --lime2:#A8D600;
   --g1:#111A02; --g2:#1C2E04; --g3:#2E4A08; --g4:#4A7410; --g5:#C8FF00;
+  --amber:#E8940F; --pivot-bg:#231407; --pivot-border:#432708;
   --mono:'JetBrains Mono',monospace; --sans:'Space Grotesk',sans-serif;
 }
 body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh}
@@ -27,6 +28,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .dc{aspect-ratio:1;border-radius:2px;background:var(--bg4);border:1px solid rgba(255,255,255,.04)}
 .dc.v1{background:var(--g1)}.dc.v2{background:var(--g2)}.dc.v3{background:var(--g3)}
 .dc.v4{background:var(--g4)}.dc.v5{background:var(--g5)}
+.dc.pivot{background:var(--pivot-bg);border-color:var(--pivot-border)}
 .dc.today{box-shadow:0 0 0 1.5px var(--lime),0 0 12px rgba(200,255,0,.3)}
 .dc.future{opacity:.14}
 .g-legend{display:flex;align-items:center;gap:7px;margin-bottom:32px;flex-wrap:wrap}
@@ -95,7 +97,7 @@ async function renderPublicGrid() {
 
   const { data: logs } = await sb
     .from('daily_logs')
-    .select('day_number, score, rules')
+    .select('day_number, score, rules, is_pivot')
     .eq('user_id', profile.id)
     .order('day_number', { ascending: true });
 
@@ -112,9 +114,14 @@ async function renderPublicGrid() {
     let title = `Day ${day}`;
     if (day === currentDay) cls += ' today';
     if (log) {
-      const tier = scoreToTier(log.score);
-      if (tier > 0) cls += ` v${tier}`;
-      title += ` · ${log.score}%`;
+      if (log.is_pivot) {
+        cls += ' pivot';
+        title += ' — pivot used';
+      } else {
+        const tier = scoreToTier(log.score);
+        if (tier > 0) cls += ` v${tier}`;
+        title += ` · ${log.score}%`;
+      }
     } else if (day > currentDay) {
       cls += ' future';
       title += ' — upcoming';
@@ -141,6 +148,8 @@ async function renderPublicGrid() {
       <div class="glc" style="background:var(--g4)"></div>
       <div class="glc" style="background:var(--g5)"></div>
       <span class="gl">Perfect</span>
+      <div class="glc" style="background:var(--pivot-bg);position:relative"><div style="width:5px;height:5px;background:var(--amber);border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"></div></div>
+      <span class="gl">Pivot</span>
     </div>
     <div class="g-stats">
       <div class="gst"><div class="gst-v">${currentDay}</div><div class="gst-k">Current day</div></div>

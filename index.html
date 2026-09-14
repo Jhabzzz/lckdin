@@ -885,6 +885,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
           <div class="share-url">lckd-in.com/<b>jashwanth</b></div>
           <button class="share-copy" id="copy-btn" onclick="copyLink()">Copy link</button>
         </div>
+        <div id="pivot-count" style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-top:14px">0 / 3 pivots used</div>
       </div>
       <div class="rv d2">
         <div class="prof-bar"><span>@jashwanth</span><span>day 1 / 120 · 26 jun 2026</span></div>
@@ -1471,6 +1472,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
     authBtn.onclick = handleSignOut;
     currentUser = session.user;
     await ensureProfile(session.user);
+    await hydrateProtocol(session.user);
     await loadTodayLog(session.user);
     await runAICoach(session.user);
   } else {
@@ -1497,6 +1499,78 @@ async function ensureProfile(user) {
 
   pendingProfileUser = user;
   openAuthModal('username');
+}
+
+async function hydrateProtocol(user) {
+  const { data: logs } = await sb
+    .from('daily_logs')
+    .select('day_number, log_date, score, is_pivot')
+    .eq('user_id', user.id)
+    .order('day_number', { ascending: true });
+
+  const byDay = {};
+  (logs || []).forEach(l => { byDay[l.day_number] = l; });
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const loggedDays = Object.keys(byDay).map(Number);
+  const maxDay = loggedDays.length ? Math.max(...loggedDays) : 0;
+  const todaysLog = (logs || []).find(l => l.log_date === todayStr);
+
+  protocolState.currentDay = todaysLog
+    ? todaysLog.day_number
+    : Math.min(maxDay + 1, protocolState.totalDays) || 1;
+  protocolState.pivotsUsed = (logs || []).filter(l => l.is_pivot).length;
+
+  dcEls.forEach((cell, idx) => {
+    const day = idx + 1;
+    if (day >= protocolState.currentDay) return; // today + future rendered elsewhere
+    const log = byDay[day];
+    let cls = 'dc show';
+    let title = `Day ${day}`;
+    if (log) {
+      if (log.is_pivot) {
+        cls += ' pivot';
+        title += ' — pivot used';
+      } else {
+        const tier = scoreToTier(log.score);
+        if (tier > 0) cls += ` v${tier}`;
+        title += ` · ${log.score}%`;
+      }
+    } else {
+      title += ' · miss';
+    }
+    cell.className = cls;
+    cell.title = title;
+  });
+
+  updatePivotBadge();
+}
+
+function updatePivotBadge() {
+  const el = document.getElementById('pivot-count');
+  if (el) el.textContent = `${protocolState.pivotsUsed} / ${protocolState.pivotsMax} pivots used`;
+}
+
+async function offerPivot() {
+  const remaining = protocolState.pivotsMax - protocolState.pivotsUsed;
+  const wantsPivot = confirm(
+    `Today's a full miss. Use a Pivot to protect your streak instead of taking the loss? (${remaining} pivot${remaining === 1 ? '' : 's'} remaining)`
+  );
+  if (!wantsPivot) return;
+
+  const { data, error } = await sb.rpc('use_pivot', { p_day_number: protocolState.currentDay });
+  if (error || !data || !data.success) {
+    alert('Could not use pivot: ' + (data && data.error ? data.error : (error ? error.message : 'unknown error')));
+    return;
+  }
+
+  protocolState.pivotsUsed = data.pivots_used;
+  const cell = dcEls[protocolState.currentDay - 1];
+  if (cell) {
+    cell.className = 'dc show today pivot';
+    cell.title = `Day ${protocolState.currentDay} (today — pivot used)`;
+  }
+  updatePivotBadge();
 }
 
 async function loadTodayLog(user) {
@@ -1531,8 +1605,13 @@ async function saveTodayLog() {
     status: status
   }, { onConflict: 'user_id,day_number' });
 
-  if (error) console.error('Save failed:', error);
-  else runAICoach(currentUser);
+  if (error) { console.error('Save failed:', error); return; }
+
+  if (score === 0 && protocolState.pivotsUsed < protocolState.pivotsMax) {
+    await offerPivot();
+  }
+
+  runAICoach(currentUser);
 }
 // ── DIAGONAL NOISE GRID (public discipline grid ambient bg) ──
 (function(){
@@ -2064,8 +2143,9 @@ async function handleSnapUpload(file){
   dropTxt.textContent = 'Analyzing photo…';
   try{
     const b64 = await fileToBase64(file);
+    const mimeType = file.type || 'image/jpeg';
     const { data, error } = await sb.functions.invoke('analyze-journal', {
-      body: { image: b64, rules: RULES.map(r=>r.t) }
+      body: { image: b64, mimeType, rules: RULES.map(r=>r.t) }
     });
     if (error) throw error;
     if (data.error) throw new Error(data.error);
