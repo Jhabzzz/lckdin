@@ -785,6 +785,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
           </div>
           <div class="spnl on" id="panel-day">
             <div class="rw-wrap" id="rules-wrap" style="max-height:none;margin-top:8px"></div>
+            <button class="cbtn2" style="cursor:pointer;margin-top:14px" onclick="exportRulesToReminders()">↓ &nbsp;Export rules to Reminders / Calendar (.ics)</button>
           </div>
           <div class="spnl" id="panel-snap">
             <div style="padding:16px 0 0">
@@ -958,6 +959,48 @@ function copyLink(){
   const b=document.getElementById('copy-btn');
   b.textContent='✓ Copied';
   setTimeout(()=>b.textContent='Copy link',2000);
+}
+
+// ── EXPORT RULES AS RECURRING REMINDERS/TASKS (.ics · VTODO) ──
+// Universal iCalendar format — imports into Apple Reminders/Calendar, Google Calendar,
+// Outlook, and most task apps. No API keys, no OAuth, works entirely client-side.
+function icsEscape(s){
+  return String(s).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+}
+function icsTimestamp(d){
+  const p = n => String(n).padStart(2,'0');
+  return d.getUTCFullYear()+p(d.getUTCMonth()+1)+p(d.getUTCDate())+'T'+p(d.getUTCHours())+p(d.getUTCMinutes())+p(d.getUTCSeconds())+'Z';
+}
+function exportRulesToReminders(){
+  const stamp = icsTimestamp(new Date());
+  const remainingDays = Math.max(1, protocolState.totalDays - protocolState.currentDay + 1);
+  const uidSuffix = (currentUser && currentUser.id ? currentUser.id : 'anon') + '@lckd-in.com';
+
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//LCKD-IN//Daily Protocol//EN', 'CALSCALE:GREGORIAN'];
+  RULES.forEach((r, i) => {
+    lines.push(
+      'BEGIN:VTODO',
+      `UID:lckdin-rule-${i}-${uidSuffix}`,
+      `DTSTAMP:${stamp}`,
+      `SUMMARY:${icsEscape(r.t)}`,
+      `DESCRIPTION:${icsEscape('LCKD—IN daily rule · day ' + protocolState.currentDay + ' of ' + protocolState.totalDays)}`,
+      `RRULE:FREQ=DAILY;COUNT=${remainingDays}`,
+      'STATUS:NEEDS-ACTION',
+      'CATEGORIES:LCKD-IN',
+      'END:VTODO'
+    );
+  });
+  lines.push('END:VCALENDAR');
+
+  const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'lckdin-daily-rules.ics';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // ── RULES ──
@@ -1223,10 +1266,11 @@ async function saveTodayLog() {
     await offerPivot();
   }
 
-  runAICoach(currentUser);
+  const summary = await runAICoach(currentUser);
+  if (summary) scheduleLLMCoach(currentUser, summary);
 }
 
-// ── AI COACH · REAL 7-DAY CORRELATION ANALYSIS ──
+// ── AI COACH · REAL 7-DAY CORRELATION ANALYSIS (instant, deterministic) ──
 async function runAICoach(user){
   const { data: logs } = await sb
     .from('daily_logs')
@@ -1298,6 +1342,51 @@ async function runAICoach(user){
     <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>Downstream rules:</strong> ${downstreamNames}.</div></div>
     <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>Tonight's fix:</strong> Protect "${rootName}" first — the rest tends to follow.</div></div>
   `;
+
+  return {
+    dayNumber: today.day_number,
+    rootRule: rootName,
+    downstreamRules: downstream.map(j => RULES[j].t),
+    missedToday,
+    todayScore: today.score,
+    days: chrono.map(l => ({
+      day_number: l.day_number,
+      score: l.score,
+      missedRuleNames: l.rules.filter(r=>!r.done).map(r=>r.t)
+    }))
+  };
+}
+
+// ── AI COACH · REAL LLM PASS (debounced, replaces the deterministic text above once it returns) ──
+let llmCoachTimer = null;
+function scheduleLLMCoach(user, summary){
+  clearTimeout(llmCoachTimer);
+  llmCoachTimer = setTimeout(() => enrichAICoachWithLLM(user, summary), 1200);
+}
+
+async function enrichAICoachWithLLM(user, summary){
+  const msgEl = document.getElementById('ai-msg');
+  const originalMsg = msgEl.innerHTML;
+  msgEl.innerHTML = '<em style="color:var(--text3)">Thinking…</em>';
+  try {
+    const { data, error } = await sb.functions.invoke('ai-coach', { body: summary });
+    if (error) throw error;
+    if (data.error) throw new Error(data.error);
+
+    if (data.message) {
+      msgEl.textContent = data.message;
+    } else {
+      msgEl.innerHTML = originalMsg;
+    }
+    if (Array.isArray(data.insights) && data.insights.length) {
+      document.getElementById('ai-insights').innerHTML = data.insights
+        .map(t => `<div class="ins"><div class="ins-dot"></div><div class="ins-txt">${escapeHtml(t)}</div></div>`)
+        .join('');
+    }
+  } catch (err) {
+    console.error('AI coach LLM pass failed, keeping deterministic text:', err);
+    msgEl.innerHTML = originalMsg;
+  }
 }
 
 // ── DAILY FUEL QUOTES WIDGET ──
@@ -1428,7 +1517,8 @@ async function boot(){
   currentUser = session.user;
   await hydrateProtocol(currentUser);
   await loadTodayLog(currentUser);
-  await runAICoach(currentUser);
+  const summary = await runAICoach(currentUser);
+  if (summary) scheduleLLMCoach(currentUser, summary);
 }
 boot();
 
