@@ -1300,6 +1300,7 @@ async function saveTodayLog() {
 
   const summary = await runAICoach(currentUser);
   if (summary) scheduleLLMCoach(currentUser, summary);
+  loadLeaderboard();
 }
 
 // ── AI COACH · REAL 7-DAY CORRELATION ANALYSIS (instant, deterministic) ──
@@ -1524,6 +1525,8 @@ async function loadLeaderboard(){
   }
 }
 loadLeaderboard();
+setInterval(loadLeaderboard, 30000); // keep it live — picks up other users' progress without a reload
+document.addEventListener('visibilitychange', () => { if (!document.hidden) loadLeaderboard(); });
 
 // ── BOOT: auth guard, then wire up the real dashboard ──
 async function boot(){
