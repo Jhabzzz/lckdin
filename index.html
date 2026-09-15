@@ -2279,14 +2279,6 @@ function escapeHtml(str){
   d.textContent = str;
   return d.innerHTML;
 }
-const LB_MIN_ROWS = 6; // pad with example entries so the board doesn't look empty pre-launch
-const LB_EXAMPLES = [
-  {username:'kabir.d',    current_day:52, perfect_days:41, avg_score:88},
-  {username:'zara.exec',  current_day:38, perfect_days:29, avg_score:82},
-  {username:'the.grindset', current_day:24, perfect_days:17, avg_score:75},
-  {username:'noah_t',     current_day:19, perfect_days:12, avg_score:71},
-  {username:'meera.k',    current_day:9,  perfect_days:6,  avg_score:68},
-];
 async function loadLeaderboard(){
   const el = document.getElementById('lb-list');
   if (!el) return;
@@ -2294,9 +2286,13 @@ async function loadLeaderboard(){
     const { data, error } = await sb.rpc('get_leaderboard');
     if (error) throw error;
     const real = data || [];
-    const combined = [...real, ...LB_EXAMPLES.slice(0, Math.max(0, LB_MIN_ROWS - real.length))];
 
-    el.innerHTML = combined.map((r,i)=>`
+    if (!real.length) {
+      el.innerHTML = '<div class="lb-empty">No one has logged a day yet — be the first.</div>';
+      return;
+    }
+
+    el.innerHTML = real.map((r,i)=>`
       <div class="lb-row${i<3?' top':''}">
         <div class="lb-rank">${i+1}</div>
         <div class="lb-user">${escapeHtml(r.username)}</div>
