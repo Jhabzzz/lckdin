@@ -804,6 +804,21 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
           </div>
         </div>
       </div>
+
+      <div class="ai-card">
+        <div class="ai-ch"><div class="ai-pulse"></div><div class="ai-ttl">Settings</div></div>
+        <div class="ai-body" style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+          <div>
+            <div style="font-size:13px;font-weight:600">Reminder emails</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px">One email a day if you haven't logged yet.</div>
+          </div>
+          <label style="position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0;cursor:pointer">
+            <input type="checkbox" id="reminders-toggle" checked onchange="toggleReminders(this.checked)" style="opacity:0;width:0;height:0">
+            <span id="reminders-toggle-track" style="position:absolute;inset:0;background:var(--lime);border-radius:24px;transition:background .2s"></span>
+            <span id="reminders-toggle-knob" style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s;transform:translateX(18px)"></span>
+          </label>
+        </div>
+      </div>
     </div>
 
     <div class="app-col">
@@ -959,6 +974,23 @@ function copyLink(){
   const b=document.getElementById('copy-btn');
   b.textContent='✓ Copied';
   setTimeout(()=>b.textContent='Copy link',2000);
+}
+
+// ── REMINDER EMAILS TOGGLE ──
+function setRemindersToggle(on){
+  document.getElementById('reminders-toggle').checked = on;
+  document.getElementById('reminders-toggle-track').style.background = on ? 'var(--lime)' : 'var(--line2)';
+  document.getElementById('reminders-toggle-knob').style.transform = on ? 'translateX(18px)' : 'translateX(0)';
+}
+async function toggleReminders(on){
+  setRemindersToggle(on);
+  if (!currentUser) return;
+  const { error } = await sb.from('profiles').update({ reminders_enabled: on }).eq('id', currentUser.id);
+  if (error) {
+    console.error('Failed to update reminder preference:', error);
+    setRemindersToggle(!on);
+    alert('Could not save that setting — try again.');
+  }
 }
 
 // ── EXPORT RULES AS RECURRING REMINDERS/TASKS (.ics · VTODO) ──
@@ -1499,13 +1531,14 @@ async function boot(){
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = '/'; return; }
 
-  const { data: profile } = await sb.from('profiles').select('username').eq('id', session.user.id).maybeSingle();
+  const { data: profile } = await sb.from('profiles').select('username, reminders_enabled').eq('id', session.user.id).maybeSingle();
   if (!profile || !profile.username) { window.location.href = '/'; return; }
 
   window.__appUsername = profile.username;
   document.getElementById('app-username').textContent = '@' + profile.username;
   document.getElementById('app-share-url').innerHTML = 'lckd-in.com/<b>' + profile.username + '</b>';
   document.getElementById('app-grid-link').href = 'https://lckd-in.com/u/' + profile.username;
+  setRemindersToggle(profile.reminders_enabled !== false);
 
   initDiscGrid();
   buildRules();
