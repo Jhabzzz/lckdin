@@ -2,5 +2,25 @@
   "rewrites": [
     { "source": "/u/:username", "destination": "/u.html" },
     { "source": "/app", "destination": "/app.html" }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "lckdin.vercel.app" }],
+      "destination": "https://www.lckd-in.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "lckdin-jhabyy.vercel.app" }],
+      "destination": "https://www.lckd-in.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "lckdin-git-main-jhabyy.vercel.app" }],
+      "destination": "https://www.lckd-in.com/:path*",
+      "permanent": true
+    }
   ]
 }
