@@ -481,6 +481,15 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .rtxt{font-size:12px;color:rgba(242,240,230,.5);flex:1;line-height:1.3;transition:color .15s}
 .rrow.ck .rtxt{color:var(--text3);text-decoration:line-through;text-decoration-color:var(--line2)}
 .rflag{font-family:var(--mono);font-size:7px;padding:2px 5px;border:1px solid #401818;color:#904040;flex-shrink:0}
+.redit,.rdel{flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:11px;border-radius:4px;opacity:0;transition:opacity .15s,color .15s,background .15s;cursor:pointer}
+.rrow:hover .redit,.rrow:hover .rdel{opacity:1}
+.redit:hover{color:var(--lime);background:var(--glass)}
+.rdel:hover{color:#c0392b;background:var(--glass)}
+.rtxt-input{flex:1;background:transparent;border:none;border-bottom:1px solid var(--lime);color:var(--text);font-size:12px;font-family:inherit;line-height:1.3;padding:0 0 2px;outline:none}
+.rrow.radd{cursor:default}
+.rrow.radd .rn{color:var(--lime)}
+.rrow.radd input{flex:1;background:transparent;border:none;color:var(--text);font-size:12px;font-family:inherit;outline:none}
+.rrow.radd input::placeholder{color:var(--text3)}
 .ph-snap{padding:13px 20px;border-top:1px solid var(--line)}
 .snap-btn{width:100%;border:1px solid var(--glass-brd2);border-radius:var(--r-xs);background:var(--glass);color:var(--text3);font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:12px;cursor:none;transition:all .3s var(--ease);display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden}
 .snap-btn:hover{color:var(--bg);border-color:transparent;background:var(--text);box-shadow:var(--shadow-glow)}
@@ -512,11 +521,6 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .cbtn2:hover{color:var(--text);border-color:var(--line3);background:var(--glass2)}
 
 /* ── MUSIC ── */
-.music-widget{border:1px solid var(--glass-brd2);border-radius:var(--r-md);overflow:hidden;background:var(--glass);backdrop-filter:blur(16px);box-shadow:var(--shadow-soft);position:relative}
-.mw-hd{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
-.mw-icon{width:30px;height:30px;background:linear-gradient(135deg,#FC3C44,#FF8A80);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.mw-ttl{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text)}
-.mw-sub{font-family:var(--mono);font-size:8px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
 .mw-conn{margin-left:auto;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:5px 11px;border:1px solid var(--line2);color:var(--text3);background:transparent;cursor:none;transition:all .15s}
 .mw-conn:hover{border-color:var(--text);color:var(--text)}
 .mw-tracks{padding:4px 0}
@@ -535,8 +539,6 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .mb:nth-child(2){animation:mb 1s .2s ease-in-out infinite alternate;height:60%}
 .mb:nth-child(3){animation:mb 1s .4s ease-in-out infinite alternate;height:80%}
 @keyframes mb{0%{height:20%}100%{height:100%}}
-.mw-ft{padding:12px 18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:9px;color:var(--text3);display:flex;align-items:center;gap:6px;letter-spacing:.06em}
-.mw-ft-dot{width:5px;height:5px;background:var(--lime);border-radius:50%;animation:pulse 2s ease-in-out infinite;flex-shrink:0}
 
 /* ── AI ── */
 .ai-2{display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:center}
@@ -548,8 +550,8 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .ins-txt{font-size:13px;font-weight:300;color:var(--text2);line-height:1.8}
 .ins-txt strong{color:var(--text);font-weight:600}
 .ai-card{border:1px solid var(--glass-brd2);border-radius:var(--r-md);overflow:hidden;background:var(--glass);backdrop-filter:blur(16px);box-shadow:var(--shadow-soft);position:relative}
-.ai-card::before,.steps::before,.insights::before,.music-widget::before{content:'';position:absolute;top:0;left:-60%;width:35%;height:100%;background:linear-gradient(115deg,transparent 0%,rgba(255,255,255,.05) 45%,rgba(244,106,56,.14) 50%,rgba(255,255,255,.05) 55%,transparent 100%);transform:skewX(-20deg);transition:left 1.2s var(--ease);pointer-events:none;z-index:2}
-.ai-card:hover::before,.steps:hover::before,.insights:hover::before,.music-widget:hover::before{left:140%}
+.ai-card::before,.steps::before,.insights::before{content:'';position:absolute;top:0;left:-60%;width:35%;height:100%;background:linear-gradient(115deg,transparent 0%,rgba(255,255,255,.05) 45%,rgba(244,106,56,.14) 50%,rgba(255,255,255,.05) 55%,transparent 100%);transform:skewX(-20deg);transition:left 1.2s var(--ease);pointer-events:none;z-index:2}
+.ai-card:hover::before,.steps:hover::before,.insights:hover::before{left:140%}
 .ai-ch{padding:18px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
 .ai-pulse{width:6px;height:6px;background:var(--lime);border-radius:50%;animation:pulse 2s ease-in-out infinite;flex-shrink:0}
 .ai-ttl{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--lime)}
@@ -681,6 +683,14 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 .app-col{display:flex;flex-direction:column;gap:28px}
 .app-loading{min-height:60vh;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
 .app-widgets{margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.widget-full{grid-column:1/-1}
+.phase2-badge{margin-left:auto;font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--line2);border-radius:20px;color:var(--text3)}
+.p2-note{font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:20px}
+.p2-split{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.p2-col-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.p2-col .mw-tracks{border:1px solid var(--glass-brd2);border-radius:var(--r-sm);overflow:hidden}
+.p2-col .wear-grid{border-radius:var(--r-sm)}
+@media(max-width:640px){.p2-split{grid-template-columns:1fr}}
 .widget-quote{position:relative;overflow:hidden;min-height:220px}
 .widget-quote .q-bg,.widget-quote .q-overlay{position:absolute;inset:0}
 .widget-quote .q-content{position:relative;z-index:1;padding:24px;text-align:center}
@@ -850,16 +860,6 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
       </div>
     </div>
 
-    <div class="music-widget">
-      <div class="mw-hd">
-        <div class="mw-icon">♫</div>
-        <div><div class="mw-ttl">Now Playing</div><div class="mw-sub">Spotify · Apple Music</div></div>
-        <button class="mw-conn" style="cursor:pointer" onclick="alert('Wearable + music sync is coming in Phase 2 — you will be notified here when it ships.')">Connect</button>
-      </div>
-      <div class="mw-tracks" id="mw-tracks"></div>
-      <div class="mw-ft"><div class="mw-ft-dot"></div>Auto-queued for: Workout → Rule 10</div>
-    </div>
-
     <div class="ai-card">
       <div class="ai-ch"><div class="ai-pulse"></div><div class="ai-ttl">Leaderboard</div></div>
       <div class="ai-body" style="padding:0">
@@ -869,16 +869,30 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
       </div>
     </div>
 
-    <div class="ai-card">
-      <div class="ai-ch"><div class="ai-pulse"></div><div class="ai-ttl">Wearable &amp; biometric sync</div></div>
+    <div class="ai-card widget-full">
+      <div class="ai-ch">
+        <div class="ai-pulse" style="background:var(--text3);animation:none"></div>
+        <div class="ai-ttl">Wearables &amp; Music</div>
+        <span class="phase2-badge">Phase 2</span>
+      </div>
       <div class="ai-body">
-        <div class="wear-grid" style="margin-top:0">
-          <div class="wc"><div class="wc-src">Apple Watch</div><div class="wc-ico"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 10.5 4a6.5 6.5 0 0 0 9.5 10.5z"/></svg></div><div class="wc-val">7h 12m</div><div class="wc-key">Sleep</div><div class="wc-tr up">↑ +42min vs avg</div></div>
-          <div class="wc"><div class="wc-src">Whoop</div><div class="wc-ico"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg></div><div class="wc-val">72 ms</div><div class="wc-key">HRV</div><div class="wc-tr up">↑ Above baseline</div></div>
-          <div class="wc"><div class="wc-src">Apple Health</div><div class="wc-ico"><svg viewBox="0 0 24 24"><path d="M12 21c-4 0-7-2.5-7-6.5C5 10 8 8 8 4c3 1 5 4 4.5 7 2-.5 3-2 3-4 2 1.5 3.5 4 3.5 7 0 4-3.5 7-7 7z"/></svg></div><div class="wc-val">8,420</div><div class="wc-key">Steps</div><div class="wc-tr nu">→ On target</div></div>
-          <div class="wc"><div class="wc-src">Oura</div><div class="wc-ico"><svg viewBox="0 0 24 24"><path d="M13 3 4 14h6l-1 7 9-11h-6l1-7z"/></svg></div><div class="wc-val">84</div><div class="wc-key">Readiness</div><div class="wc-tr dn">↓ Rest today</div></div>
+        <div class="p2-note">Apple Watch, Whoop, Oura &amp; Garmin biometrics, plus Spotify/Apple Music auto-queue — synced automatically once Phase 2 ships. Preview below uses sample data.</div>
+        <div class="p2-split">
+          <div class="p2-col">
+            <div class="p2-col-lbl">Music</div>
+            <div class="mw-tracks" id="mw-tracks"></div>
+          </div>
+          <div class="p2-col">
+            <div class="p2-col-lbl">Biometrics</div>
+            <div class="wear-grid" style="margin-top:0">
+              <div class="wc"><div class="wc-src">Apple Watch</div><div class="wc-ico"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 10.5 4a6.5 6.5 0 0 0 9.5 10.5z"/></svg></div><div class="wc-val">7h 12m</div><div class="wc-key">Sleep</div><div class="wc-tr up">↑ +42min vs avg</div></div>
+              <div class="wc"><div class="wc-src">Whoop</div><div class="wc-ico"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg></div><div class="wc-val">72 ms</div><div class="wc-key">HRV</div><div class="wc-tr up">↑ Above baseline</div></div>
+              <div class="wc"><div class="wc-src">Apple Health</div><div class="wc-ico"><svg viewBox="0 0 24 24"><path d="M12 21c-4 0-7-2.5-7-6.5C5 10 8 8 8 4c3 1 5 4 4.5 7 2-.5 3-2 3-4 2 1.5 3.5 4 3.5 7 0 4-3.5 7-7 7z"/></svg></div><div class="wc-val">8,420</div><div class="wc-key">Steps</div><div class="wc-tr nu">→ On target</div></div>
+              <div class="wc"><div class="wc-src">Oura</div><div class="wc-ico"><svg viewBox="0 0 24 24"><path d="M13 3 4 14h6l-1 7 9-11h-6l1-7z"/></svg></div><div class="wc-val">84</div><div class="wc-key">Readiness</div><div class="wc-tr dn">↓ Rest today</div></div>
+            </div>
+          </div>
         </div>
-        <div style="margin-top:16px;font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase">Sample data · live sync coming in Phase 2</div>
+        <button class="mw-conn" style="margin-top:18px;cursor:pointer" onclick="alert('Wearable + music sync is coming in Phase 2 — you will be notified here when it ships.')">Notify me when it ships</button>
       </div>
     </div>
   </div>
@@ -1055,6 +1069,54 @@ function updateRing(){
 }
 
 const rw=document.getElementById('rules-wrap');
+
+// ── CUSTOM RULES PERSISTENCE (add/edit your own todo list) ──
+async function saveCustomRules(){
+  if(!currentUser) return;
+  const payload = RULES.map(r=>({ t:r.t, flag:!!r.flag }));
+  await sb.from('profiles').update({ rules: payload }).eq('id', currentUser.id);
+}
+
+function addRule(text){
+  const t = (text||'').trim().slice(0,140);
+  if(!t) return;
+  RULES.push({ t, done:false });
+  saveCustomRules();
+  buildRules();
+  updateRing();
+}
+
+function removeRule(i){
+  RULES.splice(i,1);
+  saveCustomRules();
+  buildRules();
+  updateRing();
+}
+
+function startEditRule(i, div){
+  const span = div.querySelector('.rtxt');
+  const current = RULES[i].t;
+  const input = document.createElement('input');
+  input.className = 'rtxt-input';
+  input.type = 'text';
+  input.value = current;
+  input.maxLength = 140;
+  span.replaceWith(input);
+  input.focus();
+  input.select();
+  const commit = ()=>{
+    const t = input.value.trim().slice(0,140);
+    RULES[i].t = t || current;
+    saveCustomRules();
+    buildRules();
+  };
+  input.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){ e.preventDefault(); commit(); }
+    if(e.key==='Escape'){ e.preventDefault(); buildRules(); }
+  });
+  input.addEventListener('blur', commit);
+}
+
 function buildRules(){
   rw.innerHTML='';
   RULES.forEach((r,i)=>{
@@ -1062,8 +1124,10 @@ function buildRules(){
     div.className='rrow'+(r.done?' ck':'');
     div.innerHTML=`<span class="rn">${String(i+1).padStart(2,'0')}</span>
       <span class="rbox">${r.done?'✓':''}</span>
-      <span class="rtxt">${r.t}</span>
-      ${r.flag&&!r.done?'<span class="rflag">RISK</span>':''}`;
+      <span class="rtxt">${escapeHtml(r.t)}</span>
+      ${r.flag&&!r.done?'<span class="rflag">RISK</span>':''}
+      <span class="redit" title="Edit">✎</span>
+      <span class="rdel" title="Remove">✕</span>`;
     div.style.cursor='pointer';
     div.onclick=()=>{
       r.done=!r.done;div.classList.toggle('ck',r.done);
@@ -1072,8 +1136,19 @@ function buildRules(){
       const f=div.querySelector('.rflag');if(f)f.style.display=r.done?'none':'';
       updateRing();
     };
+    div.querySelector('.redit').onclick=(e)=>{ e.stopPropagation(); startEditRule(i, div); };
+    div.querySelector('.rdel').onclick=(e)=>{ e.stopPropagation(); removeRule(i); };
     rw.appendChild(div);
   });
+
+  const addRow=document.createElement('div');
+  addRow.className='rrow radd';
+  addRow.innerHTML=`<span class="rn">+</span><span class="rbox"></span><input type="text" placeholder="Add a rule and hit Enter…" maxlength="140">`;
+  const addInput=addRow.querySelector('input');
+  addInput.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){ e.preventDefault(); addRule(addInput.value); }
+  });
+  rw.appendChild(addRow);
 }
 
 // ── TABS ──
@@ -1131,7 +1206,7 @@ function renderConf(){
   CS.forEach(r=>{
     const row=document.createElement('div');row.className='cr';row.style.cursor='pointer';
     row.innerHTML=`<span class="crb${r.done?' y':''}">${r.done?'✓':''}</span>
-      <span class="crtxt${r.done?' y':''}">${r.t.length>30?r.t.slice(0,30)+'…':r.t}</span>
+      <span class="crtxt${r.done?' y':''}">${escapeHtml(r.t.length>30?r.t.slice(0,30)+'…':r.t)}</span>
       ${r.flag&&!r.done?'<span class="cr-low">LOW</span>':''}`;
     const b=row.querySelector('.crb');
     row.onclick=()=>{
@@ -1326,15 +1401,17 @@ async function runAICoach(user){
 
   const rootName = RULES[rootIdx].t;
   const downstreamNames = downstream.map(j => RULES[j].t).join(', ') || 'no strongly linked rules yet';
+  const rootNameSafe = escapeHtml(rootName);
+  const downstreamNamesSafe = escapeHtml(downstreamNames);
 
   document.getElementById('ai-msg').innerHTML =
-    `<strong>${missedToday} rules missed today. Root cause: R${rootIdx+1} — ${rootName}.</strong> ` +
-    `Across your last ${logs.length} days, missing this rule correlates with ${downstream.length} other rule(s) failing on the same day (${downstreamNames}). Fix this one first.`;
+    `<strong>${missedToday} rules missed today. Root cause: R${rootIdx+1} — ${rootNameSafe}.</strong> ` +
+    `Across your last ${logs.length} days, missing this rule correlates with ${downstream.length} other rule(s) failing on the same day (${downstreamNamesSafe}). Fix this one first.`;
 
   document.getElementById('ai-insights').innerHTML = `
-    <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>${rootName} is your cascade trigger.</strong> Fails alongside ${downstream.length} other rule(s) across your last ${logs.length} logged days.</div></div>
-    <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>Downstream rules:</strong> ${downstreamNames}.</div></div>
-    <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>Tonight's fix:</strong> Protect "${rootName}" first — the rest tends to follow.</div></div>
+    <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>${rootNameSafe} is your cascade trigger.</strong> Fails alongside ${downstream.length} other rule(s) across your last ${logs.length} logged days.</div></div>
+    <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>Downstream rules:</strong> ${downstreamNamesSafe}.</div></div>
+    <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>Tonight's fix:</strong> Protect "${rootNameSafe}" first — the rest tends to follow.</div></div>
   `;
 
   return {
@@ -1494,7 +1571,7 @@ async function boot(){
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = '/'; return; }
 
-  const { data: profile } = await sb.from('profiles').select('username, reminders_enabled').eq('id', session.user.id).maybeSingle();
+  const { data: profile } = await sb.from('profiles').select('username, reminders_enabled, rules').eq('id', session.user.id).maybeSingle();
   if (!profile || !profile.username) { window.location.href = '/'; return; }
 
   window.__appUsername = profile.username;
@@ -1502,6 +1579,11 @@ async function boot(){
   document.getElementById('app-share-url').innerHTML = 'lckd-in.com/<b>' + profile.username + '</b>';
   document.getElementById('app-grid-link').href = 'https://lckd-in.com/u/' + profile.username;
   setRemindersToggle(profile.reminders_enabled !== false);
+
+  if (Array.isArray(profile.rules) && profile.rules.length) {
+    RULES.length = 0;
+    profile.rules.forEach(pr => RULES.push({ t: String(pr && pr.t || '').slice(0,140) || 'Untitled rule', done: false, flag: !!(pr && pr.flag) }));
+  }
 
   initDiscGrid();
   buildRules();
