@@ -719,10 +719,19 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 .app-layout{display:grid;grid-template-columns:1fr 420px;gap:40px;align-items:start}
 .app-col{display:flex;flex-direction:column;gap:28px}
 .app-loading{min-height:60vh;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.app-widgets{margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.widget-quote{position:relative;overflow:hidden;min-height:220px}
+.widget-quote .q-bg,.widget-quote .q-overlay{position:absolute;inset:0}
+.widget-quote .q-content{position:relative;z-index:1;padding:24px;text-align:center}
+.widget-quote .q-tag{font-size:8px;margin-bottom:16px}
+.widget-quote .q-text{font-family:var(--serif);font-style:italic;font-size:16px;line-height:1.45;color:#F2F0E6;margin-bottom:14px;min-height:64px;display:flex;align-items:center;justify-content:center}
+.widget-quote .q-author{font-size:9px;margin-bottom:16px}
+.widget-quote .q-controls{gap:10px}
 @media(max-width:1024px){
   .app-layout{grid-template-columns:1fr}
   .app-main{padding:90px 24px 80px}
   .app-nav-mid{display:none}
+  .app-widgets{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -844,6 +853,55 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 
       <div class="insights" id="ai-insights">
         <div class="ins"><div class="ins-dot"></div><div class="ins-txt">Sign in and log a few days to unlock your personalized pattern analysis.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-widgets">
+    <div class="ai-card widget-quote">
+      <div class="q-bg" id="q-bg"></div>
+      <div class="q-overlay"></div>
+      <div class="q-content">
+        <div class="q-tag">Daily fuel</div>
+        <div class="q-text" id="q-text"></div>
+        <div class="q-author" id="q-author"></div>
+        <div class="q-controls">
+          <button class="q-arrow" onclick="prevQ()" style="cursor:pointer">← Prev</button>
+          <div id="q-dots"></div>
+          <button class="q-arrow" onclick="nextQ()" style="cursor:pointer">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="music-widget">
+      <div class="mw-hd">
+        <div class="mw-icon">♫</div>
+        <div><div class="mw-ttl">Now Playing</div><div class="mw-sub">Spotify · Apple Music</div></div>
+        <button class="mw-conn" style="cursor:pointer" onclick="alert('Wearable + music sync is coming in Phase 2 — you will be notified here when it ships.')">Connect</button>
+      </div>
+      <div class="mw-tracks" id="mw-tracks"></div>
+      <div class="mw-ft"><div class="mw-ft-dot"></div>Auto-queued for: Workout → Rule 10</div>
+    </div>
+
+    <div class="ai-card">
+      <div class="ai-ch"><div class="ai-pulse"></div><div class="ai-ttl">Leaderboard</div></div>
+      <div class="ai-body" style="padding:0">
+        <div class="lb-list" id="lb-list" style="border:none;border-radius:0;box-shadow:none">
+          <div class="lb-loading">Loading leaderboard…</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ai-card">
+      <div class="ai-ch"><div class="ai-pulse"></div><div class="ai-ttl">Wearable &amp; biometric sync</div></div>
+      <div class="ai-body">
+        <div class="wear-grid" style="margin-top:0">
+          <div class="wc"><div class="wc-src">Apple Watch</div><div class="wc-ico"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 10.5 4a6.5 6.5 0 0 0 9.5 10.5z"/></svg></div><div class="wc-val">7h 12m</div><div class="wc-key">Sleep</div><div class="wc-tr up">↑ +42min vs avg</div></div>
+          <div class="wc"><div class="wc-src">Whoop</div><div class="wc-ico"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg></div><div class="wc-val">72 ms</div><div class="wc-key">HRV</div><div class="wc-tr up">↑ Above baseline</div></div>
+          <div class="wc"><div class="wc-src">Apple Health</div><div class="wc-ico"><svg viewBox="0 0 24 24"><path d="M12 21c-4 0-7-2.5-7-6.5C5 10 8 8 8 4c3 1 5 4 4.5 7 2-.5 3-2 3-4 2 1.5 3.5 4 3.5 7 0 4-3.5 7-7 7z"/></svg></div><div class="wc-val">8,420</div><div class="wc-key">Steps</div><div class="wc-tr nu">→ On target</div></div>
+          <div class="wc"><div class="wc-src">Oura</div><div class="wc-ico"><svg viewBox="0 0 24 24"><path d="M13 3 4 14h6l-1 7 9-11h-6l1-7z"/></svg></div><div class="wc-val">84</div><div class="wc-key">Readiness</div><div class="wc-tr dn">↓ Rest today</div></div>
+        </div>
+        <div style="margin-top:16px;font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase">Sample data · live sync coming in Phase 2</div>
       </div>
     </div>
   </div>
@@ -1241,6 +1299,111 @@ async function runAICoach(user){
     <div class="ins"><div class="ins-dot"></div><div class="ins-txt"><strong>Tonight's fix:</strong> Protect "${rootName}" first — the rest tends to follow.</div></div>
   `;
 }
+
+// ── DAILY FUEL QUOTES WIDGET ──
+const QUOTES=[
+  {q:"The man who moves a mountain begins by carrying away small stones.",a:"Confucius",bg:"linear-gradient(135deg,#0C0A1A 0%,#1A0E30 50%,#0C0A1A 100%)",img:"/assets/quote-bgs/q1-violet.jpg"},
+  {q:"We are what we repeatedly do. Excellence is not an act, but a habit.",a:"Aristotle",bg:"linear-gradient(135deg,#081200 0%,#0E2200 50%,#040804 100%)",img:"/assets/quote-bgs/q2-green.jpg"},
+  {q:"Discipline is the bridge between goals and accomplishment.",a:"Jim Rohn",bg:"linear-gradient(135deg,#150800 0%,#281400 50%,#0C0600 100%)",img:"/assets/quote-bgs/q3-amber.jpg"},
+  {q:"The successful warrior is the average man with laser-like focus.",a:"Bruce Lee",bg:"linear-gradient(135deg,#030812 0%,#061020 50%,#030812 100%)",img:"/assets/quote-bgs/q4-blue.jpg"},
+  {q:"Do not wait for the perfect moment. Take the moment and make it perfect.",a:"Unknown",bg:"linear-gradient(135deg,#120008 0%,#200010 50%,#0C0006 100%)",img:"/assets/quote-bgs/q5-magenta.jpg"},
+  {q:"Consistency over Perfection.",a:"The 120 S.I. Challenge",bg:"linear-gradient(135deg,#0A0C04 0%,#141A06 50%,#0A0C04 100%)",img:"/assets/quote-bgs/q6-lime.jpg"},
+  {q:"Amateurs sit and wait for inspiration, the rest of us just get up and go to work.",a:"Stephen King",bg:"linear-gradient(135deg,#020C10 0%,#04181E 50%,#020C10 100%)",img:"/assets/quote-bgs/q7-teal.jpg"},
+  {q:"Discipline equals freedom.",a:"Jocko Willink",bg:"linear-gradient(135deg,#140204 0%,#280408 50%,#140204 100%)",img:"/assets/quote-bgs/q8-crimson.jpg"},
+  {q:"Fall seven times, stand up eight.",a:"Japanese Proverb",bg:"linear-gradient(135deg,#120C00 0%,#241800 50%,#120C00 100%)",img:"/assets/quote-bgs/q9-gold.jpg"},
+  {q:"Motivation gets you going, but discipline keeps you growing.",a:"John C. Maxwell",bg:"linear-gradient(135deg,#0A0A10 0%,#161620 50%,#0A0A10 100%)",img:"/assets/quote-bgs/q10-slate.jpg"},
+  {q:"Show up. Do the work. Every single day.",a:"Unknown",bg:"linear-gradient(135deg,#140006 0%,#28000C 50%,#140006 100%)",img:"/assets/quote-bgs/q11-rose.jpg"},
+  {q:"What you do today can improve all your tomorrows.",a:"Ralph Marston",bg:"linear-gradient(135deg,#0C0E04 0%,#181C06 50%,#0C0E04 100%)",img:"/assets/quote-bgs/q12-olive.jpg"},
+];
+let qi=0,typeTimer=null;
+const qtxt=document.getElementById('q-text');
+const qauth=document.getElementById('q-author');
+const qbg=document.getElementById('q-bg');
+const qdots=document.getElementById('q-dots');
+
+function typeText(str,el,cb){
+  clearTimeout(typeTimer);
+  el.textContent='"';
+  let i=0;
+  function next(){
+    if(i<str.length){el.textContent='"'+str.slice(0,++i)+(i<str.length?'|':'"');typeTimer=setTimeout(next,i<str.length?28:0)}
+    else{el.textContent=`"${str}"`;if(cb)cb()}
+  }
+  next();
+}
+
+function renderQ(){
+  const q=QUOTES[qi];
+  qbg.style.opacity=0;
+  setTimeout(()=>{
+    qbg.style.background=q.img?`url('${q.img}') center/cover no-repeat, ${q.bg}`:q.bg;
+    qbg.style.opacity=1;
+  },350);
+  qauth.style.opacity=0;
+  typeText(q.q,qtxt,()=>{qauth.textContent=`— ${q.a}`;qauth.style.opacity=1;qauth.style.transition='opacity .4s'});
+  document.querySelectorAll('.q-dot').forEach((d,i)=>d.classList.toggle('on',i===qi));
+}
+function nextQ(){qi=(qi+1)%QUOTES.length;renderQ()}
+function prevQ(){qi=(qi-1+QUOTES.length)%QUOTES.length;renderQ()}
+QUOTES.forEach((_,i)=>{const b=document.createElement('button');b.className='q-dot'+(i===0?' on':'');b.style.cursor='pointer';b.onclick=()=>{qi=i;renderQ()};qdots.appendChild(b)});
+renderQ();
+setInterval(nextQ,7000);
+
+// ── MUSIC WIDGET ──
+const TRACKS=[
+  {n:'Pursuit of Happiness',a:'Steve Aoki',rule:'Workout',playing:true},
+  {n:'Eye of the Tiger',a:'Survivor',rule:'Deep Work'},
+  {n:'Weightless',a:'Marconi Union',rule:'Meditation'},
+  {n:'Lose Yourself',a:'Eminem',rule:'Morning'},
+  {n:'Breathe',a:'Pink Floyd',rule:'Evening Walk'},
+];
+const mt=document.getElementById('mw-tracks');
+TRACKS.forEach(t=>{
+  const div=document.createElement('div');
+  div.className='mw-track'+(t.playing?' playing':'');
+  div.style.cursor='pointer';
+  div.innerHTML=`<div class="mw-art">🎵</div>
+    <div class="mw-info"><div class="mw-tn">${t.n}</div><div class="mw-ta">${t.a} · ${t.rule}</div></div>
+    <div class="mw-bars"><div class="mb"></div><div class="mb"></div><div class="mb"></div></div>`;
+  div.onclick=()=>{document.querySelectorAll('.mw-track').forEach(x=>x.classList.remove('playing'));div.classList.add('playing')};
+  mt.appendChild(div);
+});
+
+// ── LEADERBOARD · real public data via get_leaderboard() RPC ──
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+const LB_MIN_ROWS = 6; // pad with example entries so the board doesn't look empty pre-launch
+const LB_EXAMPLES = [
+  {username:'kabir.d',    current_day:52, perfect_days:41, avg_score:88},
+  {username:'zara.exec',  current_day:38, perfect_days:29, avg_score:82},
+  {username:'the.grindset', current_day:24, perfect_days:17, avg_score:75},
+  {username:'noah_t',     current_day:19, perfect_days:12, avg_score:71},
+  {username:'meera.k',    current_day:9,  perfect_days:6,  avg_score:68},
+];
+async function loadLeaderboard(){
+  const el = document.getElementById('lb-list');
+  if (!el) return;
+  try{
+    const { data, error } = await sb.rpc('get_leaderboard');
+    if (error) throw error;
+    const real = data || [];
+    const combined = [...real, ...LB_EXAMPLES.slice(0, Math.max(0, LB_MIN_ROWS - real.length))];
+
+    el.innerHTML = combined.map((r,i)=>`
+      <div class="lb-row show${i<3?' top':''}">
+        <div class="lb-rank">${i+1}</div>
+        <div class="lb-user">${escapeHtml(r.username)}</div>
+        <div class="lb-stat">Day <b>${r.current_day}</b>/120 · <b>${r.perfect_days}</b> perfect · <b>${r.avg_score}%</b> avg</div>
+      </div>`).join('');
+  }catch(err){
+    el.innerHTML = '<div class="lb-empty">Leaderboard unavailable right now.</div>';
+    console.error('Leaderboard load failed:', err);
+  }
+}
+loadLeaderboard();
 
 // ── BOOT: auth guard, then wire up the real dashboard ──
 async function boot(){
