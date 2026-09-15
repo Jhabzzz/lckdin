@@ -1,5 +1,6 @@
 {
   "rewrites": [
-    { "source": "/u/:username", "destination": "/u.html" }
+    { "source": "/u/:username", "destination": "/u.html" },
+    { "source": "/app", "destination": "/app.html" }
   ]
 }

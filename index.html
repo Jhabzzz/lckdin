@@ -1341,8 +1341,7 @@ function showAuthMsg(text, type) {
 }
 function enterApp() {
   closeAuthModal();
-  const dash = document.getElementById('dashboard');
-  if (dash) setTimeout(() => dash.scrollIntoView({ behavior: 'smooth' }), 300);
+  window.location.href = '/app';
 }
 
 function setAuthMode(mode) {
@@ -1463,9 +1462,10 @@ sb.auth.onAuthStateChange(async (event, session) => {
     authBtn.onclick = handleSignOut;
     currentUser = session.user;
     await ensureProfile(session.user);
-    await hydrateProtocol(session.user);
-    await loadTodayLog(session.user);
-    await runAICoach(session.user);
+    const { data: profile } = await sb.from('profiles').select('username').eq('id', session.user.id).maybeSingle();
+    if (profile && profile.username) {
+      window.location.href = '/app';
+    }
   } else {
     authBtn.textContent = 'Sign in';
     authBtn.onclick = handleAuthClick;
