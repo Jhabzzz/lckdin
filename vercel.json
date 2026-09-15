@@ -5,6 +5,24 @@
   ],
   "redirects": [
     {
+      "source": "/",
+      "has": [{ "type": "host", "value": "lckdin.vercel.app" }],
+      "destination": "https://www.lckd-in.com/",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "lckdin-jhabyy.vercel.app" }],
+      "destination": "https://www.lckd-in.com/",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "lckdin-git-main-jhabyy.vercel.app" }],
+      "destination": "https://www.lckd-in.com/",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "lckdin.vercel.app" }],
       "destination": "https://www.lckd-in.com/:path*",
