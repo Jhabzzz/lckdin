@@ -536,6 +536,12 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .plen-pill{font-family:var(--mono);font-size:12px;font-weight:600;padding:9px 0;flex:1;border-radius:var(--r-sm);border:1px solid var(--glass-brd2);background:var(--glass);color:var(--text2);cursor:pointer;transition:all .2s var(--ease)}
 .plen-pill:hover{border-color:var(--line3);color:var(--text)}
 .plen-pill.on{background:var(--grad);border-color:transparent;color:var(--on-accent);font-weight:700;box-shadow:var(--shadow-glow)}
+.plen-custom-row{display:flex;gap:8px;margin-top:8px}
+.plen-custom-row input{flex:1;min-width:0;background:var(--bg3);border:1px solid var(--glass-brd2);border-radius:var(--r-sm);padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;transition:border-color .2s,box-shadow .2s}
+.plen-custom-row input:focus{border-color:rgba(244,106,56,.4);box-shadow:0 0 0 3px rgba(244,106,56,.08)}
+.plen-custom-row input::placeholder{color:var(--text3)}
+.plen-custom-row button{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.04em;padding:9px 18px;border-radius:var(--r-sm);border:none;background:var(--glass2);color:var(--text2);cursor:pointer;transition:all .2s var(--ease);white-space:nowrap}
+.plen-custom-row button:hover{background:var(--grad);color:var(--on-accent)}
 .rrow:hover .rlabel-add{opacity:1}
 .redit,.rdel{flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:11px;border-radius:4px;opacity:0;transition:opacity .15s,color .15s,background .15s;cursor:pointer}
 .rrow:hover .redit,.rrow:hover .rdel{opacity:1}
@@ -837,27 +843,16 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 
       <div class="ai-card">
         <div class="ai-ch"><div class="ai-pulse"></div><div class="ai-ttl">Settings</div></div>
-        <div class="ai-body" style="display:flex;flex-direction:column;gap:20px">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
-            <div>
-              <div style="font-size:13px;font-weight:600">Reminder emails</div>
-              <div style="font-size:12px;color:var(--text3);margin-top:2px">One email a day if you haven't logged yet.</div>
-            </div>
-            <label style="position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0;cursor:pointer">
-              <input type="checkbox" id="reminders-toggle" checked onchange="toggleReminders(this.checked)" style="opacity:0;width:0;height:0">
-              <span id="reminders-toggle-track" style="position:absolute;inset:0;background:var(--lime);border-radius:24px;transition:background .2s"></span>
-              <span id="reminders-toggle-knob" style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s;transform:translateX(18px)"></span>
-            </label>
-          </div>
+        <div class="ai-body" style="display:flex;align-items:center;justify-content:space-between;gap:16px">
           <div>
-            <div style="font-size:13px;font-weight:600">Protocol length</div>
-            <div style="font-size:12px;color:var(--text3);margin-top:2px;margin-bottom:12px">How many days is your run?</div>
-            <div class="plen-row" id="plen-row">
-              <button class="plen-pill" data-days="30" onclick="setProtocolLength(30)" type="button">30</button>
-              <button class="plen-pill" data-days="75" onclick="setProtocolLength(75)" type="button">75</button>
-              <button class="plen-pill" data-days="120" onclick="setProtocolLength(120)" type="button">120</button>
-            </div>
+            <div style="font-size:13px;font-weight:600">Reminder emails</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px">One email a day if you haven't logged yet.</div>
           </div>
+          <label style="position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0;cursor:pointer">
+            <input type="checkbox" id="reminders-toggle" checked onchange="toggleReminders(this.checked)" style="opacity:0;width:0;height:0">
+            <span id="reminders-toggle-track" style="position:absolute;inset:0;background:var(--lime);border-radius:24px;transition:background .2s"></span>
+            <span id="reminders-toggle-knob" style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s;transform:translateX(18px)"></span>
+          </label>
         </div>
       </div>
     </div>
@@ -883,6 +878,20 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
             <button class="share-copy" id="copy-btn" onclick="copyLink()" style="cursor:pointer">Copy link</button>
           </div>
           <div id="pivot-count" style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-top:14px">0 / 3 pivots used</div>
+
+          <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--line)">
+            <div style="font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:10px">Protocol length</div>
+            <div class="plen-row" id="plen-row">
+              <button class="plen-pill" data-days="7" onclick="setProtocolLength(7)" type="button">7</button>
+              <button class="plen-pill" data-days="30" onclick="setProtocolLength(30)" type="button">30</button>
+              <button class="plen-pill" data-days="75" onclick="setProtocolLength(75)" type="button">75</button>
+              <button class="plen-pill" data-days="120" onclick="setProtocolLength(120)" type="button">120</button>
+            </div>
+            <div class="plen-custom-row">
+              <input type="number" id="plen-custom-input" placeholder="Or a custom number of days…" min="1" max="999">
+              <button onclick="applyCustomProtocolLength()" type="button">Set</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1135,6 +1144,17 @@ async function setProtocolLength(days){
   updatePlenPills();
   await rebuildDiscGrid();
 }
+
+function applyCustomProtocolLength(){
+  const input = document.getElementById('plen-custom-input');
+  const days = parseInt(input.value, 10);
+  if (!days || days < 1 || days > 999) { alert('Enter a number of days between 1 and 999.'); return; }
+  input.value = '';
+  setProtocolLength(days);
+}
+document.getElementById('plen-custom-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); applyCustomProtocolLength(); }
+});
 
 async function rebuildDiscGrid(){
   document.getElementById('disc-grid').innerHTML = '';
