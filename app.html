@@ -532,6 +532,10 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .rflag.c-important{border-color:var(--amber);color:var(--amber)}
 .rflag.c-top{border:none;background:var(--grad);color:var(--on-accent);font-weight:700}
 .rlabel-add{flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:10px;border-radius:4px;opacity:0;transition:opacity .15s;cursor:pointer}
+.plen-row{display:flex;gap:8px}
+.plen-pill{font-family:var(--mono);font-size:12px;font-weight:600;padding:9px 0;flex:1;border-radius:var(--r-sm);border:1px solid var(--glass-brd2);background:var(--glass);color:var(--text2);cursor:pointer;transition:all .2s var(--ease)}
+.plen-pill:hover{border-color:var(--line3);color:var(--text)}
+.plen-pill.on{background:var(--grad);border-color:transparent;color:var(--on-accent);font-weight:700;box-shadow:var(--shadow-glow)}
 .rrow:hover .rlabel-add{opacity:1}
 .redit,.rdel{flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:11px;border-radius:4px;opacity:0;transition:opacity .15s,color .15s,background .15s;cursor:pointer}
 .rrow:hover .redit,.rrow:hover .rdel{opacity:1}
@@ -833,16 +837,27 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 
       <div class="ai-card">
         <div class="ai-ch"><div class="ai-pulse"></div><div class="ai-ttl">Settings</div></div>
-        <div class="ai-body" style="display:flex;align-items:center;justify-content:space-between;gap:16px">
-          <div>
-            <div style="font-size:13px;font-weight:600">Reminder emails</div>
-            <div style="font-size:12px;color:var(--text3);margin-top:2px">One email a day if you haven't logged yet.</div>
+        <div class="ai-body" style="display:flex;flex-direction:column;gap:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+            <div>
+              <div style="font-size:13px;font-weight:600">Reminder emails</div>
+              <div style="font-size:12px;color:var(--text3);margin-top:2px">One email a day if you haven't logged yet.</div>
+            </div>
+            <label style="position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0;cursor:pointer">
+              <input type="checkbox" id="reminders-toggle" checked onchange="toggleReminders(this.checked)" style="opacity:0;width:0;height:0">
+              <span id="reminders-toggle-track" style="position:absolute;inset:0;background:var(--lime);border-radius:24px;transition:background .2s"></span>
+              <span id="reminders-toggle-knob" style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s;transform:translateX(18px)"></span>
+            </label>
           </div>
-          <label style="position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0;cursor:pointer">
-            <input type="checkbox" id="reminders-toggle" checked onchange="toggleReminders(this.checked)" style="opacity:0;width:0;height:0">
-            <span id="reminders-toggle-track" style="position:absolute;inset:0;background:var(--lime);border-radius:24px;transition:background .2s"></span>
-            <span id="reminders-toggle-knob" style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s;transform:translateX(18px)"></span>
-          </label>
+          <div>
+            <div style="font-size:13px;font-weight:600">Protocol length</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px;margin-bottom:12px">How many days is your run?</div>
+            <div class="plen-row" id="plen-row">
+              <button class="plen-pill" data-days="30" onclick="setProtocolLength(30)" type="button">30</button>
+              <button class="plen-pill" data-days="75" onclick="setProtocolLength(75)" type="button">75</button>
+              <button class="plen-pill" data-days="120" onclick="setProtocolLength(120)" type="button">120</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1099,6 +1114,34 @@ async function toggleReminders(on){
     setRemindersToggle(!on);
     alert('Could not save that setting — try again.');
   }
+}
+
+// ── PROTOCOL LENGTH (30/75/120-day switch) ──
+function updatePlenPills(){
+  document.querySelectorAll('.plen-pill').forEach(b=>{
+    b.classList.toggle('on', parseInt(b.dataset.days,10) === protocolState.totalDays);
+  });
+}
+
+async function setProtocolLength(days){
+  if (!currentUser || days === protocolState.totalDays) return;
+  if (protocolState.currentDay > days) {
+    const ok = confirm(`You're already on day ${protocolState.currentDay} — past a ${days}-day protocol. Your history is kept either way, but the grid will show as complete. Switch anyway?`);
+    if (!ok) return;
+  }
+  const { error } = await sb.from('profiles').update({ total_days: days }).eq('id', currentUser.id);
+  if (error) { alert('Could not update protocol length — try again.'); return; }
+  protocolState.totalDays = days;
+  updatePlenPills();
+  await rebuildDiscGrid();
+}
+
+async function rebuildDiscGrid(){
+  document.getElementById('disc-grid').innerHTML = '';
+  dcEls.length = 0;
+  initDiscGrid();
+  await hydrateProtocol(currentUser);
+  updateRingDisplay();
 }
 
 // ── EXPORT RULES AS RECURRING REMINDERS/TASKS (.ics · VTODO) ──
@@ -1768,7 +1811,7 @@ async function loadLeaderboard(){
       <div class="lb-row show${i<3?' top':''}${i===0?' first':''}">
         <div class="lb-rank">${i===0?'<span class="lb-crown">👑</span>':''}${i+1}</div>
         <div class="lb-user">${escapeHtml(r.username)}</div>
-        <div class="lb-stat">Day <b>${r.current_day}</b>/120 · <b>${r.perfect_days}</b> perfect · <b>${r.avg_score}%</b> avg</div>
+        <div class="lb-stat">Day <b>${r.current_day}</b>/${r.total_days || 120} · <b>${r.perfect_days}</b> perfect · <b>${r.avg_score}%</b> avg</div>
       </div>`).join('');
   }catch(err){
     el.innerHTML = '<div class="lb-empty">Leaderboard unavailable right now.</div>';
@@ -1784,7 +1827,7 @@ async function boot(){
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = '/'; return; }
 
-  const { data: profile } = await sb.from('profiles').select('username, reminders_enabled, rules').eq('id', session.user.id).maybeSingle();
+  const { data: profile } = await sb.from('profiles').select('username, reminders_enabled, rules, total_days').eq('id', session.user.id).maybeSingle();
   if (!profile || !profile.username) { window.location.href = '/'; return; }
 
   window.__appUsername = profile.username;
@@ -1792,6 +1835,8 @@ async function boot(){
   document.getElementById('app-share-url').innerHTML = 'lckd-in.com/<b>' + profile.username + '</b>';
   document.getElementById('app-grid-link').href = 'https://lckd-in.com/u/' + profile.username;
   setRemindersToggle(profile.reminders_enabled !== false);
+  protocolState.totalDays = profile.total_days || 120;
+  updatePlenPills();
 
   if (Array.isArray(profile.rules) && profile.rules.length) {
     RULES.length = 0;

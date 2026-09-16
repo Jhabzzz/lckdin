@@ -57,8 +57,6 @@ const SUPABASE_URL = 'https://qtlhpaqsmbyneivdsiei.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_uAVtjygNy4z2A1_9YJ3-8w_llPXXonE';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const TOTAL_DAYS = 120;
-
 function scoreToTier(score) {
   if (score === 0) return 0;
   if (score < 40) return 1;
@@ -100,6 +98,7 @@ async function renderPublicGrid() {
   }
 
   const { data: logs } = await sb.rpc('get_public_grid_logs', { p_user_id: profile.id });
+  const totalDays = profile.total_days || 120;
 
   const logsByDay = {};
   (logs || []).forEach(l => { logsByDay[l.day_number] = l; });
@@ -108,7 +107,7 @@ async function renderPublicGrid() {
   const currentDay = loggedDays.length ? Math.max(...loggedDays) : 1;
 
   let gridHtml = '';
-  for (let day = 1; day <= TOTAL_DAYS; day++) {
+  for (let day = 1; day <= totalDays; day++) {
     const log = logsByDay[day];
     let cls = 'dc';
     let title = `Day ${day}`;
@@ -138,7 +137,7 @@ async function renderPublicGrid() {
 
   showState(`
     <div class="prof-name">@${escapeHtml(profile.username)}</div>
-    <div class="prof-sub">Day ${currentDay} / ${TOTAL_DAYS}</div>
+    <div class="prof-sub">Day ${currentDay} / ${totalDays}</div>
     <div class="disc-grid">${gridHtml}</div>
     <div class="g-legend">
       <span class="gl">Miss</span>
