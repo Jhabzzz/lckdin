@@ -267,6 +267,23 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .auth-switch button{background:none;border:none;color:var(--lime);cursor:none;font-weight:600;font-family:var(--sans);font-size:13px;padding:0}
 .auth-switch button:hover{text-decoration:underline}
 @media(max-width:460px){.auth-modal{padding:28px 22px}}
+.dd-overlay{position:fixed;inset:0;z-index:3000;background:rgba(10,10,10,.72);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
+.dd-overlay.on{display:flex}
+.dd-modal{width:100%;max-width:420px;max-height:80vh;overflow-y:auto;background:var(--bg2);border:1px solid var(--glass-brd2);border-radius:var(--r-lg);padding:32px 28px;position:relative;box-shadow:var(--shadow-card);animation:panelIn .4s var(--ease)}
+.dd-close{position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:50%;border:1px solid var(--glass-brd);background:var(--glass);color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:13px}
+.dd-close:hover{color:var(--text);border-color:var(--line3)}
+.dd-ttl{font-family:var(--sans);font-weight:700;font-size:20px;letter-spacing:-.02em;margin-bottom:4px;padding-right:30px}
+.dd-sub{font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:20px}
+.dd-rules{border:1px solid var(--glass-brd);border-radius:var(--r-sm);overflow:hidden}
+.dd-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--hairline);font-size:12px}
+.dd-row:last-child{border-bottom:none}
+.dd-box{width:15px;height:15px;border:1px solid var(--glass-brd2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:transparent;border-radius:4px}
+.dd-row.y .dd-box{background:var(--grad);border-color:transparent;color:var(--on-accent)}
+.dd-txt{flex:1;color:var(--text2)}
+.dd-row.y .dd-txt{color:var(--text3);text-decoration:line-through;text-decoration-color:var(--line2)}
+.dd-empty{font-size:13px;color:var(--text3);text-align:center;padding:24px 0}
+.dd-example-tag{display:inline-block;margin-bottom:14px;font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--line2);border-radius:20px;color:var(--text3)}
+@media(max-width:460px){.dd-modal{padding:28px 22px}}
 .hb-v{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--text);line-height:1}
 .hb-k{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-top:4px}
 /* scroll hint */
@@ -819,6 +836,16 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
     <div class="auth-msg" id="auth-msg"></div>
 
     <div class="auth-switch" id="auth-switch">New here? <button type="button" onclick="setAuthMode('signup')">Create an account</button></div>
+  </div>
+</div>
+
+<div class="dd-overlay" id="dd-overlay" onclick="if(event.target===this) closeDayDetail()">
+  <div class="dd-modal">
+    <button class="dd-close" onclick="closeDayDetail()" type="button">✕</button>
+    <span class="dd-example-tag">Example</span>
+    <div class="dd-ttl" id="dd-ttl">Day —</div>
+    <div class="dd-sub" id="dd-sub"></div>
+    <div class="dd-rules" id="dd-rules"></div>
   </div>
 </div>
 
@@ -2001,7 +2028,9 @@ G.forEach((d,i)=>{
   if(d.tier>0)cls+=` v${d.tier}`;
   c.className=cls;
   if(d.future)c.style.setProperty('--fop',Math.max(.14,.4-i*.0022).toFixed(3));
-  c.title=`Day ${i+1}${d.today?' (today — 70%)':d.future?' — upcoming':''}`;
+  c.title=`Day ${i+1}${d.today?' (today — 70%)':' — upcoming'} — click for details`;
+  c.style.cursor='pointer';
+  c.onclick=()=>openDemoDayDetail(i+1,d);
   dg.appendChild(c);
   dcEls.push(c);
 });
@@ -2013,6 +2042,29 @@ const gridObs=new IntersectionObserver(es=>{
   }
 },{threshold:.1});
 gridObs.observe(dg);
+
+// ── DISC GRID DEMO DETAIL (click any block — illustrative example, not real data) ──
+function openDemoDayDetail(dayNumber,d){
+  document.getElementById('dd-overlay').classList.add('on');
+  document.getElementById('dd-ttl').textContent=`Day ${dayNumber}`;
+  const sub=document.getElementById('dd-sub');
+  const body=document.getElementById('dd-rules');
+  if(d.today){
+    const score=Math.round(countDone()/RULES.length*100);
+    sub.textContent=`${score}% · same checklist as the demo above — toggle it and reopen`;
+    body.innerHTML=RULES.map(r=>`
+      <div class="dd-row${r.done?' y':''}">
+        <span class="dd-box">${r.done?'✓':''}</span>
+        <span class="dd-txt">${escapeHtml(r.t)}</span>
+      </div>`).join('');
+  } else {
+    sub.textContent='Upcoming — not reached yet.';
+    body.innerHTML=`<div class="dd-empty">This is what day ${dayNumber} looks like once you get there — a full rule-by-rule breakdown, always one click away on your real grid.</div>`;
+  }
+}
+function closeDayDetail(){
+  document.getElementById('dd-overlay').classList.remove('on');
+}
 
 // ── COPY LINK ──
 function copyLink(){
