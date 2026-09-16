@@ -749,7 +749,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
             </div>
           </div>
           <div class="ph-prog" id="ph-prog"></div>
-          <div class="ph-score" id="ph-score">Score: 0 / 20 · 0%</div>
+          <div class="ph-score" id="ph-score">Score: —</div>
           <div class="tab-row" style="margin-top:24px">
             <button class="tab on" id="tab-day" onclick="switchTab('day')" style="cursor:pointer">Day view</button>
             <button class="tab" id="tab-snap" onclick="switchTab('snap')" style="cursor:pointer">Snap &amp; track</button>
@@ -761,7 +761,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
           <div class="spnl" id="panel-snap">
             <div style="padding:16px 0 0">
               <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px">Snap &amp; Track · AI Vision</div>
-              <div style="font-size:12px;font-weight:300;color:var(--text2);line-height:1.7">Upload your handwritten log. AI reads checkmarks and maps them to your 20 rules.</div>
+              <div style="font-size:12px;font-weight:300;color:var(--text2);line-height:1.7">Upload your handwritten log. AI reads checkmarks and maps them to your rules.</div>
             </div>
             <input type="file" id="snap-file" accept="image/*" capture="environment" style="display:none" onchange="handleSnapUpload(this.files[0])">
             <div class="snap-drop" id="snap-drop" onclick="document.getElementById('snap-file').click()" style="cursor:pointer"><p>↑ &nbsp;Drop image or tap to browse</p><small>JPG · PNG · HEIC · screenshot</small></div>
@@ -1583,6 +1583,10 @@ async function boot(){
   if (Array.isArray(profile.rules) && profile.rules.length) {
     RULES.length = 0;
     profile.rules.forEach(pr => RULES.push({ t: String(pr && pr.t || '').slice(0,140) || 'Untitled rule', done: false, flag: !!(pr && pr.flag) }));
+  } else {
+    // Default rule set ships with mixed done:true/false demo values baked in —
+    // reset to a blank slate; loadTodayLog() below overlays real saved state if today's already logged.
+    RULES.forEach(r => { r.done = false; });
   }
 
   initDiscGrid();
