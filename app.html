@@ -1210,6 +1210,14 @@ function updateRing(){
   saveTodayLog();
 }
 
+// Called from rule-list management (add/remove/rename a rule) — saves the
+// updated score but never interrupts with the pivot prompt. Editing your
+// rule set isn't "missing today," even if the score happens to read 0%.
+function updateRingSilent(){
+  updateRingDisplay();
+  saveTodayLog({ skipPivotOffer: true });
+}
+
 const rw=document.getElementById('rules-wrap');
 
 // ── CUSTOM RULES PERSISTENCE (add/edit your own todo list) ──
@@ -1265,14 +1273,14 @@ function addRule(text){
   RULES.push({ t, done:false });
   saveCustomRules();
   buildRules();
-  updateRing();
+  updateRingSilent();
 }
 
 function removeRule(i){
   RULES.splice(i,1);
   saveCustomRules();
   buildRules();
-  updateRing();
+  updateRingSilent();
 }
 
 function startEditRule(i, div){
@@ -1513,7 +1521,8 @@ async function loadTodayLog(user) {
   }
 }
 
-async function saveTodayLog() {
+async function saveTodayLog(opts) {
+  opts = opts || {};
   if (!currentUser) return;
 
   const score = Math.round(countDone() / RULES.length * 100);
@@ -1531,7 +1540,7 @@ async function saveTodayLog() {
 
   if (error) { console.error('Save failed:', error); return; }
 
-  if (score === 0 && protocolState.pivotsUsed < protocolState.pivotsMax) {
+  if (!opts.skipPivotOffer && score === 0 && protocolState.pivotsUsed < protocolState.pivotsMax) {
     await offerPivot();
   }
 
