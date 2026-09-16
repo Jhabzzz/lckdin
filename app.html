@@ -254,6 +254,22 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .auth-switch button{background:none;border:none;color:var(--lime);cursor:none;font-weight:600;font-family:var(--sans);font-size:13px;padding:0}
 .auth-switch button:hover{text-decoration:underline}
 @media(max-width:460px){.auth-modal{padding:28px 22px}}
+.dd-overlay{position:fixed;inset:0;z-index:3000;background:rgba(10,10,10,.72);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
+.dd-overlay.on{display:flex}
+.dd-modal{width:100%;max-width:420px;max-height:80vh;overflow-y:auto;background:var(--bg2);border:1px solid var(--glass-brd2);border-radius:var(--r-lg);padding:32px 28px;position:relative;box-shadow:var(--shadow-card);animation:panelIn .4s var(--ease)}
+.dd-close{position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:50%;border:1px solid var(--glass-brd);background:var(--glass);color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:13px}
+.dd-close:hover{color:var(--text);border-color:var(--line3)}
+.dd-ttl{font-family:var(--sans);font-weight:700;font-size:20px;letter-spacing:-.02em;margin-bottom:4px;padding-right:30px}
+.dd-sub{font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:20px}
+.dd-rules{border:1px solid var(--glass-brd);border-radius:var(--r-sm);overflow:hidden}
+.dd-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--hairline);font-size:12px}
+.dd-row:last-child{border-bottom:none}
+.dd-box{width:15px;height:15px;border:1px solid var(--glass-brd2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:transparent;border-radius:4px}
+.dd-row.y .dd-box{background:var(--grad);border-color:transparent;color:var(--on-accent)}
+.dd-txt{flex:1;color:var(--text2)}
+.dd-row.y .dd-txt{color:var(--text3);text-decoration:line-through;text-decoration-color:var(--line2)}
+.dd-empty{font-size:13px;color:var(--text3);text-align:center;padding:24px 0}
+@media(max-width:460px){.dd-modal{padding:28px 22px}}
 .hb-v{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--text);line-height:1}
 .hb-k{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-top:4px}
 /* scroll hint */
@@ -412,6 +428,8 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .lb-row:hover{background:var(--glass2)}
 .lb-rank{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text3);width:26px;flex-shrink:0}
 .lb-row.top .lb-rank{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.lb-row.first .lb-rank{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.lb-crown{font-size:11px;line-height:1;-webkit-text-fill-color:initial}
 .lb-user{flex:1;font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lb-stat{font-family:var(--mono);font-size:10px;color:var(--text3);text-align:right;letter-spacing:.02em;white-space:nowrap}
 .lb-stat b{color:var(--text);font-weight:600}
@@ -466,8 +484,8 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .ring-s{font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:1px}
 .ph-prog{display:flex;gap:2px;margin-bottom:7px}
 .ps{height:2px;flex:1;background:var(--bg);border-radius:0}
-.ps.d{background:rgba(242,240,230,.5)}
-.ps.c{background:rgba(242,240,230,.18)}
+.ps.d{background:var(--text3)}
+.ps.c{background:var(--line3)}
 .ph-score{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase}
 .rw-wrap{max-height:300px;overflow-y:auto}
 .rw-wrap::-webkit-scrollbar{width:1px}
@@ -478,9 +496,11 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .rn{font-family:var(--mono);font-size:8px;color:var(--text3);width:15px;flex-shrink:0}
 .rbox{width:15px;height:15px;border:1px solid var(--glass-brd2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:transparent;transition:all .2s var(--ease);border-radius:4px}
 .rrow.ck .rbox{background:var(--grad);border-color:transparent;color:var(--on-accent)}
-.rtxt{font-size:12px;color:rgba(242,240,230,.5);flex:1;line-height:1.3;transition:color .15s}
+.rtxt{font-size:12px;color:var(--text2);flex:1;line-height:1.3;transition:color .15s}
 .rrow.ck .rtxt{color:var(--text3);text-decoration:line-through;text-decoration-color:var(--line2)}
-.rflag{font-family:var(--mono);font-size:7px;padding:2px 5px;border:1px solid #401818;color:#904040;flex-shrink:0}
+.rflag{font-family:var(--mono);font-size:7px;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border:1px solid var(--error);color:var(--error);flex-shrink:0;cursor:pointer;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rlabel-add{flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:10px;border-radius:4px;opacity:0;transition:opacity .15s;cursor:pointer}
+.rrow:hover .rlabel-add{opacity:1}
 .redit,.rdel{flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:11px;border-radius:4px;opacity:0;transition:opacity .15s,color .15s,background .15s;cursor:pointer}
 .rrow:hover .redit,.rrow:hover .rdel{opacity:1}
 .redit:hover{color:var(--lime);background:var(--glass)}
@@ -511,9 +531,9 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .cr:last-child{border-bottom:none}
 .crb{width:13px;height:13px;border:1px solid var(--glass-brd2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;color:transparent;border-radius:4px;transition:all .2s var(--ease)}
 .crb.y{background:var(--grad);border-color:transparent;color:var(--on-accent)}
-.crtxt{font-size:11px;flex:1;line-height:1.3;color:rgba(242,240,230,.5)}
-.crtxt.y{color:rgba(242,240,230,.8)}
-.cr-low{font-family:var(--mono);font-size:7px;padding:2px 5px;border:1px solid #401818;color:#904040;flex-shrink:0}
+.crtxt{font-size:11px;flex:1;line-height:1.3;color:var(--text2)}
+.crtxt.y{color:var(--text)}
+.cr-low{font-family:var(--mono);font-size:7px;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border:1px solid var(--error);color:var(--error);flex-shrink:0;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cbtn{width:100%;background:var(--text);background-size:160% 160%;background-position:0% 50%;color:var(--bg);border:none;border-radius:var(--r-xs);padding:12px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:none;font-weight:700;transition:box-shadow .3s var(--ease);margin-bottom:6px;position:relative;overflow:hidden}
 .cbtn:hover{box-shadow:var(--shadow-glow)}
 .cbtn span{position:relative;z-index:1}
@@ -529,7 +549,7 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .mw-track:last-child{border-bottom:none}
 .mw-art{width:34px;height:34px;border-radius:3px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
 .mw-info{flex:1;min-width:0}
-.mw-tn{font-size:12px;color:rgba(242,240,230,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;transition:color .15s}
+.mw-tn{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;transition:color .15s}
 .mw-track.playing .mw-tn{color:var(--lime)}
 .mw-ta{font-family:var(--mono);font-size:9px;color:var(--text3)}
 .mw-bars{display:flex;align-items:flex-end;gap:2px;height:14px;flex-shrink:0;opacity:0;transition:opacity .2s}
@@ -898,6 +918,15 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
   </div>
 </main>
 
+<div class="dd-overlay" id="dd-overlay" onclick="if(event.target===this) closeDayDetail()">
+  <div class="dd-modal">
+    <button class="dd-close" onclick="closeDayDetail()" type="button">✕</button>
+    <div class="dd-ttl" id="dd-ttl">Day —</div>
+    <div class="dd-sub" id="dd-sub"></div>
+    <div class="dd-rules" id="dd-rules"></div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   // ── THEME TOGGLE ──
@@ -937,9 +966,58 @@ function initDiscGrid(){
     c.className = 'dc show future';
     c.style.setProperty('--fop', Math.max(.14, .4 - i*.0022).toFixed(3));
     c.title = `Day ${i+1} — upcoming`;
+    c.style.cursor = 'pointer';
+    c.onclick = () => openDayDetail(i + 1);
     dg.appendChild(c);
     dcEls.push(c);
   }
+}
+
+// ── DAY DETAIL (click any grid block/pivot to see what was completed that day) ──
+async function openDayDetail(dayNumber){
+  const overlay = document.getElementById('dd-overlay');
+  const ttl = document.getElementById('dd-ttl');
+  const sub = document.getElementById('dd-sub');
+  const body = document.getElementById('dd-rules');
+  overlay.classList.add('on');
+  ttl.textContent = `Day ${dayNumber}`;
+  sub.textContent = 'Loading…';
+  body.innerHTML = '';
+
+  if (dayNumber === protocolState.currentDay) {
+    const score = RULES.length ? Math.round(countDone() / RULES.length * 100) : 0;
+    renderDayDetail(sub, body, RULES, score, false, localDateStr());
+    return;
+  }
+
+  if (!currentUser) { sub.textContent = 'Sign in to see this day.'; return; }
+
+  const { data } = await sb.from('daily_logs')
+    .select('rules, score, is_pivot, log_date')
+    .eq('user_id', currentUser.id)
+    .eq('day_number', dayNumber)
+    .maybeSingle();
+
+  if (!data) {
+    sub.textContent = dayNumber > protocolState.currentDay ? 'Upcoming — not reached yet.' : 'No log for this day.';
+    body.innerHTML = '<div class="dd-empty">Nothing recorded for this day.</div>';
+    return;
+  }
+
+  renderDayDetail(sub, body, data.rules || [], data.score, data.is_pivot, data.log_date);
+}
+
+function renderDayDetail(sub, body, rules, score, isPivot, logDate){
+  sub.textContent = `${logDate ? logDate + ' · ' : ''}${score}%${isPivot ? ' · Pivot used' : ''}`;
+  body.innerHTML = rules.length ? rules.map(r => `
+    <div class="dd-row${r.done ? ' y' : ''}">
+      <span class="dd-box">${r.done ? '✓' : ''}</span>
+      <span class="dd-txt">${escapeHtml(r.t)}</span>
+    </div>`).join('') : '<div class="dd-empty">No rules recorded.</div>';
+}
+
+function closeDayDetail(){
+  document.getElementById('dd-overlay').classList.remove('on');
 }
 
 // ── COPY LINK ──
@@ -1014,14 +1092,14 @@ function exportRulesToReminders(){
 const RULES=[
   {t:'No Porn',done:true},{t:'Zero Sugar',done:true},{t:'0% Junk Food',done:true},
   {t:'3L Water Intake (Monsoon)',done:true},{t:'3 Adequate Meals',done:true},
-  {t:'Eat Dry Fruits',done:true},{t:'Sleep at 11:30 PM',done:false,flag:true},
+  {t:'Eat Dry Fruits',done:true},{t:'Sleep at 11:30 PM',done:false,label:'Risk'},
   {t:'Wake up at 7:30 AM',done:true},{t:'Business 9AM–8PM',done:true},
   {t:'20 min walk & 30 sec sprint',done:true},{t:'15 mins Looks-maxing',done:true},
-  {t:'Screen Time < 3 hours',done:false,flag:true},{t:'Social Media < 30 min',done:false,flag:true},
+  {t:'Screen Time < 3 hours',done:false,label:'Risk'},{t:'Social Media < 30 min',done:false,label:'Risk'},
   {t:'10 min Meditation',done:true},{t:'Pray, Be Calm, Be Kind',done:true},
-  {t:'Be Productive 8hr/Day',done:false,flag:true},{t:'Learn English & Spanish',done:false,flag:true},
+  {t:'Be Productive 8hr/Day',done:false,label:'Risk'},{t:'Learn English & Spanish',done:false,label:'Risk'},
   {t:'Avoid Phone before 12pm & after 10pm',done:true},
-  {t:'Learn a Digital Skill',done:false,flag:true},
+  {t:'Learn a Digital Skill',done:false,label:'Risk'},
   {t:'20 pushups | 20 squats | 77s plank | 20 leg raises',done:true},
 ];
 
@@ -1073,8 +1151,18 @@ const rw=document.getElementById('rules-wrap');
 // ── CUSTOM RULES PERSISTENCE (add/edit your own todo list) ──
 async function saveCustomRules(){
   if(!currentUser) return;
-  const payload = RULES.map(r=>({ t:r.t, flag:!!r.flag }));
+  const payload = RULES.map(r=>({ t:r.t, label:r.label||null }));
   await sb.from('profiles').update({ rules: payload }).eq('id', currentUser.id);
+}
+
+function editRuleLabel(i){
+  const current = RULES[i].label || '';
+  const val = prompt('Label for this rule (e.g. "Important", "Most important") — leave blank to remove:', current);
+  if(val === null) return;
+  const t = val.trim().slice(0, 24);
+  RULES[i].label = t || null;
+  saveCustomRules();
+  buildRules();
 }
 
 function addRule(text){
@@ -1125,7 +1213,7 @@ function buildRules(){
     div.innerHTML=`<span class="rn">${String(i+1).padStart(2,'0')}</span>
       <span class="rbox">${r.done?'✓':''}</span>
       <span class="rtxt">${escapeHtml(r.t)}</span>
-      ${r.flag&&!r.done?'<span class="rflag">RISK</span>':''}
+      ${r.label?`<span class="rflag" title="Click to edit label">${escapeHtml(r.label)}</span>`:'<span class="rlabel-add" title="Add a label">🏷</span>'}
       <span class="redit" title="Edit">✎</span>
       <span class="rdel" title="Remove">✕</span>`;
     div.style.cursor='pointer';
@@ -1133,11 +1221,12 @@ function buildRules(){
       r.done=!r.done;div.classList.toggle('ck',r.done);
       div.querySelector('.rbox').textContent=r.done?'✓':'';
       div.querySelector('.rtxt').className='rtxt'+(r.done?' done':'');
-      const f=div.querySelector('.rflag');if(f)f.style.display=r.done?'none':'';
       updateRing();
     };
     div.querySelector('.redit').onclick=(e)=>{ e.stopPropagation(); startEditRule(i, div); };
     div.querySelector('.rdel').onclick=(e)=>{ e.stopPropagation(); removeRule(i); };
+    const labelEl = div.querySelector('.rflag') || div.querySelector('.rlabel-add');
+    labelEl.onclick=(e)=>{ e.stopPropagation(); editRuleLabel(i); };
     rw.appendChild(div);
   });
 
@@ -1207,7 +1296,7 @@ function renderConf(){
     const row=document.createElement('div');row.className='cr';row.style.cursor='pointer';
     row.innerHTML=`<span class="crb${r.done?' y':''}">${r.done?'✓':''}</span>
       <span class="crtxt${r.done?' y':''}">${escapeHtml(r.t.length>30?r.t.slice(0,30)+'…':r.t)}</span>
-      ${r.flag&&!r.done?'<span class="cr-low">LOW</span>':''}`;
+      ${r.label?`<span class="cr-low">${escapeHtml(r.label)}</span>`:''}`;
     const b=row.querySelector('.crb');
     row.onclick=()=>{
       r.done=!r.done;
@@ -1222,6 +1311,15 @@ function renderConf(){
 }
 function confirmLog(){CS.forEach(r=>{RULES[r.idx].done=r.done});buildRules();updateRing();switchTab('day');saveTodayLog()}
 
+// ── LOCAL (not UTC) calendar date — day boundaries follow the visitor's own clock/timezone ──
+function localDateStr(d){
+  d = d || new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 // ── PROTOCOL / PIVOT ──
 async function hydrateProtocol(user) {
   const { data: logs } = await sb
@@ -1233,7 +1331,7 @@ async function hydrateProtocol(user) {
   const byDay = {};
   (logs || []).forEach(l => { byDay[l.day_number] = l; });
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = localDateStr();
   const loggedDays = Object.keys(byDay).map(Number);
   const maxDay = loggedDays.length ? Math.max(...loggedDays) : 0;
   const todaysLog = (logs || []).find(l => l.log_date === todayStr);
@@ -1323,6 +1421,7 @@ async function saveTodayLog() {
   const { error } = await sb.from('daily_logs').upsert({
     user_id: currentUser.id,
     day_number: protocolState.currentDay,
+    log_date: localDateStr(),
     rules: RULES,
     score: score,
     status: status
@@ -1552,8 +1651,8 @@ async function loadLeaderboard(){
     }
 
     el.innerHTML = real.map((r,i)=>`
-      <div class="lb-row show${i<3?' top':''}">
-        <div class="lb-rank">${i+1}</div>
+      <div class="lb-row show${i<3?' top':''}${i===0?' first':''}">
+        <div class="lb-rank">${i===0?'<span class="lb-crown">👑</span>':''}${i+1}</div>
         <div class="lb-user">${escapeHtml(r.username)}</div>
         <div class="lb-stat">Day <b>${r.current_day}</b>/120 · <b>${r.perfect_days}</b> perfect · <b>${r.avg_score}%</b> avg</div>
       </div>`).join('');
@@ -1582,7 +1681,11 @@ async function boot(){
 
   if (Array.isArray(profile.rules) && profile.rules.length) {
     RULES.length = 0;
-    profile.rules.forEach(pr => RULES.push({ t: String(pr && pr.t || '').slice(0,140) || 'Untitled rule', done: false, flag: !!(pr && pr.flag) }));
+    profile.rules.forEach(pr => RULES.push({
+      t: String(pr && pr.t || '').slice(0,140) || 'Untitled rule',
+      done: false,
+      label: (pr && (pr.label || (pr.flag ? 'Risk' : null))) || null
+    }));
   } else {
     // Default rule set ships with mixed done:true/false demo values baked in —
     // reset to a blank slate; loadTodayLog() below overlays real saved state if today's already logged.
