@@ -88,9 +88,7 @@ async function renderPublicGrid() {
   }
 
   const { data: profile, error: profileError } = await sb
-    .from('profiles')
-    .select('id, username')
-    .eq('username', username)
+    .rpc('get_public_profile', { p_username: username })
     .single();
 
   if (profileError || !profile) {
@@ -101,11 +99,7 @@ async function renderPublicGrid() {
     return;
   }
 
-  const { data: logs } = await sb
-    .from('daily_logs')
-    .select('day_number, score, rules, is_pivot')
-    .eq('user_id', profile.id)
-    .order('day_number', { ascending: true });
+  const { data: logs } = await sb.rpc('get_public_grid_logs', { p_user_id: profile.id });
 
   const logsByDay = {};
   (logs || []).forEach(l => { logsByDay[l.day_number] = l; });
@@ -139,8 +133,8 @@ async function renderPublicGrid() {
 
   const todayLog = logsByDay[currentDay];
   const todayScore = todayLog ? todayLog.score : 0;
-  const ruleCount = todayLog ? todayLog.rules.length : 0;
-  const doneCount = todayLog ? todayLog.rules.filter(r => r.done).length : 0;
+  const ruleCount = todayLog ? todayLog.rule_count : 0;
+  const doneCount = todayLog ? todayLog.done_count : 0;
 
   showState(`
     <div class="prof-name">@${escapeHtml(profile.username)}</div>

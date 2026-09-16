@@ -1416,8 +1416,8 @@ async function handleAuthSubmit(e) {
       showAuthMsg('3-30 characters: letters, numbers, _ or - only.', 'err');
       btn.disabled = false; return false;
     }
-    const { data: taken } = await sb.from('profiles').select('username').ilike('username', username).maybeSingle();
-    if (taken) { showAuthMsg('That username is already taken.', 'err'); btn.disabled = false; return false; }
+    const { data: available } = await sb.rpc('check_username_available', { p_username: username });
+    if (!available) { showAuthMsg('That username is already taken.', 'err'); btn.disabled = false; return false; }
     const { error } = await sb.from('profiles').insert({ id: pendingProfileUser.id, username });
     if (error) { showAuthMsg(error.message, 'err'); btn.disabled = false; return false; }
     showAuthMsg('Saved — welcome in.', 'ok');
@@ -1435,8 +1435,8 @@ async function handleAuthSubmit(e) {
       showAuthMsg('Username must be 3-30 characters: letters, numbers, _ or - only.', 'err');
       btn.disabled = false; return false;
     }
-    const { data: taken } = await sb.from('profiles').select('username').ilike('username', username).maybeSingle();
-    if (taken) { showAuthMsg('That username is already taken.', 'err'); btn.disabled = false; return false; }
+    const { data: available } = await sb.rpc('check_username_available', { p_username: username });
+    if (!available) { showAuthMsg('That username is already taken.', 'err'); btn.disabled = false; return false; }
     const { data, error } = await sb.auth.signUp({ email, password, options: { data: { username } } });
     if (error) { showAuthMsg(error.message, 'err'); btn.disabled = false; return false; }
     if (data.session) {
