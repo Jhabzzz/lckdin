@@ -270,6 +270,33 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .dd-row.y .dd-txt{color:var(--text3);text-decoration:line-through;text-decoration-color:var(--line2)}
 .dd-empty{font-size:13px;color:var(--text3);text-align:center;padding:24px 0}
 @media(max-width:460px){.dd-modal{padding:28px 22px}}
+.lbl-overlay{position:fixed;inset:0;z-index:3100;background:rgba(10,10,10,.72);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
+.lbl-overlay.on{display:flex}
+.lbl-modal{width:100%;max-width:380px;background:var(--bg2);border:1px solid var(--glass-brd2);border-radius:var(--r-lg);padding:32px 28px;position:relative;box-shadow:var(--shadow-card);animation:panelIn .4s var(--ease)}
+.lbl-ttl{font-family:var(--sans);font-weight:700;font-size:19px;letter-spacing:-.02em;margin-bottom:4px;padding-right:30px}
+.lbl-sub{font-size:12px;color:var(--text3);margin-bottom:22px;line-height:1.4}
+.lbl-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.lbl-chip{display:flex;align-items:center;gap:6px;padding:9px 16px;border-radius:100px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:transform .2s var(--spring),box-shadow .25s var(--ease),background .2s,color .2s;background:var(--glass);opacity:0;animation:chipIn .35s var(--ease) forwards}
+.lbl-chip:nth-child(1){animation-delay:.03s}
+.lbl-chip:nth-child(2){animation-delay:.08s}
+.lbl-chip:nth-child(3){animation-delay:.13s}
+@keyframes chipIn{from{opacity:0;transform:translateY(6px) scale(.94)}to{opacity:1;transform:none}}
+.lbl-chip:hover{transform:translateY(-2px)}
+.lbl-chip.c-risk{border:1px solid var(--error);color:var(--error)}
+.lbl-chip.c-risk:hover,.lbl-chip.c-risk.on{background:var(--error);color:#fff;box-shadow:0 6px 20px -8px var(--error)}
+.lbl-chip.c-important{border:1px solid var(--amber);color:var(--amber)}
+.lbl-chip.c-important:hover,.lbl-chip.c-important.on{background:var(--amber);color:#fff;box-shadow:0 6px 20px -8px var(--amber)}
+.lbl-chip.c-top{border:1px solid var(--lime);color:var(--lime)}
+.lbl-chip.c-top:hover,.lbl-chip.c-top.on{background:var(--grad);color:var(--on-accent);border-color:transparent;box-shadow:0 6px 20px -8px rgba(244,106,56,.6)}
+.lbl-custom{margin-bottom:22px}
+.lbl-custom input{width:100%;background:var(--bg3);border:1px solid var(--glass-brd2);border-radius:var(--r-sm);padding:12px 14px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;transition:border-color .2s,box-shadow .2s}
+.lbl-custom input:focus{border-color:rgba(244,106,56,.4);box-shadow:0 0 0 3px rgba(244,106,56,.08)}
+.lbl-actions{display:flex;gap:10px}
+.lbl-remove{flex:1;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:13px;border-radius:var(--r-sm);border:1px solid var(--glass-brd2);background:transparent;color:var(--text3);cursor:pointer;transition:all .2s}
+.lbl-remove:hover{color:var(--text);border-color:var(--line3)}
+.lbl-save{flex:1;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:13px;border-radius:var(--r-sm);border:none;background:var(--grad);color:var(--on-accent);font-weight:700;cursor:pointer;transition:box-shadow .3s var(--ease),transform .2s}
+.lbl-save:hover{box-shadow:var(--shadow-glow);transform:translateY(-1px)}
+@media(max-width:460px){.lbl-modal{padding:28px 22px}}
 .hb-v{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--text);line-height:1}
 .hb-k{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-top:4px}
 /* scroll hint */
@@ -498,7 +525,11 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .rrow.ck .rbox{background:var(--grad);border-color:transparent;color:var(--on-accent)}
 .rtxt{font-size:12px;color:var(--text2);flex:1;line-height:1.3;transition:color .15s}
 .rrow.ck .rtxt{color:var(--text3);text-decoration:line-through;text-decoration-color:var(--line2)}
-.rflag{font-family:var(--mono);font-size:7px;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border:1px solid var(--error);color:var(--error);flex-shrink:0;cursor:pointer;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rflag{font-family:var(--mono);font-size:7px;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border:1px solid var(--line3);color:var(--text3);flex-shrink:0;cursor:pointer;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:transform .15s var(--spring)}
+.rflag:hover{transform:translateY(-1px)}
+.rflag.c-risk{border-color:var(--error);color:var(--error)}
+.rflag.c-important{border-color:var(--amber);color:var(--amber)}
+.rflag.c-top{border:none;background:var(--grad);color:var(--on-accent);font-weight:700}
 .rlabel-add{flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:10px;border-radius:4px;opacity:0;transition:opacity .15s;cursor:pointer}
 .rrow:hover .rlabel-add{opacity:1}
 .redit,.rdel{flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:11px;border-radius:4px;opacity:0;transition:opacity .15s,color .15s,background .15s;cursor:pointer}
@@ -533,7 +564,10 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .crb.y{background:var(--grad);border-color:transparent;color:var(--on-accent)}
 .crtxt{font-size:11px;flex:1;line-height:1.3;color:var(--text2)}
 .crtxt.y{color:var(--text)}
-.cr-low{font-family:var(--mono);font-size:7px;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border:1px solid var(--error);color:var(--error);flex-shrink:0;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cr-low{font-family:var(--mono);font-size:7px;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border:1px solid var(--line3);color:var(--text3);flex-shrink:0;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cr-low.c-risk{border-color:var(--error);color:var(--error)}
+.cr-low.c-important{border-color:var(--amber);color:var(--amber)}
+.cr-low.c-top{border:none;background:var(--grad);color:var(--on-accent);font-weight:700}
 .cbtn{width:100%;background:var(--text);background-size:160% 160%;background-position:0% 50%;color:var(--bg);border:none;border-radius:var(--r-xs);padding:12px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:none;font-weight:700;transition:box-shadow .3s var(--ease);margin-bottom:6px;position:relative;overflow:hidden}
 .cbtn:hover{box-shadow:var(--shadow-glow)}
 .cbtn span{position:relative;z-index:1}
@@ -927,6 +961,26 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
   </div>
 </div>
 
+<div class="lbl-overlay" id="lbl-overlay" onclick="if(event.target===this) closeLabelPicker()">
+  <div class="lbl-modal">
+    <button class="dd-close" onclick="closeLabelPicker()" type="button">✕</button>
+    <div class="lbl-ttl">Label this rule</div>
+    <div class="lbl-sub" id="lbl-rule-name"></div>
+    <div class="lbl-chips">
+      <button class="lbl-chip c-risk" data-label="Risk" type="button"><span>🔥</span>Risk</button>
+      <button class="lbl-chip c-important" data-label="Important" type="button"><span>⭐</span>Important</button>
+      <button class="lbl-chip c-top" data-label="Most Important" type="button"><span>👑</span>Most Important</button>
+    </div>
+    <div class="lbl-custom">
+      <input type="text" id="lbl-custom-input" placeholder="Or write your own…" maxlength="24">
+    </div>
+    <div class="lbl-actions">
+      <button class="lbl-remove" id="lbl-remove-btn" type="button">Remove label</button>
+      <button class="lbl-save" id="lbl-save-btn" type="button">Save</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   // ── THEME TOGGLE ──
@@ -1108,7 +1162,7 @@ const protocolState = {
   currentDay: 1,
   totalDays: 120,
   pivotsUsed: 0,
-  pivotsMax: 3
+  pivotsMax: 5
 };
 
 function scoreToTier(score) {
@@ -1133,7 +1187,10 @@ function updateTodayCell() {
 const pb=document.getElementById('ph-prog');
 for(let i=0;i<40;i++){const s=document.createElement('div');s.className='ps'+(i===0?' c':'');pb.appendChild(s)}
 function countDone(){return RULES.filter(r=>r.done).length}
-function updateRing(){
+// Pure visual refresh — no DB write, no pivot prompt. Used when we're just
+// rendering state we already loaded (boot, after loadTodayLog), not reacting
+// to a real user action.
+function updateRingDisplay(){
   const p=Math.round(countDone()/RULES.length*100);
   const c=2*Math.PI*26;
   document.getElementById('ring-arc').setAttribute('stroke-dashoffset',(c*(1-p/100)).toFixed(1));
@@ -1143,6 +1200,12 @@ function updateRing(){
   document.getElementById('app-day-n').innerHTML = protocolState.currentDay + ' <span>/ ' + protocolState.totalDays + '</span>';
   document.getElementById('app-day-sub').textContent = `day ${protocolState.currentDay} / ${protocolState.totalDays}`;
   updateTodayCell();
+}
+
+// Called on real user actions (checking/unchecking a rule) — saves and, if
+// today's now a full miss, offers a pivot.
+function updateRing(){
+  updateRingDisplay();
   saveTodayLog();
 }
 
@@ -1155,15 +1218,45 @@ async function saveCustomRules(){
   await sb.from('profiles').update({ rules: payload }).eq('id', currentUser.id);
 }
 
+let labelEditIndex = null;
+const PRESET_LABELS = ['Risk', 'Important', 'Most Important'];
+
 function editRuleLabel(i){
-  const current = RULES[i].label || '';
-  const val = prompt('Label for this rule (e.g. "Important", "Most important") — leave blank to remove:', current);
-  if(val === null) return;
-  const t = val.trim().slice(0, 24);
-  RULES[i].label = t || null;
+  labelEditIndex = i;
+  const r = RULES[i];
+  document.getElementById('lbl-rule-name').textContent = r.t;
+  const customInput = document.getElementById('lbl-custom-input');
+  customInput.value = (r.label && !PRESET_LABELS.includes(r.label)) ? r.label : '';
+  document.querySelectorAll('.lbl-chip').forEach(chip => {
+    chip.classList.toggle('on', chip.dataset.label === r.label);
+  });
+  document.getElementById('lbl-overlay').classList.add('on');
+  customInput.focus();
+}
+
+function closeLabelPicker(){
+  document.getElementById('lbl-overlay').classList.remove('on');
+  labelEditIndex = null;
+}
+
+function applyRuleLabel(label){
+  if (labelEditIndex === null) return;
+  RULES[labelEditIndex].label = label || null;
   saveCustomRules();
   buildRules();
+  closeLabelPicker();
 }
+
+document.querySelectorAll('.lbl-chip').forEach(chip => {
+  chip.onclick = () => applyRuleLabel(chip.dataset.label);
+});
+document.getElementById('lbl-save-btn').onclick = () => {
+  applyRuleLabel(document.getElementById('lbl-custom-input').value.trim().slice(0, 24));
+};
+document.getElementById('lbl-remove-btn').onclick = () => applyRuleLabel(null);
+document.getElementById('lbl-custom-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); document.getElementById('lbl-save-btn').click(); }
+});
 
 function addRule(text){
   const t = (text||'').trim().slice(0,140);
@@ -1205,6 +1298,13 @@ function startEditRule(i, div){
   input.addEventListener('blur', commit);
 }
 
+function labelClass(label){
+  if (label === 'Risk') return 'c-risk';
+  if (label === 'Important') return 'c-important';
+  if (label === 'Most Important') return 'c-top';
+  return 'c-custom';
+}
+
 function buildRules(){
   rw.innerHTML='';
   RULES.forEach((r,i)=>{
@@ -1213,7 +1313,7 @@ function buildRules(){
     div.innerHTML=`<span class="rn">${String(i+1).padStart(2,'0')}</span>
       <span class="rbox">${r.done?'✓':''}</span>
       <span class="rtxt">${escapeHtml(r.t)}</span>
-      ${r.label?`<span class="rflag" title="Click to edit label">${escapeHtml(r.label)}</span>`:'<span class="rlabel-add" title="Add a label">🏷</span>'}
+      ${r.label?`<span class="rflag ${labelClass(r.label)}" title="Click to edit label">${escapeHtml(r.label)}</span>`:'<span class="rlabel-add" title="Add a label">🏷</span>'}
       <span class="redit" title="Edit">✎</span>
       <span class="rdel" title="Remove">✕</span>`;
     div.style.cursor='pointer';
@@ -1296,7 +1396,7 @@ function renderConf(){
     const row=document.createElement('div');row.className='cr';row.style.cursor='pointer';
     row.innerHTML=`<span class="crb${r.done?' y':''}">${r.done?'✓':''}</span>
       <span class="crtxt${r.done?' y':''}">${escapeHtml(r.t.length>30?r.t.slice(0,30)+'…':r.t)}</span>
-      ${r.label?`<span class="cr-low">${escapeHtml(r.label)}</span>`:''}`;
+      ${r.label?`<span class="cr-low ${labelClass(r.label)}">${escapeHtml(r.label)}</span>`:''}`;
     const b=row.querySelector('.crb');
     row.onclick=()=>{
       r.done=!r.done;
@@ -1363,7 +1463,7 @@ async function hydrateProtocol(user) {
     cell.title = title;
   });
 
-  updateRing();
+  updateRingDisplay();
   updatePivotBadge();
 }
 
@@ -1407,7 +1507,7 @@ async function loadTodayLog(user) {
       if (RULES[i]) RULES[i].done = savedRule.done;
     });
     buildRules();
-    updateRing();
+    updateRingDisplay();
   }
 }
 
@@ -1694,7 +1794,7 @@ async function boot(){
 
   initDiscGrid();
   buildRules();
-  updateRing();
+  updateRingDisplay();
 
   document.getElementById('app-loading').style.display = 'none';
   document.getElementById('app-content').style.display = 'block';
