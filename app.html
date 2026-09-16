@@ -1294,7 +1294,10 @@ function startEditRule(i, div){
   span.replaceWith(input);
   input.focus();
   input.select();
+  let committed = false;
   const commit = ()=>{
+    if (committed) return;
+    committed = true;
     const t = input.value.trim().slice(0,140);
     RULES[i].t = t || current;
     saveCustomRules();
@@ -1302,7 +1305,7 @@ function startEditRule(i, div){
   };
   input.addEventListener('keydown', e=>{
     if(e.key==='Enter'){ e.preventDefault(); commit(); }
-    if(e.key==='Escape'){ e.preventDefault(); buildRules(); }
+    if(e.key==='Escape'){ e.preventDefault(); committed = true; buildRules(); }
   });
   input.addEventListener('blur', commit);
 }
@@ -1419,7 +1422,7 @@ function renderConf(){
     cl.appendChild(row);
   });
 }
-function confirmLog(){CS.forEach(r=>{RULES[r.idx].done=r.done});buildRules();updateRing();switchTab('day');saveTodayLog()}
+function confirmLog(){CS.forEach(r=>{RULES[r.idx].done=r.done});buildRules();updateRing();switchTab('day')}
 
 // ── LOCAL (not UTC) calendar date — day boundaries follow the visitor's own clock/timezone ──
 function localDateStr(d){

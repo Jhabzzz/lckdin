@@ -72,6 +72,12 @@ function showState(html) {
   document.getElementById('content').innerHTML = html;
 }
 
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
 async function renderPublicGrid() {
   const parts = location.pathname.split('/u/');
   const username = parts[1] ? decodeURIComponent(parts[1]).replace(/\/$/, '') : '';
@@ -89,7 +95,7 @@ async function renderPublicGrid() {
 
   if (profileError || !profile) {
     showState(`
-      <div class="state-msg">No user found for "${username}".</div>
+      <div class="state-msg">No user found for "${escapeHtml(username)}".</div>
       <div class="cta"><a href="/">← Back to LCKD—IN</a></div>
     `);
     return;
@@ -133,10 +139,11 @@ async function renderPublicGrid() {
 
   const todayLog = logsByDay[currentDay];
   const todayScore = todayLog ? todayLog.score : 0;
+  const ruleCount = todayLog ? todayLog.rules.length : 0;
   const doneCount = todayLog ? todayLog.rules.filter(r => r.done).length : 0;
 
   showState(`
-    <div class="prof-name">@${profile.username}</div>
+    <div class="prof-name">@${escapeHtml(profile.username)}</div>
     <div class="prof-sub">Day ${currentDay} / ${TOTAL_DAYS}</div>
     <div class="disc-grid">${gridHtml}</div>
     <div class="g-legend">
@@ -154,7 +161,7 @@ async function renderPublicGrid() {
     <div class="g-stats">
       <div class="gst"><div class="gst-v">${currentDay}</div><div class="gst-k">Current day</div></div>
       <div class="gst"><div class="gst-v">${todayScore}%</div><div class="gst-k">Today's score</div></div>
-      <div class="gst"><div class="gst-v">${doneCount}/20</div><div class="gst-k">Rules done</div></div>
+      <div class="gst"><div class="gst-v">${doneCount}/${ruleCount || '—'}</div><div class="gst-k">Rules done</div></div>
     </div>
   `);
 }
