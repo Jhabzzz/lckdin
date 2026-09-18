@@ -1665,6 +1665,20 @@ async function saveTodayLog(opts) {
   const tier = scoreToTier(score);
   const status = tier === 5 ? 'PERFECT' : tier === 0 ? 'MISS' : 'PARTIAL';
 
+  // Pivots are for a genuinely untouched day — not for "checked a couple
+  // rules, then unchecked them back to 0%." If today already has a saved
+  // score above 0 from earlier in the session, don't treat a return to 0%
+  // as a fresh miss worth offering a pivot for.
+  let hadEffortToday = false;
+  if (!opts.skipPivotOffer && score === 0) {
+    const { data: existing } = await sb.from('daily_logs')
+      .select('score')
+      .eq('user_id', currentUser.id)
+      .eq('day_number', protocolState.currentDay)
+      .maybeSingle();
+    hadEffortToday = !!(existing && existing.score > 0);
+  }
+
   const { error } = await sb.from('daily_logs').upsert({
     user_id: currentUser.id,
     day_number: protocolState.currentDay,
@@ -1676,7 +1690,7 @@ async function saveTodayLog(opts) {
 
   if (error) { console.error('Save failed:', error); return; }
 
-  if (!opts.skipPivotOffer && score === 0 && protocolState.pivotsUsed < protocolState.pivotsMax) {
+  if (!opts.skipPivotOffer && score === 0 && !hadEffortToday && protocolState.pivotsUsed < protocolState.pivotsMax) {
     await offerPivot();
   }
 
