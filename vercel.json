@@ -1,7 +1,7 @@
 {
   "rewrites": [
-    { "source": "/u/:username", "destination": "/u.html" },
-    { "source": "/app", "destination": "/app.html" }
+    { "source": "/u/:username", "destination": "/profile.html" },
+    { "source": "/app", "destination": "/dashboard.html" }
   ],
   "redirects": [
     {
