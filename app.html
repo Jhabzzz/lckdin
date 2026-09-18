@@ -861,36 +861,16 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 
       <div class="ai-card">
         <div class="ai-ch"><div class="ai-pulse"></div><div class="ai-ttl">Settings</div></div>
-        <div class="ai-body" style="display:flex;flex-direction:column;gap:20px">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
-            <div>
-              <div style="font-size:13px;font-weight:600">Reminder emails</div>
-              <div style="font-size:12px;color:var(--text3);margin-top:2px">One email a day if you haven't logged yet.</div>
-            </div>
-            <label style="position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0;cursor:pointer">
-              <input type="checkbox" id="reminders-toggle" checked onchange="toggleReminders(this.checked)" style="opacity:0;width:0;height:0">
-              <span id="reminders-toggle-track" style="position:absolute;inset:0;background:var(--lime);border-radius:24px;transition:background .2s"></span>
-              <span id="reminders-toggle-knob" style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s;transform:translateX(18px)"></span>
-            </label>
+        <div class="ai-body" style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+          <div>
+            <div style="font-size:13px;font-weight:600">Reminder emails</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px">One email a day if you haven't logged yet.</div>
           </div>
-          <div style="padding-top:18px;border-top:1px solid var(--line)">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px">
-              <div>
-                <div style="font-size:13px;font-weight:600">Phone number</div>
-                <div style="font-size:12px;color:var(--text3);margin-top:2px">Optional — SMS for reminders &amp; big updates.</div>
-              </div>
-              <label style="position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0;cursor:pointer">
-                <input type="checkbox" id="sms-toggle" checked onchange="toggleSmsUpdates(this.checked)" style="opacity:0;width:0;height:0">
-                <span id="sms-toggle-track" style="position:absolute;inset:0;background:var(--lime);border-radius:24px;transition:background .2s"></span>
-                <span id="sms-toggle-knob" style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s;transform:translateX(18px)"></span>
-              </label>
-            </div>
-            <div class="plen-custom-row" style="margin-top:0">
-              <input type="tel" id="phone-input" placeholder="+15551234567">
-              <button id="phone-save-btn" onclick="savePhoneNumber()" type="button">Save</button>
-            </div>
-            <div id="phone-status" style="font-family:var(--mono);font-size:10px;margin-top:8px;min-height:12px"></div>
-          </div>
+          <label style="position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0;cursor:pointer">
+            <input type="checkbox" id="reminders-toggle" checked onchange="toggleReminders(this.checked)" style="opacity:0;width:0;height:0">
+            <span id="reminders-toggle-track" style="position:absolute;inset:0;background:var(--lime);border-radius:24px;transition:background .2s"></span>
+            <span id="reminders-toggle-knob" style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s;transform:translateX(18px)"></span>
+          </label>
         </div>
       </div>
     </div>
@@ -1173,60 +1153,6 @@ async function toggleReminders(on){
     console.error('Failed to update reminder preference:', error);
     setRemindersToggle(!on);
     alert('Could not save that setting — try again.');
-  }
-}
-
-// ── PHONE NUMBER (for future SMS reminders/updates) ──
-const PHONE_RE = /^\+[1-9]\d{6,14}$/;
-
-function setSmsToggle(on){
-  document.getElementById('sms-toggle').checked = on;
-  document.getElementById('sms-toggle-track').style.background = on ? 'var(--lime)' : 'var(--line2)';
-  document.getElementById('sms-toggle-knob').style.transform = on ? 'translateX(18px)' : 'translateX(0)';
-}
-
-function setPhoneUI(phone, smsEnabled){
-  document.getElementById('phone-input').value = phone || '';
-  setSmsToggle(smsEnabled !== false);
-}
-
-async function toggleSmsUpdates(on){
-  setSmsToggle(on);
-  if (!currentUser) return;
-  const { error } = await sb.from('profiles').update({ sms_updates_enabled: on }).eq('id', currentUser.id);
-  if (error) {
-    console.error('Failed to update SMS preference:', error);
-    setSmsToggle(!on);
-    alert('Could not save that setting — try again.');
-  }
-}
-
-async function savePhoneNumber(){
-  if (!currentUser) return;
-  const input = document.getElementById('phone-input');
-  const statusEl = document.getElementById('phone-status');
-  const raw = input.value.trim();
-
-  if (!raw) {
-    const { error } = await sb.from('profiles').update({ phone: null }).eq('id', currentUser.id);
-    statusEl.textContent = error ? 'Could not save — try again.' : 'Removed.';
-    statusEl.style.color = error ? 'var(--error)' : 'var(--text3)';
-    return;
-  }
-
-  if (!PHONE_RE.test(raw)) {
-    statusEl.textContent = 'Use international format, e.g. +15551234567';
-    statusEl.style.color = 'var(--error)';
-    return;
-  }
-
-  const { error } = await sb.from('profiles').update({ phone: raw }).eq('id', currentUser.id);
-  if (error) {
-    statusEl.textContent = 'Could not save — try again.';
-    statusEl.style.color = 'var(--error)';
-  } else {
-    statusEl.textContent = 'Saved.';
-    statusEl.style.color = 'var(--lime)';
   }
 }
 
@@ -1995,7 +1921,7 @@ async function boot(){
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = '/'; return; }
 
-  const { data: profile } = await sb.from('profiles').select('username, reminders_enabled, rules, total_days, phone, sms_updates_enabled').eq('id', session.user.id).maybeSingle();
+  const { data: profile } = await sb.from('profiles').select('username, reminders_enabled, rules, total_days').eq('id', session.user.id).maybeSingle();
   if (!profile || !profile.username) { window.location.href = '/'; return; }
 
   window.__appUsername = profile.username;
@@ -2003,7 +1929,6 @@ async function boot(){
   document.getElementById('app-share-url').innerHTML = 'lckd-in.com/<b>' + profile.username + '</b>';
   document.getElementById('app-grid-link').href = 'https://lckd-in.com/u/' + profile.username;
   setRemindersToggle(profile.reminders_enabled !== false);
-  setPhoneUI(profile.phone, profile.sms_updates_enabled);
   protocolState.totalDays = profile.total_days || 120;
   updatePlenPills();
 
