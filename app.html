@@ -270,6 +270,24 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .dd-row.y .dd-txt{color:var(--text3);text-decoration:line-through;text-decoration-color:var(--line2)}
 .dd-empty{font-size:13px;color:var(--text3);text-align:center;padding:24px 0}
 @media(max-width:460px){.dd-modal{padding:28px 22px}}
+.cel-overlay{position:fixed;inset:0;z-index:3200;background:rgba(8,7,5,.82);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px}
+.cel-overlay.on{display:flex}
+.cel-modal{width:100%;max-width:440px;background:var(--bg2);border:1px solid var(--glass-brd2);border-radius:var(--r-lg);padding:44px 36px 36px;position:relative;text-align:center;box-shadow:var(--shadow-card),0 0 100px -20px rgba(244,106,56,.35);animation:celIn .5s var(--spring);overflow:hidden}
+.cel-modal::before{content:'';position:absolute;top:-40%;left:50%;transform:translateX(-50%);width:140%;aspect-ratio:1;background:radial-gradient(circle,rgba(244,106,56,.25),transparent 60%);animation:celPulse 3s ease-in-out infinite;pointer-events:none}
+@keyframes celIn{from{opacity:0;transform:scale(.9) translateY(10px)}to{opacity:1;transform:none}}
+@keyframes celPulse{0%,100%{opacity:.5;transform:translateX(-50%) scale(1)}50%{opacity:.9;transform:translateX(-50%) scale(1.08)}}
+.cel-badge{font-size:40px;margin-bottom:8px;position:relative}
+.cel-ttl{font-family:var(--sans);font-weight:800;font-size:24px;letter-spacing:-.02em;margin-bottom:18px;position:relative}
+.cel-big{font-family:var(--mono);font-weight:700;font-size:64px;letter-spacing:-.03em;line-height:1;margin-bottom:16px;position:relative}
+.cel-big span{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.cel-big .cel-slash{background:none;-webkit-text-fill-color:var(--text3);color:var(--text3);margin:0 4px}
+.cel-sub{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:32px;position:relative}
+.cel-actions{display:flex;flex-direction:column;gap:10px;position:relative}
+.cel-btn-primary{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:15px;border-radius:var(--r-sm);border:none;background:var(--grad);color:var(--on-accent);cursor:pointer;transition:box-shadow .3s var(--ease),transform .2s}
+.cel-btn-primary:hover{box-shadow:var(--shadow-glow);transform:translateY(-1px)}
+.cel-btn-secondary{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;padding:15px;border-radius:var(--r-sm);border:1px solid var(--glass-brd2);background:transparent;color:var(--text3);cursor:pointer;transition:all .2s}
+.cel-btn-secondary:hover{color:var(--text);border-color:var(--line3)}
+@media(max-width:460px){.cel-modal{padding:36px 24px 28px}.cel-big{font-size:52px}}
 .lbl-overlay{position:fixed;inset:0;z-index:3100;background:rgba(10,10,10,.72);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
 .lbl-overlay.on{display:flex}
 .lbl-modal{width:100%;max-width:380px;background:var(--bg2);border:1px solid var(--glass-brd2);border-radius:var(--r-lg);padding:32px 28px;position:relative;box-shadow:var(--shadow-card);animation:panelIn .4s var(--ease)}
@@ -1006,6 +1024,19 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
   </div>
 </div>
 
+<div class="cel-overlay" id="cel-overlay">
+  <div class="cel-modal">
+    <div class="cel-badge">🏆</div>
+    <div class="cel-ttl">Protocol Complete</div>
+    <div class="cel-big"><span id="cel-days">7</span><span class="cel-slash">/</span><span id="cel-total">7</span></div>
+    <div class="cel-sub">You did what most people just talk about — every single day, logged. That's not motivation, that's discipline. Nobody can take this run away from you.</div>
+    <div class="cel-actions">
+      <button class="cel-btn-primary" id="cel-continue-btn" onclick="continueChallenge()" type="button">Keep Going</button>
+      <button class="cel-btn-secondary" onclick="pickNewLength()" type="button">Choose a New Length</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   // ── THEME TOGGLE ──
@@ -1162,6 +1193,44 @@ async function rebuildDiscGrid(){
   initDiscGrid();
   await hydrateProtocol(currentUser);
   updateRingDisplay();
+}
+
+// ── PROTOCOL COMPLETION CELEBRATION ──
+async function checkProtocolCompletion(){
+  if (!currentUser) return;
+  const key = `lckdin-celebrated-${currentUser.id}-${protocolState.totalDays}`;
+  if (localStorage.getItem(key)) return;
+  const { data } = await sb.from('daily_logs')
+    .select('day_number')
+    .eq('user_id', currentUser.id)
+    .eq('day_number', protocolState.totalDays)
+    .maybeSingle();
+  if (!data) return;
+  localStorage.setItem(key, '1');
+  showCompletionModal();
+}
+
+function showCompletionModal(){
+  document.getElementById('cel-days').textContent = protocolState.totalDays;
+  document.getElementById('cel-total').textContent = protocolState.totalDays;
+  document.getElementById('cel-continue-btn').textContent = `Keep Going — ${protocolState.totalDays} More Days`;
+  document.getElementById('cel-overlay').classList.add('on');
+}
+
+function closeCompletionModal(){
+  document.getElementById('cel-overlay').classList.remove('on');
+}
+
+async function continueChallenge(){
+  const extended = protocolState.totalDays * 2;
+  closeCompletionModal();
+  await setProtocolLength(extended);
+}
+
+function pickNewLength(){
+  closeCompletionModal();
+  const plenRow = document.getElementById('plen-row');
+  if (plenRow) plenRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // ── EXPORT RULES AS RECURRING REMINDERS/TASKS (.ics · VTODO) ──
@@ -1610,6 +1679,10 @@ async function saveTodayLog(opts) {
     await offerPivot();
   }
 
+  if (protocolState.currentDay === protocolState.totalDays) {
+    await checkProtocolCompletion();
+  }
+
   const summary = await runAICoach(currentUser);
   if (summary) scheduleLLMCoach(currentUser, summary);
   loadLeaderboard();
@@ -1883,6 +1956,7 @@ async function boot(){
   await loadTodayLog(currentUser);
   const summary = await runAICoach(currentUser);
   if (summary) scheduleLLMCoach(currentUser, summary);
+  await checkProtocolCompletion();
 }
 boot();
 
