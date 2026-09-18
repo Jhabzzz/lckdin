@@ -1174,6 +1174,7 @@ async function setProtocolLength(days){
   protocolState.totalDays = days;
   updatePlenPills();
   await rebuildDiscGrid();
+  await checkProtocolCompletion();
 }
 
 function applyCustomProtocolLength(){
@@ -1222,7 +1223,7 @@ function closeCompletionModal(){
 }
 
 async function continueChallenge(){
-  const extended = protocolState.totalDays * 2;
+  const extended = Math.min(protocolState.totalDays * 2, 999);
   closeCompletionModal();
   await setProtocolLength(extended);
 }

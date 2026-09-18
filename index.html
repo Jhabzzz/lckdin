@@ -2351,11 +2351,11 @@ function escapeHtml(str){
 }
 const LB_MIN_ROWS = 6; // pad with clearly-labeled example entries so the marketing preview doesn't look empty
 const LB_EXAMPLES = [
-  {username:'kabir.d',    current_day:52, perfect_days:41, avg_score:88},
-  {username:'zara.exec',  current_day:38, perfect_days:29, avg_score:82},
-  {username:'the.grindset', current_day:24, perfect_days:17, avg_score:75},
-  {username:'noah_t',     current_day:19, perfect_days:12, avg_score:71},
-  {username:'meera.k',    current_day:9,  perfect_days:6,  avg_score:68},
+  {username:'kabir.d',    current_day:52, perfect_days:41, avg_score:88, total_days:120},
+  {username:'zara.exec',  current_day:38, perfect_days:29, avg_score:82, total_days:120},
+  {username:'the.grindset', current_day:24, perfect_days:17, avg_score:75, total_days:120},
+  {username:'noah_t',     current_day:19, perfect_days:12, avg_score:71, total_days:120},
+  {username:'meera.k',    current_day:9,  perfect_days:6,  avg_score:68, total_days:120},
 ];
 async function loadLeaderboard(){
   const el = document.getElementById('lb-list');
@@ -2371,7 +2371,7 @@ async function loadLeaderboard(){
       <div class="lb-row${i<3?' top':''}${i>=real.length?' placeholder':''}">
         <div class="lb-rank">${i+1}</div>
         <div class="lb-user">${escapeHtml(r.username)}${i>=real.length?' <span style="opacity:.6">(example)</span>':''}</div>
-        <div class="lb-stat">Day <b>${r.current_day}</b>/120 · <b>${r.perfect_days}</b> perfect · <b>${r.avg_score}%</b> avg</div>
+        <div class="lb-stat">Day <b>${r.current_day}</b>/${r.total_days || 120} · <b>${r.perfect_days}</b> perfect · <b>${r.avg_score}%</b> avg</div>
       </div>`).join('');
     const rows = el.querySelectorAll('.lb-row');
     const lbObs = new IntersectionObserver(es=>{
