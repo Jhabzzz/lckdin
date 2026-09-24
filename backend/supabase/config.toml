@@ -13,3 +13,7 @@ verify_jwt = true
 # Called by a Postgres trigger with a shared secret, not a user JWT.
 [functions.send-waitlist-email]
 verify_jwt = false
+
+# Called by pg_cron with the INTERNAL_WEBHOOK_SECRET header, not a user JWT.
+[functions.adapt-agent]
+verify_jwt = false

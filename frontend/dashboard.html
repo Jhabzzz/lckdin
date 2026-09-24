@@ -2081,5 +2081,153 @@ sb.auth.onAuthStateChange((event) => {
   if (event === 'SIGNED_OUT') window.location.href = '/';
 });
 </script>
+<script>
+// ── SUGGESTED ADJUSTMENT (adapt-agent) ──
+// Additive: shows the user's pending rule_adaptations row above the AI briefing
+// card. Accept/reject go through RPCs, so the one-rule swap and the status change
+// happen atomically on the server. On success the page reloads, so RULES is rebuilt
+// from profiles.rules by boot() and is never mutated from here.
+(function () {
+  var STYLE_ID = 'adj-styles';
+  var css = [
+    '.adj-rule{font-family:var(--mono);font-size:12px;line-height:1.6;padding:10px 12px;border:1px solid var(--line2);margin-bottom:8px;color:var(--text2)}',
+    '.adj-rule b{display:block;font-size:9px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--text4);margin-bottom:4px}',
+    '.adj-rule.new{border-color:var(--lime);color:var(--text)}',
+    '.adj-why{font-family:var(--mono);font-size:11px;line-height:1.75;color:var(--text3);margin:14px 0 18px}',
+    '.adj-q{font-family:var(--mono);font-size:12px;line-height:1.6;color:var(--text);margin-bottom:12px}',
+    '.adj-actions{display:flex;gap:8px;flex-wrap:wrap}',
+    '.adj-btn{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;padding:10px 14px;border:1px solid var(--line2);background:transparent;color:var(--text2);cursor:pointer;border-radius:0}',
+    '.adj-btn:hover{color:var(--text);border-color:var(--text3)}',
+    '.adj-btn.primary{background:var(--lime);border-color:var(--lime);color:var(--on-accent)}',
+    '.adj-btn:disabled{opacity:.5;cursor:default}',
+    '.adj-msg{font-family:var(--mono);font-size:11px;margin-top:12px;color:var(--text3)}',
+    '.adj-msg.err{color:var(--error)}'
+  ].join('');
+
+  var ERRORS = {
+    rule_changed: 'Your rules changed since this was suggested. Nothing was changed.',
+    already_decided: 'This suggestion was already handled.',
+    not_found: 'This suggestion no longer exists.'
+  };
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function currentRulesPayload() {
+    // Only used server-side when profiles.rules is empty (user still on the default list).
+    try {
+      return RULES.map(function (r) { return { t: r.t, label: r.label || null }; });
+    } catch (e) { return null; }
+  }
+
+  function render(row) {
+    if (!document.getElementById(STYLE_ID)) {
+      var st = el('style'); st.id = STYLE_ID; st.textContent = css; document.head.appendChild(st);
+    }
+    var anchor = document.getElementById('ai-msg');
+    anchor = anchor && anchor.closest('.ai-card');
+    if (!anchor || !anchor.parentNode) return;
+
+    var card = el('div', 'ai-card'); card.id = 'adj-card';
+    var head = el('div', 'ai-ch');
+    head.appendChild(el('div', 'ai-pulse'));
+    head.appendChild(el('div', 'ai-ttl', 'Suggested adjustment'));
+    var body = el('div', 'ai-body');
+
+    var oldBox = el('div', 'adj-rule'); oldBox.appendChild(el('b', null, 'Now')); oldBox.appendChild(document.createTextNode(row.old_rule));
+    var newBox = el('div', 'adj-rule new'); newBox.appendChild(el('b', null, 'Suggested')); newBox.appendChild(document.createTextNode(row.proposed_rule));
+    var why = el('div', 'adj-why', row.reason);
+    var actions = el('div', 'adj-actions');
+    var msg = el('div', 'adj-msg');
+
+    function setMsg(text, isErr) { msg.textContent = text || ''; msg.className = 'adj-msg' + (isErr ? ' err' : ''); }
+    function busy(on) { Array.prototype.forEach.call(actions.querySelectorAll('button'), function (b) { b.disabled = on; }); }
+
+    function showChoices() {
+      actions.innerHTML = '';
+      var accept = el('button', 'adj-btn primary', 'Accept'); accept.type = 'button';
+      var reject = el('button', 'adj-btn', 'Reject'); reject.type = 'button';
+      accept.onclick = showConfirm;
+      reject.onclick = doReject;
+      actions.appendChild(accept); actions.appendChild(reject);
+    }
+
+    function showConfirm() {
+      setMsg('');
+      actions.innerHTML = '';
+      var q = el('div', 'adj-q', 'Replace “' + row.old_rule + '” with “' + row.proposed_rule + '”?');
+      var yes = el('button', 'adj-btn primary', 'Yes, replace'); yes.type = 'button';
+      var no = el('button', 'adj-btn', 'Cancel'); no.type = 'button';
+      yes.onclick = doAccept;
+      no.onclick = function () { q.remove(); showChoices(); };
+      actions.parentNode.insertBefore(q, actions);
+      actions.appendChild(yes); actions.appendChild(no);
+    }
+
+    async function doAccept() {
+      busy(true); setMsg('Applying…');
+      try {
+        var res = await sb.rpc('accept_rule_adaptation', { p_id: row.id, p_current_rules: currentRulesPayload() });
+        if (res.error) throw res.error;
+        if (!res.data || !res.data.success) {
+          var code = res.data && res.data.error;
+          setMsg(ERRORS[code] || 'Couldn’t apply that. Nothing was changed.', true);
+          busy(false);
+          if (code === 'already_decided' || code === 'not_found') actions.innerHTML = '';
+          return;
+        }
+        setMsg('Rule updated.');
+        setTimeout(function () { window.location.reload(); }, 900);
+      } catch (e) {
+        setMsg('Couldn’t apply that. Nothing was changed.', true);
+        busy(false);
+      }
+    }
+
+    async function doReject() {
+      busy(true); setMsg('');
+      try {
+        var res = await sb.rpc('reject_rule_adaptation', { p_id: row.id });
+        if (res.error || !res.data || !res.data.success) throw res.error || new Error('reject failed');
+        card.remove();
+      } catch (e) {
+        setMsg('Couldn’t dismiss that. Try again.', true);
+        busy(false);
+      }
+    }
+
+    body.appendChild(oldBox); body.appendChild(newBox); body.appendChild(why);
+    body.appendChild(actions); body.appendChild(msg);
+    card.appendChild(head); card.appendChild(body);
+    anchor.parentNode.insertBefore(card, anchor);
+    showChoices();
+  }
+
+  async function load() {
+    try {
+      var res = await sb.from('rule_adaptations')
+        .select('id, rule_index, old_rule, proposed_rule, reason')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!res.error && res.data) render(res.data);
+    } catch (e) { /* the card is optional; never break the dashboard */ }
+  }
+
+  // Wait for boot() to finish signing in and revealing the app.
+  var tries = 0;
+  (function waitForApp() {
+    var ready = false;
+    try { ready = !!currentUser && document.getElementById('app-content').style.display === 'block'; } catch (e) {}
+    if (ready) { load(); return; }
+    if (++tries < 60) setTimeout(waitForApp, 500);
+  })();
+})();
+</script>
 </body>
 </html>

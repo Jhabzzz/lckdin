@@ -57,12 +57,14 @@ lckdin/
 │   └── supabase/
 │       ├── config.toml        # per-function settings
 │       ├── functions/         # edge functions
+│       │   ├── adapt-agent/          # daily agent: suggests one adapted rule
 │       │   ├── analyze-journal/      # Snap & Track (Gemini vision)
 │       │   ├── ai-coach/             # AI Coach (Gemini)
 │       │   ├── send-daily-reminder/  # cron reminder email
 │       │   └── send-waitlist-email/  # waitlist welcome email
 │       └── migrations/        # database schema history
 ├── docs/
+│   ├── adapt-agent.md         # suggested-adjustment agent + merge runbook
 │   ├── analytics.md           # event taxonomy + privacy rules
 │   ├── architecture.md        # how the pieces fit together
 │   └── deploy.md              # deploying frontend, functions, migrations
