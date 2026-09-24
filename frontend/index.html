@@ -3,6 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="/analytics.js"></script>
+<script src="/feedback-widget.js"></script>
+<script>
+  // Analytics must never break the app. analytics.js can be blocked outright
+  // (adblockers commonly block that filename) or fail to load, so every
+  // analytics entry point is re-wrapped here: whatever loaded (or nothing)
+  // becomes a call that can never throw into the caller. That keeps signup,
+  // loadTodayLog() and saveTodayLog() working even with analytics fully gone.
+  (function (w) {
+    function safe(fn) {
+      return function () { try { if (typeof fn === 'function') fn.apply(w, arguments); } catch (e) {} };
+    }
+    w.trackEvent = safe(w.trackEvent);
+    w.identifyUser = safe(w.identifyUser);
+    w.resetAnalyticsIdentity = safe(w.resetAnalyticsIdentity);
+    w.LckdAnalytics = w.LckdAnalytics || {
+      getDeviceType: function () { return 'unknown'; },
+      getReferrerCategory: function () { return 'other'; }
+    };
+  })(window);
+</script>
 <title>LCKD—IN · Execute Without Excuses</title>
 <meta name="description" content="The 120-day discipline protocol. Log your day in 5 seconds, let AI catch what's breaking your streak, and keep a public accountability grid. Create your free account and start today.">
 <link rel="canonical" href="https://lckd-in.com/">
@@ -19,12 +40,21 @@
 <meta name="twitter:image" content="https://lckd-in.com/assets/images/og-image.jpg?v=2">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0C0B09" id="theme-color-meta">
-<link rel="icon" href="/assets/icons/favicon-32.png?v=2" sizes="32x32">
-<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png?v=2">
+<link rel="icon" href="/assets/icons/favicon-32.png?v=3" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png?v=3">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="LCKD—IN">
 <meta name="mobile-web-app-capable" content="yes">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "LCKD—IN",
+  "url": "https://lckd-in.com/",
+  "logo": "https://lckd-in.com/assets/icons/icon-512.png?v=3"
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,400;1,600;1,700;1,800&display=swap" rel="stylesheet">
@@ -165,7 +195,7 @@ body:has(.dc:hover) #cur{background:var(--lime);width:14px;height:14px}
 #nav{position:fixed;inset:0 0 auto;z-index:500;height:52px;border-bottom:1px solid var(--line);background:var(--nav-bg);backdrop-filter:blur(20px)}
 .nav-in{max-width:1320px;margin:0 auto;padding:0 40px;height:100%;display:flex;align-items:center;justify-content:space-between}
 .logo{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.06em;cursor:none}
-.logo em{font-style:normal;color:var(--lime)}
+.logo img{height:22px;width:auto;display:block}
 .nav-links{display:flex;align-items:center;gap:32px}
 .nl{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);background:none;border:none;padding:4px 0;cursor:none;transition:color .2s;position:relative}
 .nl::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1px;background:var(--lime);transition:width .3s var(--ease)}
@@ -749,7 +779,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 <!-- NAV -->
 <nav id="nav">
   <div class="nav-in">
-    <div class="logo">LCKD<em>—</em>IN</div>
+    <div class="logo"><img src="/assets/branding/lckd-in-logo-nav.png" alt="LCKD—IN"></div>
     <div class="nav-links" id="nav-links">
       <button class="nl" onclick="goto('challenge')">Challenge</button>
       <button class="nl" onclick="goto('grid')">Grid</button>
@@ -759,7 +789,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
       <button class="nl" id="auth-btn" onclick="handleAuthClick()">Sign in</button>
     </div>
     <div class="nav-right">
-      <button class="nav-cta" id="nav-signup-cta" onclick="openAuthModal('signup')" type="button"><span>Sign up free</span></button>
+      <button class="nav-cta" id="nav-signup-cta" onclick="openAuthModal('signup','nav')" type="button"><span>Sign up free</span></button>
       <button class="nav-signin-mobile" id="nav-signin-mobile" onclick="handleAuthClick()" aria-label="Sign in" type="button">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       </button>
@@ -777,7 +807,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 <!-- MOBILE STICKY CTA -->
 <div class="sticky-cta" id="sticky-cta">
   <span>247 already locked in</span>
-  <button class="btn-fill magnet" style="padding:9px 20px" onclick="openAuthModal('signup')"><span>Start</span></button>
+  <button class="btn-fill magnet" style="padding:9px 20px" onclick="openAuthModal('signup','sticky_mobile')"><span>Start</span></button>
 </div>
 
 <!-- AI CHAT WIDGET -->
@@ -870,7 +900,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
     </div>
     <div class="hero-serif" id="hero-tag">120-day protocol · zero dopamine · public accountability</div>
     <div class="hero-btns">
-      <button class="btn-fill magnet" onclick="openAuthModal('signup')"><span>Create Free Account</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px;vertical-align:-2px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <button class="btn-fill magnet" onclick="openAuthModal('signup','hero')"><span>Create Free Account</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:8px;vertical-align:-2px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
       <button class="btn-stroke" onclick="goto('grid')">See the grid</button>
     </div>
   </div>
@@ -972,7 +1002,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
       <div class="why-card rv"><div class="n">03</div><h3>AI catches the slip</h3><p>Miss a pattern and AI tells you exactly what's breaking your streak — before it resets to zero.</p></div>
     </div>
     <div class="rv" style="text-align:center;margin-top:48px">
-      <button class="btn-fill magnet" onclick="openAuthModal('signup')"><span>Create your account</span></button>
+      <button class="btn-fill magnet" onclick="openAuthModal('signup','challenge_section')"><span>Create your account</span></button>
     </div>
   </div>
 </section>
@@ -1236,7 +1266,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
           <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px">Coming in Phase 2</div>
           <div style="font-size:15px;font-weight:600;margin-bottom:10px;letter-spacing:-.01em">Connect your devices</div>
           <p class="bod" style="font-size:13px;margin-bottom:24px">Submit your email to be first when Apple Health, Whoop, Oura, and Garmin integrations go live.</p>
-          <button class="btn-fill" onclick="openAuthModal('signup')" style="width:100%"><span>Create your account</span></button>
+          <button class="btn-fill" onclick="openAuthModal('signup','wearables_waitlist')" style="width:100%"><span>Create your account</span></button>
         </div>
         <div style="margin-top:14px;border:1px solid var(--glass-brd);border-radius:var(--r-md);overflow:hidden">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
@@ -1288,7 +1318,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
     <div class="wl-tag">Early access · live now</div>
     <div class="wl-h">Ready to<br><em>lock in?</em></div>
     <p class="wl-sub">Create your free account and start today — real streak, real grid, real AI Coach. No trial. No paywall.</p>
-    <button class="btn-fill magnet" onclick="openAuthModal('signup')" style="margin:0 auto"><span>Create Free Account</span></button>
+    <button class="btn-fill magnet" onclick="openAuthModal('signup','final_cta')" style="margin:0 auto"><span>Create Free Account</span></button>
     <div class="wl-bridge" style="margin-top:22px">Not ready yet? <button onclick="document.getElementById('wl-form').scrollIntoView({behavior:'smooth'});document.getElementById('wl-email').focus()">Get notified by email</button> instead.</div>
     <div class="wl-form" id="wl-form" style="margin-top:28px">
       <input class="wl-input" id="wl-email" type="email" placeholder="your@email.com">
@@ -1344,6 +1374,11 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 sb.auth.getSession().then(({ data, error }) => {
   if (error) console.error('Supabase connection failed:', error);
 });
+
+trackEvent('landing_view', {
+  device_type: LckdAnalytics.getDeviceType(),
+  referrer_category: LckdAnalytics.getReferrerCategory()
+});
 // ── AUTH UI ──
 const authBtn = document.getElementById('auth-btn');
 let currentUser = null;
@@ -1354,7 +1389,8 @@ const USERNAME_RE = /^[a-zA-Z0-9_-]{3,30}$/;
 function handleAuthClick() { openAuthModal('signin'); }
 function handleSignOut() { sb.auth.signOut(); }
 
-function openAuthModal(mode) {
+function openAuthModal(mode, ctaLocation) {
+  if (mode === 'signup') trackEvent('cta_clicked', { cta_location: ctaLocation || 'unknown' });
   setAuthMode(mode || 'signin');
   document.getElementById('auth-overlay').classList.add('on');
 }
@@ -1412,6 +1448,7 @@ function setAuthMode(mode) {
     uIn.required = (mode === 'signup');
     sw.style.display = 'block';
     if (mode === 'signup') {
+      trackEvent('signup_started', {});
       ttl.textContent = 'Create your account';
       sub.textContent = 'Start your 120-day protocol.';
       btnSpan.textContent = 'Create account';
@@ -1432,6 +1469,17 @@ async function oauthSignIn(provider) {
   showAuthMsg('Redirecting to ' + provider + '…', '');
   const { error } = await sb.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin } });
   if (error) showAuthMsg(error.message, 'err');
+}
+
+// Maps a raw Supabase/validation error to a small predefined category —
+// never send the raw message text to analytics (may echo user input back).
+function categorizeAuthError(message) {
+  const m = (message || '').toLowerCase();
+  if (m.indexOf('already registered') !== -1 || m.indexOf('already exists') !== -1) return 'email_taken';
+  if (m.indexOf('password') !== -1) return 'weak_password';
+  if (m.indexOf('invalid login') !== -1 || m.indexOf('invalid credentials') !== -1) return 'invalid_credentials';
+  if (m.indexOf('network') !== -1 || m.indexOf('fetch') !== -1) return 'network_error';
+  return 'other';
 }
 
 async function handleAuthSubmit(e) {
@@ -1461,23 +1509,42 @@ async function handleAuthSubmit(e) {
   if (authMode === 'signup') {
     const username = document.getElementById('auth-username').value.trim();
     if (!USERNAME_RE.test(username)) {
+      trackEvent('signup_failed', { error_category: 'invalid_username' });
       showAuthMsg('Username must be 3-30 characters: letters, numbers, _ or - only.', 'err');
       btn.disabled = false; return false;
     }
     const { data: available } = await sb.rpc('check_username_available', { p_username: username });
-    if (!available) { showAuthMsg('That username is already taken.', 'err'); btn.disabled = false; return false; }
+    if (!available) {
+      trackEvent('signup_failed', { error_category: 'username_taken' });
+      showAuthMsg('That username is already taken.', 'err'); btn.disabled = false; return false;
+    }
     const { data, error } = await sb.auth.signUp({ email, password, options: { data: { username } } });
-    if (error) { showAuthMsg(error.message, 'err'); btn.disabled = false; return false; }
+    if (error) {
+      trackEvent('signup_failed', { error_category: categorizeAuthError(error.message) });
+      showAuthMsg(error.message, 'err'); btn.disabled = false; return false;
+    }
     if (data.session) {
+      // Fire before the profile insert / redirect below — onAuthStateChange
+      // can independently redirect to /app as soon as it sees a profile
+      // (e.g. inserted by ensureProfile racing this same insert), which can
+      // abort the rest of this function before it reaches a later trackEvent.
+      trackEvent('signup_completed', { auth_method: 'email' });
       const { error: pErr } = await sb.from('profiles').insert({ id: data.user.id, username });
-      if (pErr && pErr.code !== '23505') showAuthMsg("Account created, but couldn't save username: " + pErr.message, 'err');
-      else { showAuthMsg("Account created — you're in.", 'ok'); setTimeout(enterApp, 900); }
+      if (pErr && pErr.code !== '23505') {
+        showAuthMsg("Account created, but couldn't save username: " + pErr.message, 'err');
+      } else {
+        showAuthMsg("Account created — you're in.", 'ok'); setTimeout(enterApp, 900);
+      }
     } else {
       showAuthMsg('Check your email to confirm your account, then sign in.', 'ok');
     }
   } else {
     const { error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) { showAuthMsg(error.message, 'err'); btn.disabled = false; return false; }
+    if (error) {
+      trackEvent('signin_failed', { error_category: categorizeAuthError(error.message) });
+      showAuthMsg(error.message, 'err'); btn.disabled = false; return false;
+    }
+    trackEvent('signin_completed', { auth_method: 'email' });
     showAuthMsg('Welcome back.', 'ok');
     setTimeout(enterApp, 600);
   }
@@ -1494,6 +1561,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
     if (signupCta) signupCta.style.display = 'none';
     if (signinMobile) signinMobile.style.display = 'none';
     currentUser = session.user;
+    identifyUser(session.user.id);
     await ensureProfile(session.user);
     const { data: profile } = await sb.from('profiles').select('username').eq('id', session.user.id).maybeSingle();
     if (profile && profile.username) {
@@ -1504,6 +1572,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
     authBtn.onclick = handleAuthClick;
     if (signupCta) signupCta.style.display = '';
     if (signinMobile) signinMobile.style.display = '';
+    if (currentUser) resetAnalyticsIdentity();
     currentUser = null;
   }
 });

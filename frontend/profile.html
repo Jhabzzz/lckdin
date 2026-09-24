@@ -3,6 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="/analytics.js"></script>
+<script src="/feedback-widget.js"></script>
+<script>
+  // Analytics must never break the app. analytics.js can be blocked outright
+  // (adblockers commonly block that filename) or fail to load, so every
+  // analytics entry point is re-wrapped here: whatever loaded (or nothing)
+  // becomes a call that can never throw into the caller. That keeps signup,
+  // loadTodayLog() and saveTodayLog() working even with analytics fully gone.
+  (function (w) {
+    function safe(fn) {
+      return function () { try { if (typeof fn === 'function') fn.apply(w, arguments); } catch (e) {} };
+    }
+    w.trackEvent = safe(w.trackEvent);
+    w.identifyUser = safe(w.identifyUser);
+    w.resetAnalyticsIdentity = safe(w.resetAnalyticsIdentity);
+    w.LckdAnalytics = w.LckdAnalytics || {
+      getDeviceType: function () { return 'unknown'; },
+      getReferrerCategory: function () { return 'other'; }
+    };
+  })(window);
+</script>
 <title>LCKD—IN · Public Grid</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +42,7 @@
 body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh}
 .wrap{max-width:760px;margin:0 auto;padding:60px 24px}
 .logo{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.06em;margin-bottom:48px;display:inline-block;color:var(--text);text-decoration:none}
-.logo em{font-style:normal;color:var(--lime)}
+.logo img{height:22px;width:auto;display:block}
 .prof-name{font-size:clamp(32px,6vw,48px);font-weight:800;letter-spacing:-.03em;margin-bottom:8px}
 .prof-sub{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:40px}
 .disc-grid{display:grid;grid-template-columns:repeat(20,1fr);gap:4px;margin-bottom:24px}
@@ -45,7 +66,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 </head>
 <body>
 <div class="wrap">
-  <a class="logo" href="/">LCKD<em>—</em>IN</a>
+  <a class="logo" href="/"><img src="/assets/branding/lckd-in-logo-nav.png" alt="LCKD—IN"></a>
   <div id="content">
     <div class="state-msg">Loading...</div>
   </div>
@@ -96,6 +117,8 @@ async function renderPublicGrid() {
     `);
     return;
   }
+
+  trackEvent('public_profile_viewed', {});
 
   const { data: logs } = await sb.rpc('get_public_grid_logs', { p_user_id: profile.id });
   const totalDays = profile.total_days || 120;

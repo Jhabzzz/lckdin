@@ -32,6 +32,7 @@ Supabase is loaded from `cdn.jsdelivr.net/npm/@supabase/supabase-js@2`. There is
 | `profiles` | username, custom `rules` (jsonb), `total_days`, reminder settings |
 | `daily_logs` | one row per user per day: `day_number`, `score`, `status`, `rules` (jsonb), `is_pivot` |
 | `waitlist_emails` | insert-only for anon; an insert trigger calls `send-waitlist-email` |
+| `feedback` | insert-only from the API (no read policies). A `BEFORE INSERT` trigger rate-limits to 3 per 10 min per user (or per sha256-hashed IP when logged out) and 50 anonymous per hour, rejecting with `PT429` |
 
 Row Level Security limits reads and writes to the row owner. Public pages use narrow `SECURITY DEFINER` RPCs that return only the fields they render:
 

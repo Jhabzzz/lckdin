@@ -10,4 +10,5 @@ node_modules/
 # Tooling
 .vercel/
 backend/supabase/.temp/
-.claude/
+.claude/*
+!.claude/agents/

@@ -3,12 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="/analytics.js"></script>
+<script src="/feedback-widget.js"></script>
+<script>
+  // Analytics must never break the app. analytics.js can be blocked outright
+  // (adblockers commonly block that filename) or fail to load, so every
+  // analytics entry point is re-wrapped here: whatever loaded (or nothing)
+  // becomes a call that can never throw into the caller. That keeps signup,
+  // loadTodayLog() and saveTodayLog() working even with analytics fully gone.
+  (function (w) {
+    function safe(fn) {
+      return function () { try { if (typeof fn === 'function') fn.apply(w, arguments); } catch (e) {} };
+    }
+    w.trackEvent = safe(w.trackEvent);
+    w.identifyUser = safe(w.identifyUser);
+    w.resetAnalyticsIdentity = safe(w.resetAnalyticsIdentity);
+    w.LckdAnalytics = w.LckdAnalytics || {
+      getDeviceType: function () { return 'unknown'; },
+      getReferrerCategory: function () { return 'other'; }
+    };
+  })(window);
+</script>
 <title>Dashboard · LCKD—IN</title>
 <meta name="robots" content="noindex">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0C0B09" id="theme-color-meta">
-<link rel="icon" href="/assets/icons/favicon-32.png?v=2" sizes="32x32">
-<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png?v=2">
+<link rel="icon" href="/assets/icons/favicon-32.png?v=3" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png?v=3">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="LCKD—IN">
@@ -757,7 +778,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 #app-nav{position:fixed;inset:0 0 auto;z-index:500;height:52px;border-bottom:1px solid var(--line);background:var(--nav-bg);backdrop-filter:blur(20px)}
 .app-nav-in{max-width:1320px;margin:0 auto;padding:0 40px;height:100%;display:flex;align-items:center;justify-content:space-between;gap:20px}
 .app-logo{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.06em;color:var(--text);text-decoration:none}
-.app-logo em{font-style:normal;color:var(--lime)}
+.app-logo img{height:22px;width:auto;display:block}
 .app-nav-mid{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);display:flex;align-items:center;gap:8px}
 .app-nav-mid a{color:var(--text3);text-decoration:none;transition:color .2s}
 .app-nav-mid a:hover{color:var(--text)}
@@ -793,7 +814,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
 
 <nav id="app-nav">
   <div class="app-nav-in">
-    <a class="app-logo" href="/">LCKD<em>—</em>IN</a>
+    <a class="app-logo" href="/"><img src="/assets/branding/lckd-in-logo-nav.png" alt="LCKD—IN"></a>
     <div class="app-nav-mid">
       <a href="/" id="app-grid-link" target="_blank" rel="noopener">Your public grid ↗</a>
     </div>
@@ -1065,7 +1086,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentUser = null;
-function handleSignOut(){ sb.auth.signOut().then(()=>{ window.location.href = '/'; }); }
+function handleSignOut(){ resetAnalyticsIdentity(); sb.auth.signOut().then(()=>{ window.location.href = '/'; }); }
 
 // ── DISC GRID (real user grid — populated by hydrateProtocol below) ──
 const dcEls = [];
@@ -1134,6 +1155,7 @@ function closeDayDetail(){
 function copyLink(){
   const url = 'https://lckd-in.com/' + (window.__appUsername || '');
   navigator.clipboard.writeText(url).catch(()=>{});
+  trackEvent('public_profile_shared', {});
   const b=document.getElementById('copy-btn');
   b.textContent='✓ Copied';
   setTimeout(()=>b.textContent='Copy link',2000);
@@ -1153,7 +1175,9 @@ async function toggleReminders(on){
     console.error('Failed to update reminder preference:', error);
     setRemindersToggle(!on);
     alert('Could not save that setting — try again.');
+    return;
   }
+  trackEvent(on ? 'reminder_enabled' : 'reminder_disabled', {});
 }
 
 // ── PROTOCOL LENGTH (30/75/120-day switch) ──
@@ -1163,15 +1187,22 @@ function updatePlenPills(){
   });
 }
 
-async function setProtocolLength(days){
+async function setProtocolLength(days, source){
   if (!currentUser || days === protocolState.totalDays) return;
   if (protocolState.currentDay > days) {
     const ok = confirm(`You're already on day ${protocolState.currentDay} — past a ${days}-day protocol. Your history is kept either way, but the grid will show as complete. Switch anyway?`);
     if (!ok) return;
   }
+  const previousLength = protocolState.totalDays;
   const { error } = await sb.from('profiles').update({ total_days: days }).eq('id', currentUser.id);
   if (error) { alert('Could not update protocol length — try again.'); return; }
   protocolState.totalDays = days;
+  if (window.__pendingNewProtocolFlow) {
+    window.__pendingNewProtocolFlow = false;
+    trackEvent('new_protocol_started', { protocol_length: days });
+  } else if (source !== 'extend') {
+    trackEvent('protocol_length_selected', { protocol_length: days, previous_length: previousLength });
+  }
   updatePlenPills();
   await rebuildDiscGrid();
   await checkProtocolCompletion();
@@ -1212,6 +1243,7 @@ async function checkProtocolCompletion(){
 }
 
 function showCompletionModal(){
+  trackEvent('protocol_completed', { protocol_length: protocolState.totalDays });
   document.getElementById('cel-days').textContent = protocolState.totalDays;
   document.getElementById('cel-total').textContent = protocolState.totalDays;
   document.getElementById('cel-continue-btn').textContent = `Keep Going — ${protocolState.totalDays} More Days`;
@@ -1223,13 +1255,16 @@ function closeCompletionModal(){
 }
 
 async function continueChallenge(){
+  const previousLength = protocolState.totalDays;
   const extended = Math.min(protocolState.totalDays * 2, 999);
   closeCompletionModal();
-  await setProtocolLength(extended);
+  await setProtocolLength(extended, 'extend');
+  trackEvent('protocol_extended', { previous_length: previousLength, new_length: extended });
 }
 
 function pickNewLength(){
   closeCompletionModal();
+  window.__pendingNewProtocolFlow = true;
   const plenRow = document.getElementById('plen-row');
   if (plenRow) plenRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
@@ -1488,6 +1523,7 @@ function buildRules(){
 
 // ── TABS ──
 function switchTab(n){
+  if (n === 'snap') trackEvent('snap_track_opened', {});
   ['day','snap'].forEach(x=>{
     document.getElementById('tab-'+x).classList.toggle('on',x===n);
     document.getElementById('panel-'+x).classList.toggle('on',x===n);
@@ -1510,6 +1546,7 @@ function fileToBase64(file){
 async function handleSnapUpload(file){
   if(!file) return;
   if(!currentUser){ alert('Sign in first to use Snap & Track.'); return; }
+  trackEvent('snap_track_image_submitted', {});
   const dropTxt = document.querySelector('#snap-drop p');
   const originalTxt = dropTxt.textContent;
   dropTxt.textContent = 'Analyzing photo…';
@@ -1524,15 +1561,20 @@ async function handleSnapUpload(file){
 
     CS = data.results.map(r => ({ ...RULES[r.idx], idx: r.idx, done: r.done }));
     document.getElementById('conf-ttl').textContent = `AI confidence — ${data.confidence}%`;
+    trackEvent('snap_track_succeeded', {});
     renderConf();
   }catch(err){
+    trackEvent('snap_track_failed', { error_category: 'vision_analysis_failed' });
     alert('Snap & Track failed: ' + (err.message || err));
   }finally{
     dropTxt.textContent = originalTxt;
   }
 }
 
+let snapCorrectedThisSession = false;
+
 function renderConf(){
+  snapCorrectedThisSession = false;
   document.getElementById('conf').style.display='block';
   const doneCount = CS.filter(r=>r.done).length;
   document.getElementById('conf-sub').textContent =
@@ -1545,6 +1587,7 @@ function renderConf(){
       ${r.label?`<span class="cr-low ${labelClass(r.label)}">${escapeHtml(r.label)}</span>`:''}`;
     const b=row.querySelector('.crb');
     row.onclick=()=>{
+      if (!snapCorrectedThisSession) { snapCorrectedThisSession = true; trackEvent('snap_track_corrected', {}); }
       r.done=!r.done;
       b.className='crb'+(r.done?' y':'');
       b.textContent=r.done?'✓':'';
@@ -1555,7 +1598,7 @@ function renderConf(){
     cl.appendChild(row);
   });
 }
-function confirmLog(){CS.forEach(r=>{RULES[r.idx].done=r.done});buildRules();updateRing();switchTab('day')}
+function confirmLog(){trackEvent('snap_track_confirmed', {});CS.forEach(r=>{RULES[r.idx].done=r.done});buildRules();updateRing();switchTab('day')}
 
 // ── LOCAL (not UTC) calendar date — day boundaries follow the visitor's own clock/timezone ──
 function localDateStr(d){
@@ -1587,6 +1630,13 @@ async function hydrateProtocol(user) {
     : Math.min(maxDay + 1, protocolState.totalDays) || 1;
   protocolState.pivotsUsed = (logs || []).filter(l => l.is_pivot).length;
 
+  // hydrateProtocol is the authoritative source for "does today already have
+  // a saved row" — it re-runs (via rebuildDiscGrid) whenever the protocol
+  // length changes and currentDay is recalculated, so the "first save today"
+  // milestone flags must be refreshed here too, not just once at boot.
+  todayLogExistedBeforeSession = !!todaysLog;
+  todayLogSavedThisSession = false;
+
   dcEls.forEach((cell, idx) => {
     const day = idx + 1;
     if (day >= protocolState.currentDay) return; // today + future rendered elsewhere
@@ -1611,6 +1661,7 @@ async function hydrateProtocol(user) {
 
   updateRingDisplay();
   updatePivotBadge();
+  return { hasAnyLogs: loggedDays.length > 0 };
 }
 
 function updatePivotBadge() {
@@ -1620,10 +1671,11 @@ function updatePivotBadge() {
 
 async function offerPivot() {
   const remaining = protocolState.pivotsMax - protocolState.pivotsUsed;
+  trackEvent('pivot_offered', { pivots_remaining: remaining });
   const wantsPivot = confirm(
     `Today's a full miss. Use a Pivot to protect your streak instead of taking the loss? (${remaining} pivot${remaining === 1 ? '' : 's'} remaining)`
   );
-  if (!wantsPivot) return;
+  if (!wantsPivot) { trackEvent('pivot_declined', {}); return; }
 
   const { data, error } = await sb.rpc('use_pivot', { p_day_number: protocolState.currentDay });
   if (error || !data || !data.success) {
@@ -1632,6 +1684,7 @@ async function offerPivot() {
   }
 
   protocolState.pivotsUsed = data.pivots_used;
+  trackEvent('pivot_used', { pivots_used_total: data.pivots_used, pivots_remaining: protocolState.pivotsMax - data.pivots_used });
   const cell = dcEls[protocolState.currentDay - 1];
   if (cell) {
     cell.className = 'dc show today pivot';
@@ -1640,6 +1693,9 @@ async function offerPivot() {
   updatePivotBadge();
 }
 
+let todayLogExistedBeforeSession = false;
+let todayLogSavedThisSession = false;
+
 async function loadTodayLog(user) {
   const { data } = await sb
     .from('daily_logs')
@@ -1647,6 +1703,8 @@ async function loadTodayLog(user) {
     .eq('user_id', user.id)
     .eq('day_number', protocolState.currentDay)
     .single();
+
+  todayLogExistedBeforeSession = !!data;
 
   if (data) {
     data.rules.forEach((savedRule, i) => {
@@ -1679,6 +1737,14 @@ async function saveTodayLog(opts) {
     hadEffortToday = !!(existing && existing.score > 0);
   }
 
+  // Real daily-log activity vs. incidental saves from rule-list editing —
+  // only the former counts toward the "first save today" milestones below.
+  const isRealLogAction = !opts.skipPivotOffer;
+  const isFirstEverSaveForDay = isRealLogAction && !todayLogExistedBeforeSession && !todayLogSavedThisSession;
+  if (isFirstEverSaveForDay) {
+    trackEvent('daily_log_started', { day_number: protocolState.currentDay });
+  }
+
   const { error } = await sb.from('daily_logs').upsert({
     user_id: currentUser.id,
     day_number: protocolState.currentDay,
@@ -1689,6 +1755,28 @@ async function saveTodayLog(opts) {
   }, { onConflict: 'user_id,day_number' });
 
   if (error) { console.error('Save failed:', error); return; }
+
+  if (isRealLogAction) {
+    todayLogSavedThisSession = true;
+    const scoreBucket = status === 'PERFECT' ? 'perfect' : status === 'MISS' ? 'miss' : 'partial';
+    trackEvent('daily_log_saved', { day_number: protocolState.currentDay, score_bucket: scoreBucket });
+
+    if (isFirstEverSaveForDay) {
+      if (protocolState.currentDay === 1) trackEvent('day_1_logged', {});
+      else if (protocolState.currentDay === 2) trackEvent('day_2_logged', {});
+      else if (protocolState.currentDay === 7) trackEvent('day_7_reached', {});
+    }
+
+    if (status === 'PERFECT' && currentUser) {
+      try {
+        const perfectKey = `lckdin-perfect-tracked-${currentUser.id}-${protocolState.currentDay}`;
+        if (!localStorage.getItem(perfectKey)) {
+          localStorage.setItem(perfectKey, '1');
+          trackEvent('perfect_day_logged', { day_number: protocolState.currentDay });
+        }
+      } catch (e) { /* best-effort dedup only */ }
+    }
+  }
 
   if (!opts.skipPivotOffer && score === 0 && !hadEffortToday && protocolState.pivotsUsed < protocolState.pivotsMax) {
     await offerPivot();
@@ -1803,6 +1891,7 @@ async function enrichAICoachWithLLM(user, summary){
   const msgEl = document.getElementById('ai-msg');
   const originalMsg = msgEl.innerHTML;
   msgEl.innerHTML = '<em style="color:var(--text3)">Thinking…</em>';
+  trackEvent('ai_coach_requested', {});
   try {
     const { data, error } = await sb.functions.invoke('ai-coach', { body: summary });
     if (error) throw error;
@@ -1818,8 +1907,10 @@ async function enrichAICoachWithLLM(user, summary){
         .map(t => `<div class="ins"><div class="ins-dot"></div><div class="ins-txt">${escapeHtml(t)}</div></div>`)
         .join('');
     }
+    trackEvent('ai_coach_succeeded', {});
   } catch (err) {
     console.error('AI coach LLM pass failed, keeping deterministic text:', err);
+    trackEvent('ai_coach_failed', { error_category: 'llm_pass_failed' });
     msgEl.innerHTML = originalMsg;
   }
 }
@@ -1902,9 +1993,14 @@ function escapeHtml(str){
   d.textContent = str;
   return d.innerHTML;
 }
+let leaderboardViewedThisSession = false;
 async function loadLeaderboard(){
   const el = document.getElementById('lb-list');
   if (!el) return;
+  if (!leaderboardViewedThisSession) {
+    leaderboardViewedThisSession = true;
+    trackEvent('leaderboard_viewed', {});
+  }
   try{
     const { data, error } = await sb.rpc('get_leaderboard');
     if (error) throw error;
@@ -1934,6 +2030,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) load
 async function boot(){
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = '/'; return; }
+  identifyUser(session.user.id);
 
   const { data: profile } = await sb.from('profiles').select('username, reminders_enabled, rules, total_days').eq('id', session.user.id).maybeSingle();
   if (!profile || !profile.username) { window.location.href = '/'; return; }
@@ -1967,7 +2064,12 @@ async function boot(){
   document.getElementById('app-content').style.display = 'block';
 
   currentUser = session.user;
-  await hydrateProtocol(currentUser);
+  const hydrateResult = await hydrateProtocol(currentUser);
+  if (hydrateResult && !hydrateResult.hasAnyLogs) {
+    // First time this account has ever reached the dashboard with zero
+    // logged days — the one-time "protocol started" milestone.
+    trackEvent('protocol_started', { protocol_length: protocolState.totalDays });
+  }
   await loadTodayLog(currentUser);
   const summary = await runAICoach(currentUser);
   if (summary) scheduleLLMCoach(currentUser, summary);

@@ -34,6 +34,7 @@ LCKD—IN is a habit-accountability web app built around a fixed-length protocol
 | AI | Google Gemini (vision + text) |
 | Email | [Resend](https://resend.com) |
 | Hosting | [Vercel](https://vercel.com) |
+| Analytics | [PostHog](https://posthog.com): product analytics and Web Vitals |
 
 ## Project structure
 
@@ -43,6 +44,8 @@ lckdin/
 │   ├── index.html             # landing page + sign-up / sign-in       →  /
 │   ├── dashboard.html         # the app                                 →  /app
 │   ├── profile.html           # public accountability grid              →  /u/:username
+│   ├── analytics.js           # PostHog wrapper (never throws, prod-only)
+│   ├── feedback-widget.js     # floating feedback button → feedback table
 │   ├── manifest.json          # PWA manifest
 │   ├── sw.js                  # service worker (network-first offline shell)
 │   ├── vercel.json            # rewrites + redirects
@@ -60,6 +63,7 @@ lckdin/
 │       │   └── send-waitlist-email/  # waitlist welcome email
 │       └── migrations/        # database schema history
 └── docs/
+    ├── analytics.md           # event taxonomy + privacy rules
     ├── architecture.md        # how the pieces fit together
     └── deploy.md              # deploying frontend, functions, migrations
 ```
