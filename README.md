@@ -1,68 +1,89 @@
 <div align="center">
 
-<img src="assets/icons/og-image.jpg" alt="LCKD—IN" width="100%" />
-
 # LCKD—IN
 
-**The 120-day discipline protocol. Execute without excuses.**
+**A daily discipline tracker. Log your day in 5 seconds, and see what's actually breaking your streak.**
 
-[www.lckd-in.com](https://www.lckd-in.com)
+[**lckd-in.com**](https://www.lckd-in.com)
+
+<img src="docs/images/landing.png" alt="LCKD—IN landing page" width="100%" />
 
 </div>
 
----
-
 ## What it is
 
-LCKD—IN is a daily habit-accountability app built around one idea: **log your day in 5 seconds, and let the app catch what's actually breaking your streak** — not vague motivation, real pattern analysis from your own data.
-
-Pick a protocol length (7, 30, 75, 120 days — or anything custom), check off your rules each day, and your progress lives on a public, shareable grid. No fake stats, no filler — every number on the page is either real user data or clearly labeled as an example.
+LCKD—IN is a habit-accountability web app built around a fixed-length protocol (7, 30, 75, 120 days, or custom). Each day you check off your rules. Your progress lives on a public, shareable grid, and an AI coach looks at your own history to find the one habit that drags the others down.
 
 ## Features
 
-- **Streak grid** — a 120-square (or however long you choose) visual record of every day: perfect, partial, missed, or protected by a pivot. Click any square to see the full rule-by-rule breakdown for that day.
-- **Pivot Protocol** — miss a day completely and you can spend one of a limited number of pivots to protect your streak instead of resetting to zero. Discipline that accounts for being human.
-- **AI Coach** — real 7-day correlation analysis (not a canned tip) finds the one habit quietly dragging the rest down, backed by an LLM pass for specific, non-generic coaching.
-- **Snap & Track** — photograph a handwritten log and AI vision reads the checkmarks and maps them to your rules automatically.
-- **Custom rules** — add, edit, remove, and label your own rules (with quick `!` / `!!` / `!!!` priority tags) instead of a fixed list.
-- **Public accountability grid** — every account gets a shareable `lckd-in.com/u/username` page. Your discipline is public by default.
-- **Fair leaderboard** — ranked by average score (a normalized rate), not raw day count, so a finished 7-day run competes fairly against someone 40 days into a 120-day one.
-- **Completion celebration** — finish your protocol and get a real congratulations screen with the choice to extend or start a new length.
-- **Daily reminder emails**, dark/light theme, and a installable PWA shell.
+- **Streak grid.** One square per day: perfect, partial, missed, or protected by a pivot. Click a square for the rule-by-rule breakdown.
+- **Pivot Protocol.** Miss a whole day and you can spend one of five pivots to protect your streak instead of resetting it.
+- **AI Coach.** A 7-day correlation pass finds your root-cause habit, then Gemini turns the numbers into specific coaching.
+- **Snap & Track.** Photograph a handwritten log and Gemini vision maps the checkmarks to your rules.
+- **Custom rules.** Add, edit, and remove your own rules, with `!` / `!!` / `!!!` priority tags.
+- **Public profile.** Every account gets a shareable `lckd-in.com/u/<username>` grid.
+- **Fair leaderboard.** Ranked by average score, so a 7-day run competes fairly with a 120-day one.
+- **Daily reminder emails**, dark/light theme, and an installable PWA.
 
 ## Tech stack
 
-No framework — vanilla HTML/CSS/JS, kept deliberately simple and fast.
-
 | Layer | Tech |
 |---|---|
-| Frontend | Vanilla JS, hand-written CSS (no build step) |
-| Backend | [Supabase](https://supabase.com) — Postgres, Auth, RLS, Edge Functions |
-| AI | Gemini (vision for Snap & Track, coaching analysis) |
+| Frontend | Vanilla HTML / CSS / JS. No framework, no build step |
+| Backend | [Supabase](https://supabase.com): Postgres, Auth, Row Level Security, Edge Functions (Deno) |
+| AI | Google Gemini (vision + text) |
 | Email | [Resend](https://resend.com) |
 | Hosting | [Vercel](https://vercel.com) |
 
 ## Project structure
 
 ```
-index.html      — marketing site + sign-up/sign-in
-dashboard.html   — the real app (served at /app)
-profile.html     — public accountability grid (served at /u/:username)
-manifest.json    — PWA manifest
-sw.js            — service worker (offline shell, network-first)
-vercel.json      — routing/rewrites
-assets/          — icons, backgrounds, image assets
+lckdin/
+├── frontend/                  # everything Vercel serves
+│   ├── index.html             # landing page + sign-up / sign-in       →  /
+│   ├── dashboard.html         # the app                                 →  /app
+│   ├── profile.html           # public accountability grid              →  /u/:username
+│   ├── manifest.json          # PWA manifest
+│   ├── sw.js                  # service worker (network-first offline shell)
+│   ├── vercel.json            # rewrites + redirects
+│   └── assets/
+│       ├── icons/             # favicon, app icons
+│       ├── images/            # social preview, quote backgrounds
+│       └── branding/          # logo source files
+├── backend/
+│   └── supabase/
+│       ├── config.toml        # per-function settings
+│       ├── functions/         # edge functions
+│       │   ├── analyze-journal/      # Snap & Track (Gemini vision)
+│       │   ├── ai-coach/             # AI Coach (Gemini)
+│       │   ├── send-daily-reminder/  # cron reminder email
+│       │   └── send-waitlist-email/  # waitlist welcome email
+│       └── migrations/        # database schema history
+└── docs/
+    ├── architecture.md        # how the pieces fit together
+    └── deploy.md              # deploying frontend, functions, migrations
 ```
+
+## Run locally
+
+The frontend is static files that talk to the hosted Supabase project, so any static server works:
+
+```bash
+cd frontend
+python3 -m http.server 8000
+```
+
+Then open `http://localhost:8000` for the landing page and `http://localhost:8000/dashboard.html` for the app. The `/app` and `/u/:username` routes are Vercel rewrites. To get those locally, run `npx vercel dev` from `frontend/`.
+
+## Deploy
+
+- **Frontend:** push to `main`. Vercel (Root Directory = `frontend`) deploys to production automatically.
+- **Edge functions:** `cd backend && supabase functions deploy <name> --project-ref qtlhpaqsmbyneivdsiei`
+
+Full details, including secrets and migrations, are in [`docs/deploy.md`](docs/deploy.md). For how it all fits together, see [`docs/architecture.md`](docs/architecture.md).
 
 ## Security
 
-- Row Level Security locked to owner-only reads on all personal tables.
-- Public pages (leaderboard, profile grid, username availability) go through narrow `SECURITY DEFINER` database functions that expose only the specific fields those pages need — never raw table access.
-
----
-
-<div align="center">
-
-Built solo, iterated daily.
-
-</div>
+- Row Level Security limits every personal table to owner-only access.
+- Public pages (leaderboard, profile grid, username check) go through narrow `SECURITY DEFINER` functions that return only the fields they render.
+- API keys live in Supabase secrets, never in this repo.
