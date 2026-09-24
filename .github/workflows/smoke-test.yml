@@ -1,0 +1,31 @@
+name: smoke-test
+
+# After a push to main, give Vercel time to deploy, then make sure production answers.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Wait for Vercel deploy
+        run: sleep 60
+
+      - name: Check lckd-in.com, /app and a public profile
+        run: |
+          fail=0
+          for path in / /app /u/jhaby; do
+            url="https://www.lckd-in.com$path"
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 --retry 3 --retry-delay 5 --retry-all-errors "$url" || echo 000)
+            echo "$code  $url"
+            if [ "$code" != "200" ]; then
+              echo "::error::$url returned $code"
+              fail=1
+            fi
+          done
+          exit $fail

@@ -1,0 +1,20 @@
+name: design-check
+
+# Fails if frontend/ uses any color literal outside .github/design-allowlist.txt
+# (the palette the live site uses; see CLAUDE.md > Design system).
+# Run locally: python3 .github/scripts/design_check.py
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  colors:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check frontend colors against the allowlist
+        run: python3 .github/scripts/design_check.py

@@ -34,3 +34,13 @@ supabase secrets set GEMINI_API_KEY=... --project-ref qtlhpaqsmbyneivdsiei
 New migrations go in `backend/supabase/migrations/` as `<timestamp>_<name>.sql`. Apply them with `supabase db push`, or through the Supabase dashboard / MCP.
 
 Migration `20260731060658_fix_waitlist_email_trigger_secret.sql` has a `<INTERNAL_WEBHOOK_SECRET>` placeholder. Substitute the real value if you ever re-apply it.
+
+## CI (GitHub Actions)
+
+| Workflow | Runs on | Fails when |
+|---|---|---|
+| `secret-scan` | every push + PR | gitleaks finds a secret anywhere in git history (config: `.github/gitleaks.toml`; only the Supabase anon/publishable keys and the PostHog `phc_` key are allowlisted) |
+| `design-check` | every push + PR | `frontend/` uses a color not in `.github/design-allowlist.txt`. Run locally with `python3 .github/scripts/design_check.py` |
+| `smoke-test` | push to `main` | 60s after the push, `/`, `/app` or `/u/jhaby` on lckd-in.com doesn't return 200 |
+
+All three run on GitHub's free tier (public repo) and need no secrets.

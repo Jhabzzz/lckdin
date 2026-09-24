@@ -66,6 +66,11 @@ lckdin/
 │   ├── analytics.md           # event taxonomy + privacy rules
 │   ├── architecture.md        # how the pieces fit together
 │   └── deploy.md              # deploying frontend, functions, migrations
+├── .github/
+│   ├── workflows/             # CI: secret-scan (gitleaks), design-check, smoke-test
+│   ├── scripts/design_check.py
+│   ├── design-allowlist.txt   # every color the frontend may use
+│   └── gitleaks.toml          # secret rules + public-key allowlist
 ├── .claude/agents/            # Claude Code subagents: design-guard, deploy-check,
 │                              #   repo-keeper, supabase-guard
 └── CLAUDE.md                  # rules for AI-assisted changes (design system, no-touch code)

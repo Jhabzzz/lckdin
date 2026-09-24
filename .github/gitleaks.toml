@@ -1,0 +1,44 @@
+# Gitleaks config for .github/workflows/secret-scan.yml
+# Default rules, minus keys that are PUBLIC BY DESIGN and ship to every browser.
+# Allowlists are exact/narrow on purpose: a service_role JWT, an sb_secret_ key,
+# a different PostHog key, etc. will still fail the scan.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Public client keys"
+regexes = [
+  # Supabase anon JWT for project qtlhpaqsmbyneivdsiei — header + {"iss":"supabase","ref":"qtlhpaqsmbyneivdsiei","role":"anon"
+  '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0bGhwYXFzbWJ5bmVpdmRzaWVpIiwicm9sZSI6ImFub24i''',
+  # Supabase publishable (client) keys — secret keys use sb_secret_ and are NOT allowlisted
+  '''^sb_publishable_[A-Za-z0-9_-]+$''',
+  # PostHog project key (write-only ingestion key)
+  '''^phc_mixTga5aQuvj5LA36FTfSUqJ7VyvRdA2yv4opN4yfTYE$''',
+]
+
+# Extra rules for this stack (defaults don't cover all of these, and default
+# rules skip low-entropy values — these match on shape alone).
+[[rules]]
+id = "supabase-secret-key"
+description = "Supabase secret API key"
+regex = '''\bsb_secret_[A-Za-z0-9_-]{16,}'''
+keywords = ["sb_secret_"]
+
+[[rules]]
+id = "resend-api-key"
+description = "Resend API key"
+regex = '''\bre_[A-Za-z0-9]{6,}_[A-Za-z0-9]{12,}'''
+keywords = ["re_"]
+
+[[rules]]
+id = "sk-style-secret-key"
+description = "sk_/sk- secret keys (Stripe, OpenAI, Anthropic, …)"
+regex = '''\b(?:sk|rk)[-_](?:live|test|proj|ant|api\d*)?[-_]?[A-Za-z0-9_-]{24,}'''
+keywords = ["sk_", "sk-", "rk_", "rk-"]
+
+[[rules]]
+id = "service-role-jwt"
+description = "Supabase service_role JWT (payload contains \"role\":\"service_role\")"
+regex = '''eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]*(?:InNlcnZpY2Vfcm9sZS|Jzb2xlIjoic2VydmljZV9yb2xl|cm9sZSI6InNlcnZpY2Vfcm9sZS)[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+'''
+keywords = ["eyj"]
