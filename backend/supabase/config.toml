@@ -1,0 +1,15 @@
+project_id = "qtlhpaqsmbyneivdsiei"
+
+# Mirrors the live verify_jwt settings so redeploys don't change auth behavior.
+[functions.analyze-journal]
+verify_jwt = true
+
+[functions.ai-coach]
+verify_jwt = true
+
+[functions.send-daily-reminder]
+verify_jwt = true
+
+# Called by a Postgres trigger with a shared secret, not a user JWT.
+[functions.send-waitlist-email]
+verify_jwt = false
