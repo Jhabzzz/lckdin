@@ -62,10 +62,13 @@ lckdin/
 │       │   ├── send-daily-reminder/  # cron reminder email
 │       │   └── send-waitlist-email/  # waitlist welcome email
 │       └── migrations/        # database schema history
-└── docs/
-    ├── analytics.md           # event taxonomy + privacy rules
-    ├── architecture.md        # how the pieces fit together
-    └── deploy.md              # deploying frontend, functions, migrations
+├── docs/
+│   ├── analytics.md           # event taxonomy + privacy rules
+│   ├── architecture.md        # how the pieces fit together
+│   └── deploy.md              # deploying frontend, functions, migrations
+├── .claude/agents/            # Claude Code subagents: design-guard, deploy-check,
+│                              #   repo-keeper, supabase-guard
+└── CLAUDE.md                  # rules for AI-assisted changes (design system, no-touch code)
 ```
 
 ## Run locally
