@@ -21,7 +21,7 @@ dashboard.html "Suggested adjustment" card
 
 `adapt_agent_candidates()` picks users who:
 - logged at least once in the last 14 days (inactive users are left alone)
-- missed **2 or more of the last 3 completed days**, where "missed" means no log that day or status `MISS`
+- missed **2 or more of the last 3 completed days**, where "missed" means no log that day or status `MISS`. A **pivot-protected day is never counted as missed**, because using a pivot is already the "adapt, don't reset" move. The agent's prompt also tells it not to treat pivot days as evidence of slipping.
 - have had **no suggestion in the last 7 days**, whether pending, accepted or rejected
 
 A user can also have at most one pending suggestion (unique index), and each run is capped at 50 users.
