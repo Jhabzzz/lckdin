@@ -7,6 +7,7 @@ import { createClient, type SupabaseClient } from "jsr:@supabase/supabase-js@2";
 //
 // WHAT to suggest is decided deterministically in analyze() before the model runs; the
 // model only explains why and words it, and create_rule_adaptation enforces the decision:
+//   - Only COMPLETED days are ever read: never the user's own today (see completedBefore()).
 //   - Evidence = the user's last 3 LOGGED days (pivot days excluded). No-log days make a
 //     user a candidate but never count against a specific rule. 0% days are treated like
 //     no-log days: nothing checked says nothing about WHICH rule failed, and editing the
@@ -89,6 +90,7 @@ How to work:
 2. Call create_rule_adaptation exactly once, with the type (and rule_index) from the analysis.
 
 Evidence rules:
+- You only ever see completed days; the user's current day is excluded on purpose.
 - Only logged days are evidence about specific rules. A day with no log, or a 0% day, counts as slipping in general, but never cite it as proof a particular rule is failing.
 - A day with pivot: true was protected by a pivot. That is the user already adapting, not failing. Don't count it as a miss or cite it as evidence.
 
@@ -115,6 +117,14 @@ function clampDays(v: unknown): number {
 
 function sinceDate(days: number): string {
   return new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+}
+
+// First date that might still be "today" for the user. We don't store timezones, and
+// every real one is within UTC-12..UTC+14, so a user's local date is never earlier than
+// the UTC date 12 hours ago. Reading only log_date < this never includes their today.
+// (East of UTC+11 it can also skip one already-completed day — the safe direction.)
+function completedBefore(): string {
+  return new Date(Date.now() - 12 * 3600000).toISOString().slice(0, 10);
 }
 
 // The rules the dashboard shows: profiles.rules if set, otherwise the app default
@@ -157,20 +167,21 @@ function analyze(rules: Rule[], logs: DayLog[] /* newest first, lookback window 
     .map((d) => ({ date: d.log_date, missed: d.rules.filter((r) => !r?.done).length, total: d.rules.length }))
     .filter((d) => d.missed / d.total >= ROUGH_PATCH_SHARE);
   if (majority(rough.length)) {
-    let focus = rules.filter((r) => r.label === CRITICAL_LABEL);
+    // Up to 3 focus rules (the user can change the picks on the card): their !!! rules,
+    // or if they have none, the rules they kept most often. Most-kept first either way.
+    const byKept = (pool: Rule[]) => pool
+      .map((r) => ({ r, kept: logged.filter((d) => missedOn(d, r.rule) === false).length }))
+      .sort((a, b) => b.kept - a.kept || a.r.index - b.r.index);
+    const critical = rules.filter((r) => r.label === CRITICAL_LABEL);
     let basis: "!!! rules" | "most-kept rules" = "!!! rules";
+    let focus = byKept(critical).slice(0, 3).map((x) => x.r);
     if (!focus.length) {
-      // No !!! rules: fall back to the 3 rules kept most often on logged days.
       basis = "most-kept rules";
-      focus = rules
-        .map((r) => ({ r, kept: logged.filter((d) => missedOn(d, r.rule) === false).length }))
-        .filter((x) => x.kept > 0)
-        .sort((a, b) => b.kept - a.kept || a.r.index - b.r.index)
-        .slice(0, 3).map((x) => x.r);
+      focus = byKept(rules).filter((x) => x.kept > 0).slice(0, 3).map((x) => x.r);
     }
     if (!focus.length) return { mode: "none", why: "rough patch but no rules to focus on" };
     return { mode: "rough_patch", evidence_days: evidenceDates, rough_days: rough,
-             focus: focus.slice(0, 100).map((r) => ({ index: r.index, t: r.raw })), focus_basis: basis };
+             focus: focus.map((r) => ({ index: r.index, t: r.raw })), focus_basis: basis };
   }
 
   // Per-rule evidence: only actual misses on logged days count against a rule.
@@ -228,7 +239,7 @@ async function runAgent(admin: SupabaseClient, apiKey: string, userId: string, d
 
   const { data: lookback } = await admin.from("daily_logs")
     .select("log_date, day_number, status, score, is_pivot, rules")
-    .eq("user_id", userId).gte("log_date", sinceDate(LOOKBACK_DAYS)).order("log_date", { ascending: false });
+    .eq("user_id", userId).gte("log_date", sinceDate(LOOKBACK_DAYS)).lt("log_date", completedBefore()).order("log_date", { ascending: false });
   const analysis = analyze(rules, (lookback ?? []) as DayLog[]);
   if (analysis.mode === "none") {
     return { user_id: userId, created: false, analysis, usage, toolCalls }; // no model call
@@ -239,10 +250,10 @@ async function runAgent(admin: SupabaseClient, apiKey: string, userId: string, d
       const d = clampDays(days);
       const { data } = await admin.from("daily_logs")
         .select("log_date, day_number, status, score, is_pivot, rules")
-        .eq("user_id", userId).gte("log_date", sinceDate(d)).order("log_date", { ascending: false });
+        .eq("user_id", userId).gte("log_date", sinceDate(d)).lt("log_date", completedBefore()).order("log_date", { ascending: false });
       return {
         window_days: d,
-        today: new Date().toISOString().slice(0, 10),
+        completed_days_before: completedBefore(), // the user's today is never included
         logs: (data ?? []).map((l) => ({
           date: l.log_date, day: l.day_number, status: l.status, score: l.score, pivot: l.is_pivot,
           done: (l.rules ?? []).filter((r: { done?: boolean }) => r?.done).length,
@@ -253,7 +264,7 @@ async function runAgent(admin: SupabaseClient, apiKey: string, userId: string, d
     get_journal_entries: async ({ days }) => {
       const d = clampDays(days);
       const { data } = await admin.from("daily_logs").select("log_date, status, is_pivot, rules")
-        .eq("user_id", userId).gte("log_date", sinceDate(d)).order("log_date", { ascending: false });
+        .eq("user_id", userId).gte("log_date", sinceDate(d)).lt("log_date", completedBefore()).order("log_date", { ascending: false });
       return {
         window_days: d,
         entries: (data ?? []).map((l) => ({

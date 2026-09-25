@@ -2087,16 +2087,19 @@ sb.auth.onAuthStateChange((event) => {
 // card. Two types:
 //   rule_change — accept swaps one rule (atomically, server-side), then the page
 //                 reloads so RULES is rebuilt from profiles.rules by boot().
-//   rough_patch — accept only records the commitment to focus on a short list of
-//                 rules for a few days; the rule list is never changed.
+//   rough_patch — the user picks up to 3 focus rules (suggested ones pre-selected);
+//                 accept saves the picks and starts focus mode (see the FOCUS MODE
+//                 banner script below). The rule list is never changed.
 (function () {
   var STYLE_ID = 'adj-styles';
   var css = [
     '.adj-rule{font-family:var(--mono);font-size:12px;line-height:1.6;padding:10px 12px;border:1px solid var(--line2);margin-bottom:8px;color:var(--text2)}',
     '.adj-rule b{display:block;font-size:9px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--text4);margin-bottom:4px}',
     '.adj-rule.new{border-color:var(--lime);color:var(--text)}',
-    '.adj-focus{list-style:none;margin:0;padding:0}',
-    '.adj-focus li{padding:2px 0}',
+    '.adj-pick{display:flex;align-items:flex-start;gap:8px;padding:4px 0;cursor:pointer}',
+    '.adj-pick input{accent-color:var(--lime);margin:2px 0 0;flex-shrink:0;cursor:pointer}',
+    '.adj-pick input:disabled+span{color:var(--text4)}',
+    '.adj-count{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:6px}',
     '.adj-why{font-family:var(--mono);font-size:11px;line-height:1.75;color:var(--text3);margin:14px 0 18px}',
     '.adj-q{font-family:var(--mono);font-size:12px;line-height:1.6;color:var(--text);margin-bottom:12px}',
     '.adj-actions{display:flex;gap:8px;flex-wrap:wrap}',
@@ -2121,13 +2124,7 @@ sb.auth.onAuthStateChange((event) => {
     return n;
   }
 
-  function niceDate(iso) {
-    // 'YYYY-MM-DD' -> 'Sep 27' in the viewer's locale; falls back to the raw string.
-    try {
-      var p = String(iso).split('-');
-      return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-    } catch (e) { return String(iso); }
-  }
+  var MAX_PICKS = 3;
 
   function currentRulesPayload() {
     // Only used server-side when profiles.rules is empty (user still on the default list).
@@ -2151,16 +2148,32 @@ sb.auth.onAuthStateChange((event) => {
     var body = el('div', 'ai-body');
 
     var isPatch = row.type === 'rough_patch';
-    var focus = (Array.isArray(row.focus_rules) ? row.focus_rules : []).filter(function (f) { return f && f.t; });
+    var suggested = (Array.isArray(row.focus_rules) ? row.focus_rules : []).map(function (f) { return f && f.t; });
     var focusDays = row.focus_days || 3;
+    var boxes = [];   // [{ input, index, t }] — rough_patch picker
+    var countEl;
+    function picks() {
+      return boxes.filter(function (b) { return b.input.checked; }).map(function (b) { return { index: b.index, t: b.t }; });
+    }
     var oldBox, newBox;
     if (isPatch) {
       oldBox = el('div', 'adj-rule'); oldBox.appendChild(el('b', null, 'Rough patch'));
       oldBox.appendChild(document.createTextNode(row.proposed_rule));
-      newBox = el('div', 'adj-rule new'); newBox.appendChild(el('b', null, 'Focus on'));
-      var list = el('ul', 'adj-focus');
-      focus.forEach(function (f) { list.appendChild(el('li', null, f.t)); });
-      newBox.appendChild(list);
+      newBox = el('div', 'adj-rule new'); newBox.appendChild(el('b', null, 'Pick up to ' + MAX_PICKS + ' to focus on'));
+      var current = [];
+      try { current = RULES.map(function (r, i) { return { index: i, t: r.t }; }); } catch (e) {}
+      var preselected = 0;
+      current.forEach(function (r) {
+        var lab = el('label', 'adj-pick');
+        var cb = el('input'); cb.type = 'checkbox';
+        if (preselected < MAX_PICKS && suggested.indexOf(r.t) !== -1) { cb.checked = true; preselected++; }
+        cb.onchange = syncPicks;
+        lab.appendChild(cb); lab.appendChild(el('span', null, r.t));
+        newBox.appendChild(lab);
+        boxes.push({ input: cb, index: r.index, t: r.t });
+      });
+      countEl = el('div', 'adj-count');
+      newBox.appendChild(countEl);
     } else {
       oldBox = el('div', 'adj-rule'); oldBox.appendChild(el('b', null, 'Now')); oldBox.appendChild(document.createTextNode(row.old_rule));
       newBox = el('div', 'adj-rule new'); newBox.appendChild(el('b', null, 'Suggested')); newBox.appendChild(document.createTextNode(row.proposed_rule));
@@ -2172,6 +2185,15 @@ sb.auth.onAuthStateChange((event) => {
     function setMsg(text, isErr) { msg.textContent = text || ''; msg.className = 'adj-msg' + (isErr ? ' err' : ''); }
     function busy(on) { Array.prototype.forEach.call(actions.querySelectorAll('button'), function (b) { b.disabled = on; }); }
 
+    function syncPicks() {
+      if (!isPatch) return;
+      var n = picks().length;
+      boxes.forEach(function (b) { b.input.disabled = !b.input.checked && n >= MAX_PICKS; });
+      countEl.textContent = n + ' of ' + MAX_PICKS + ' picked';
+      var acc = actions.querySelector('.adj-btn.primary');
+      if (acc) acc.disabled = n === 0;
+    }
+
     function showChoices() {
       actions.innerHTML = '';
       var accept = el('button', 'adj-btn primary', 'Accept'); accept.type = 'button';
@@ -2179,13 +2201,18 @@ sb.auth.onAuthStateChange((event) => {
       accept.onclick = showConfirm;
       reject.onclick = doReject;
       actions.appendChild(accept); actions.appendChild(reject);
+      boxes.forEach(function (b) { b.input.closest('label').style.pointerEvents = ''; });
+      syncPicks();
     }
 
     function showConfirm() {
       setMsg('');
       actions.innerHTML = '';
+      var chosen = picks();
+      if (isPatch && !chosen.length) { setMsg('Pick at least one rule.', true); showChoices(); return; }
+      boxes.forEach(function (b) { b.input.closest('label').style.pointerEvents = 'none'; }); // lock picks while confirming
       var q = el('div', 'adj-q', isPatch
-        ? 'Focus on just these ' + focus.length + ' rule' + (focus.length === 1 ? '' : 's') + ' for ' + focusDays + ' days? Your rule list won’t change.'
+        ? 'Focus on just ' + chosen.map(function (c) { return '“' + c.t + '”'; }).join(', ') + ' for ' + focusDays + ' days? Your rule list won’t change.'
         : 'Replace “' + row.old_rule + '” with “' + row.proposed_rule + '”?');
       var yes = el('button', 'adj-btn primary', isPatch ? 'Yes, focus' : 'Yes, replace'); yes.type = 'button';
       var no = el('button', 'adj-btn', 'Cancel'); no.type = 'button';
@@ -2198,19 +2225,24 @@ sb.auth.onAuthStateChange((event) => {
     async function doAccept() {
       busy(true); setMsg('Applying…');
       try {
-        var res = await sb.rpc('accept_rule_adaptation', { p_id: row.id, p_current_rules: isPatch ? null : currentRulesPayload() });
+        var res = await sb.rpc('accept_rule_adaptation', isPatch
+          ? { p_id: row.id, p_focus_rules: picks() }
+          : { p_id: row.id, p_current_rules: currentRulesPayload() });
         if (res.error) throw res.error;
         if (!res.data || !res.data.success) {
           var code = res.data && res.data.error;
           setMsg(ERRORS[code] || 'Couldn’t apply that. Nothing was changed.', true);
           busy(false);
           if (code === 'already_decided' || code === 'not_found') actions.innerHTML = '';
+          else if (isPatch) showChoices();
           return;
         }
         if (res.data.type === 'rough_patch') {
           var q2 = card.querySelector('.adj-q'); if (q2) q2.remove();
           actions.innerHTML = '';
-          setMsg('Locked in. Focus on these until ' + niceDate(res.data.focus_until) + '. Your rules are unchanged.');
+          boxes.forEach(function (b) { b.input.disabled = true; });
+          setMsg('Locked in. Focus mode is on for ' + focusDays + ' days. Your rules are unchanged.');
+          try { document.dispatchEvent(new CustomEvent('lckdin:focus-mode')); } catch (e) {}
           return;
         }
         setMsg('Rule updated.');
@@ -2218,6 +2250,7 @@ sb.auth.onAuthStateChange((event) => {
       } catch (e) {
         setMsg('Couldn’t apply that. Nothing was changed.', true);
         busy(false);
+        if (isPatch) showChoices();
       }
     }
 
@@ -2253,6 +2286,88 @@ sb.auth.onAuthStateChange((event) => {
   }
 
   // Wait for boot() to finish signing in and revealing the app.
+  var tries = 0;
+  (function waitForApp() {
+    var ready = false;
+    try { ready = !!currentUser && document.getElementById('app-content').style.display === 'block'; } catch (e) {}
+    if (ready) { load(); return; }
+    if (++tries < 60) setTimeout(waitForApp, 500);
+  })();
+})();
+</script>
+<script>
+// ── FOCUS MODE (accepted rough_patch) ──
+// Additive: while an accepted rough_patch is within its focus_days (counted in the
+// viewer's local days, day 1 = the day it was accepted), shows "Focus mode · day X of N"
+// above the rules list and highlights the focus rules (others dimmed). Purely visual:
+// it never touches scoring, saveTodayLog() or RULES. buildRules() re-renders the list,
+// so a MutationObserver re-applies the highlight. Gone automatically after day N.
+(function () {
+  var STYLE_ID = 'fm-styles';
+  var css = [
+    '.fm-banner{font-family:var(--mono);border:1px solid var(--lime);padding:10px 12px;margin:8px 0 4px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}',
+    '.fm-banner b{font-size:10px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--lime)}',
+    '.fm-banner span{font-size:10px;color:var(--text3)}',
+    '#rules-wrap.fm-on .rrow{opacity:.4}',
+    '#rules-wrap.fm-on .rrow.fm-focus,#rules-wrap.fm-on .rrow.radd{opacity:1}',  // never dim the add-rule row
+    '#rules-wrap.fm-on .rrow.fm-focus .rn{color:var(--lime)}'
+  ].join('');
+  var observer = null;
+
+  function localDayNumber(decidedAt) {
+    var d = new Date(decidedAt);
+    var start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    var now = new Date();
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return Math.round((today - start) / 86400000) + 1;
+  }
+
+  function highlight(wrap, texts) {
+    Array.prototype.forEach.call(wrap.querySelectorAll('.rrow'), function (row) {
+      var t = row.querySelector('.rtxt');
+      row.classList.toggle('fm-focus', !!t && texts.indexOf(t.textContent) !== -1);
+    });
+  }
+
+  function apply(row) {
+    var wrap = document.getElementById('rules-wrap');
+    if (!wrap) return;
+    var old = document.getElementById('fm-banner'); if (old) old.remove();
+    if (observer) { observer.disconnect(); observer = null; }
+    wrap.classList.remove('fm-on');
+    if (!row) return;
+    var days = row.focus_days || 3;
+    var day = localDayNumber(row.decided_at);
+    var texts = (Array.isArray(row.focus_rules) ? row.focus_rules : []).map(function (f) { return f && f.t; }).filter(Boolean);
+    if (day < 1 || day > days || !texts.length) return;
+
+    if (!document.getElementById(STYLE_ID)) {
+      var st = document.createElement('style'); st.id = STYLE_ID; st.textContent = css; document.head.appendChild(st);
+    }
+    var banner = document.createElement('div'); banner.className = 'fm-banner'; banner.id = 'fm-banner';
+    var title = document.createElement('b'); title.textContent = 'Focus mode · day ' + day + ' of ' + days;
+    var note = document.createElement('span'); note.textContent = texts.length + ' focus rule' + (texts.length === 1 ? '' : 's') + ' highlighted · scoring unchanged';
+    banner.appendChild(title); banner.appendChild(note);
+    wrap.parentNode.insertBefore(banner, wrap);
+    wrap.classList.add('fm-on');
+    highlight(wrap, texts);
+    observer = new MutationObserver(function () { highlight(wrap, texts); });
+    observer.observe(wrap, { childList: true });
+  }
+
+  async function load() {
+    try {
+      var res = await sb.from('rule_adaptations')
+        .select('focus_rules, focus_days, decided_at')
+        .eq('type', 'rough_patch').eq('status', 'accepted')
+        .order('decided_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!res.error) apply(res.data || null);
+    } catch (e) { /* optional UI; never break the dashboard */ }
+  }
+
+  document.addEventListener('lckdin:focus-mode', load);
   var tries = 0;
   (function waitForApp() {
     var ready = false;

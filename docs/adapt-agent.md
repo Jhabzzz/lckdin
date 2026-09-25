@@ -30,8 +30,10 @@ A user can also have at most one pending suggestion (unique index), and each run
 
 `analyze()` in the edge function makes the decision deterministically. The model only explains *why* and words the suggestion, and `create_rule_adaptation` rejects anything else.
 
+- **Only completed days** are read, never the user's own today. There's no stored timezone, so the agent reads only `log_date` before the UTC date 12 hours ago. Every real timezone is between UTC−12 and UTC+14, so that date can never be anyone's today. At the 13:00 UTC cron this excludes exactly UTC-today; only users east of UTC+11 also lose their (completed) yesterday.
 - **Evidence** is the user's last 3 **logged** days within 14 days. No-log days make someone a candidate, but they are never evidence against a specific rule; only an unchecked rule on a logged day counts. Pivot days and **0% days** are excluded too: a day with nothing checked says nothing about *which* rule failed, and editing the rule list can write an all-unchecked placeholder row. Rules are matched by text, so edits to the list don't misalign history.
-- **`rough_patch`:** if on most evidence days (2 of 3) **70% or more of the rules were missed together**, no rule is blamed. The suggestion is *"For 3 days, only your !!! rules (n)."* (or the 3 most-kept rules if there are no `!!!` rules). Accepting it records the commitment and **never changes the rule list**.
+- **`rough_patch`:** if on most evidence days (2 of 3) **70% or more of the rules were missed together**, no rule is blamed. The suggestion is *"For 3 days, only your !!! rules (n)."*: up to 3 of them, most-kept first. If there are no `!!!` rules, it's the 3 most-kept rules; other labels such as "Risk" are not critical. On the card the user **picks up to 3 focus rules** with checkboxes (the suggested ones are pre-selected), and accept saves the picks to `focus_rules`.
+- **Focus mode:** after accepting a rough patch, the dashboard shows *"Focus mode · day X of 3"* above the rules and highlights the focus rules (the others are dimmed). Days count in the viewer's local time, starting from the day of acceptance, and the banner disappears after day 3. It is visual only: scoring, `saveTodayLog()` and `RULES` are untouched, and the **rule list never changes**.
 - **`rule_change`:** otherwise, one failing rule (missed on most evidence days) gets an adapted version.
   - `!!!` rules are **never** loosened unless one is the *only* rule failing. Non-`!!!` rules always win.
   - Tie-break: the rule whose current miss streak **started first**, then the most misses in the 14-day window, then the lowest index.
@@ -47,6 +49,7 @@ A user can also have at most one pending suggestion (unique index), and each run
 
 ## Accept guarantees (`accept_rule_adaptation`)
 
+- `accept_rule_adaptation(p_id, p_current_rules, p_focus_rules)`. For a rough patch, the picks must be 1–3 `{index, t}` entries and, when `profiles.rules` is stored, each must be one of those rules.
 - Runs in one transaction. Either the rule changes **and** the row becomes `accepted`, or nothing changes.
 - Replaces only `rules[rule_index].t`. Every other rule, and the adapted rule's label, is carried over unchanged.
 - Refuses with `rule_changed` if that rule's text no longer equals `old_rule`.
