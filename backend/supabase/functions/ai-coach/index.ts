@@ -1,43 +1,21 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import { createClient, type SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
 const ALLOWED_ORIGINS = new Set([
   "https://lckd-in.com",
   "https://www.lckd-in.com",
 ]);
 
-// ── Per-user daily AI allowance + friendly rate-limit errors ──
-// Shared free-tier Gemini quota (20/day, 5/min per project), so each user gets
-// DAILY_LIMIT calls per UTC day. Failed model calls are refunded. The 429 bodies below
-// are read by the dashboard to show a specific message instead of a generic error.
+// ── One briefing per user per day ──
+// The dashboard asks once per day (and on Refresh). Today's briefing is cached in
+// ai_coach_briefings, keyed by the user's local date (`date` in the body). Without
+// `refresh`, a cached briefing is returned with no Gemini call. Every Gemini call
+// (the first of the day and each Refresh) takes one of DAILY_LIMIT calls per UTC day
+// (ai_daily_usage). Failed model calls are refunded. The 429 bodies below are read by
+// the dashboard to show a specific message instead of a generic error.
 const DAILY_LIMIT = 3;
 const LIMIT_REACHED = { error: "daily_limit", message: "Daily AI limit reached, resets tomorrow" };
 const RECHARGING = { error: "ai_recharging", message: "AI is recharging — try again later" };
-
-async function takeQuota(req: Request, kind: "coach" | "snap"): Promise<{ userId: string | null; ok: boolean; refund: () => Promise<void> }> {
-  const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-  const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
-  const { data, error: authError } = await admin.auth.getUser(jwt);
-  const noop = async () => {};
-  if (authError && !(authError.status && authError.status < 500)) {
-    // Auth API down/unreachable (not a bad token): don't tell signed-in users to sign in.
-    console.error("auth.getUser failed:", authError.status ?? "network");
-    return { userId: "unknown", ok: true, refund: noop };
-  }
-  const userId = data?.user?.id ?? null;
-  if (!userId) return { userId: null, ok: false, refund: noop };
-  const { data: allowed, error } = await admin.rpc("ai_quota_take", { p_user_id: userId, p_kind: kind, p_limit: DAILY_LIMIT });
-  if (error) {
-    // Quota table unreachable: let the call through rather than break the feature;
-    // Gemini's own 429 still protects the project quota.
-    console.error("ai_quota_take failed:", error.code);
-    return { userId, ok: true, refund: noop };
-  }
-  return {
-    userId, ok: allowed === true,
-    refund: async () => { await admin.rpc("ai_quota_refund", { p_user_id: userId, p_kind: kind }); },
-  };
-}
 
 function corsHeaders(origin: string | null) {
   const allowOrigin = origin && ALLOWED_ORIGINS.has(origin) ? origin : "https://lckd-in.com";
@@ -48,42 +26,86 @@ function corsHeaders(origin: string | null) {
   };
 }
 
+// Every real timezone is within UTC-12..UTC+14, so a user's local date is always the
+// UTC date or one day either side. Anything else is rejected.
+function validLocalDate(v: unknown): string | null {
+  if (typeof v !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return null;
+  const now = Date.now();
+  const ok = [-1, 0, 1].map((d) => new Date(now + d * 86400000).toISOString().slice(0, 10));
+  return ok.includes(v) ? v : null;
+}
+
+function cleanBriefing(p: unknown): { message: string; insights: string[] } | null {
+  const o = p as { message?: unknown; insights?: unknown } | null;
+  if (!o || typeof o.message !== "string" || !o.message.trim()) return null;
+  const insights = Array.isArray(o.insights)
+    ? o.insights.filter((t): t is string => typeof t === "string" && !!t.trim()).slice(0, 5).map((t) => t.slice(0, 400))
+    : [];
+  return { message: o.message.slice(0, 800), insights };
+}
+
+async function userFromJwt(admin: SupabaseClient, req: Request): Promise<{ id: string | null; outage: boolean }> {
+  const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+  const { data, error } = await admin.auth.getUser(jwt);
+  // A bad/missing token is a 4xx; anything else is Auth being down, not the user.
+  if (error && !(error.status && error.status < 500)) return { id: null, outage: true };
+  return { id: data?.user?.id ?? null, outage: false };
+}
+
 Deno.serve(async (req) => {
   const CORS_HEADERS = corsHeaders(req.headers.get("origin"));
+  const json = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), { status, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
 
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: CORS_HEADERS });
   }
 
-  let quota: Awaited<ReturnType<typeof takeQuota>> | null = null;
+  const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  let quotaTaken: string | null = null; // user id whose call must be refunded if the model fails
+  const refund = async () => {
+    if (!quotaTaken) return;
+    const uid = quotaTaken;
+    quotaTaken = null;
+    await admin.rpc("ai_quota_refund", { p_user_id: uid, p_kind: "coach" });
+  };
+
   try {
-    const { dayNumber, rootRule, downstreamRules, missedToday, todayScore, days } = await req.json();
+    const { dayNumber, rootRule, downstreamRules, missedToday, todayScore, days, date, refresh } = await req.json();
+
+    const user = await userFromJwt(admin, req);
+    if (user.outage) return json({ error: "Auth unavailable, try again later" }, 503);
+    if (!user.id) return json({ error: "Sign in to use AI features" }, 401);
+
+    // Older dashboards (open tabs from before this change) don't send `date`: use UTC's.
+    const day = date === undefined ? new Date().toISOString().slice(0, 10) : validLocalDate(date);
+    if (!day) return json({ error: "Invalid date" }, 400);
+
+    // Today's briefing already exists: serve it, no model call.
+    if (refresh !== true) {
+      const { data: cached } = await admin.from("ai_coach_briefings")
+        .select("briefing, created_at").eq("user_id", user.id).eq("day", day).maybeSingle();
+      if (cached) return json({ ...cached.briefing, cached: true, created_at: cached.created_at });
+    }
 
     if (!Array.isArray(days) || days.length < 2 || !rootRule) {
-      return new Response(
-        JSON.stringify({ error: "Need at least 2 days of history and a root rule" }),
-        { status: 400, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-      );
+      return json({ error: "Need at least 2 days of history and a root rule" }, 400);
     }
 
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
     if (!GEMINI_API_KEY) {
-      return new Response(
-        JSON.stringify({ error: "GEMINI_API_KEY not configured on the server" }),
-        { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-      );
+      return json({ error: "GEMINI_API_KEY not configured on the server" }, 500);
     }
 
-    quota = await takeQuota(req, "coach");
-    if (!quota.userId) {
-      return new Response(
-        JSON.stringify({ error: "Sign in to use AI features" }),
-        { status: 401, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-      );
-    }
-    if (!quota.ok) {
-      return new Response(JSON.stringify(LIMIT_REACHED),
-        { status: 429, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
+    const { data: allowed, error: quotaError } = await admin.rpc("ai_quota_take", { p_user_id: user.id, p_kind: "coach", p_limit: DAILY_LIMIT });
+    if (quotaError) {
+      // Quota table unreachable: let the call through rather than break the feature;
+      // Gemini's own 429 still protects the project quota.
+      console.error("ai_quota_take failed:", quotaError.code);
+    } else if (allowed !== true) {
+      return json(LIMIT_REACHED, 429);
+    } else {
+      quotaTaken = user.id;
     }
 
     const historyLines = days
@@ -128,44 +150,39 @@ Respond with ONLY valid JSON, no markdown, in exactly this shape:
     );
 
     if (!geminiRes.ok) {
-      await quota!.refund();
+      await refund();
       const errText = await geminiRes.text();
       if (geminiRes.status === 429) {
         console.error("Gemini rate limited:", errText.slice(0, 300));
-        return new Response(JSON.stringify(RECHARGING),
-          { status: 429, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
+        return json(RECHARGING, 429);
       }
       console.error("Gemini error body:", errText);
-      return new Response(
-        JSON.stringify({ error: "Gemini request failed", status: geminiRes.status, detail: errText }),
-        { status: 502, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-      );
+      return json({ error: "Gemini request failed", status: geminiRes.status, detail: errText }, 502);
     }
 
     const geminiData = await geminiRes.json();
     const textOut = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
 
-    let parsed;
+    let briefing;
     try {
-      parsed = JSON.parse(textOut);
-    } catch {
-      await quota!.refund();
+      briefing = cleanBriefing(JSON.parse(textOut));
+    } catch { /* handled below */ }
+    if (!briefing) {
+      await refund();
       console.error("Could not parse Gemini text output:", textOut);
-      return new Response(
-        JSON.stringify({ error: "Could not parse Gemini response", raw: textOut }),
-        { status: 502, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-      );
+      return json({ error: "Could not parse Gemini response", raw: textOut }, 502);
     }
 
-    return new Response(JSON.stringify(parsed), {
-      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-    });
+    const createdAt = new Date().toISOString();
+    const { error: saveError } = await admin.from("ai_coach_briefings")
+      .upsert({ user_id: user.id, day, briefing, created_at: createdAt }, { onConflict: "user_id,day" });
+    if (saveError) console.error("Could not cache briefing:", saveError.code); // still return it
+
+    quotaTaken = null; // success: the call counts
+    return json({ ...briefing, cached: false, created_at: createdAt });
   } catch (err) {
-    if (quota?.ok) await quota.refund().catch(() => {});
+    await refund().catch(() => {});
     console.error("Unhandled error:", err);
-    return new Response(
-      JSON.stringify({ error: String(err) }),
-      { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-    );
+    return json({ error: String(err) }, 500);
   }
 });

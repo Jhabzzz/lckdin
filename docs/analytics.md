@@ -154,7 +154,7 @@ thing to a score, deliberately coarser than the raw percentage.
 ### AI Coach (`dashboard.html`)
 | Event | Fires when | Properties |
 |---|---|---|
-| `ai_coach_requested` | The debounced LLM coaching pass is invoked | — |
+| `ai_coach_requested` | `ai-coach` is invoked: once per day on dashboard load when there's no cached briefing, or on Refresh | — |
 | `ai_coach_succeeded` | The `ai-coach` edge function returns successfully | — |
 | `ai_coach_failed` | The edge function call throws or returns an error | `error_category`: `'llm_pass_failed'`, `'ai_daily_limit'` (user's 3/day allowance used) or `'ai_rate_limited'` (Gemini project quota 429) |
 
@@ -303,8 +303,8 @@ other code path can navigate away (see §9 for why this placement matters).
   use PostHog's own event timestamps, not `day_number`, as noted in §7.
 - **`ai_coach_opened` was not implemented**: the AI Coach panel is always
   visible on the dashboard (not opened/closed by the user), so there is no
-  natural "open" trigger distinct from `ai_coach_requested` (the debounced
-  LLM pass firing). `ai_coach_requested` is the closest equivalent and
+  natural "open" trigger distinct from `ai_coach_requested` (the once-a-day
+  briefing generation, or a Refresh). `ai_coach_requested` is the closest equivalent and
   covers the adoption signal.
 
 ## 10. Adding a future event

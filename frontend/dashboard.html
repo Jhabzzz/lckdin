@@ -667,6 +667,9 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .ai-bar-fill{width:100%;border-radius:3px 3px 0 0;background:var(--grad);min-height:3px;transition:height .8s var(--ease)}
 .ai-bar-lbl{font-family:var(--mono);font-size:7px;color:var(--text3);letter-spacing:.05em}
 .ai-msg strong{color:var(--text);font-weight:600;display:block;margin-bottom:8px}
+.ai-refresh{margin-left:auto;font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;padding:6px 10px;border:1px solid var(--line2);background:transparent;color:var(--text2);cursor:pointer;border-radius:0;position:relative;z-index:3}
+.ai-refresh:hover{color:var(--text);border-color:var(--text3)}
+.ai-refresh:disabled{opacity:.5;cursor:default}
 .ai-limit-note{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
 .ai-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--glass-brd);border-top:1px solid var(--glass-brd)}
 .ast{background:var(--bg3);padding:16px}
@@ -936,7 +939,7 @@ footer{border-top:1px solid var(--line);padding:32px 40px}
       </div>
 
       <div class="ai-card">
-        <div class="ai-ch"><div class="ai-pulse"></div><div class="ai-ttl" id="ai-ttl">AI briefing</div></div>
+        <div class="ai-ch"><div class="ai-pulse"></div><div class="ai-ttl" id="ai-ttl">AI briefing</div><button class="ai-refresh" id="ai-refresh" type="button" hidden>Refresh</button></div>
         <div class="ai-body">
           <div class="ai-msg" id="ai-msg">Log a few more days to unlock pattern analysis.</div>
           <div class="ai-chart" id="ai-chart">
@@ -1902,16 +1905,33 @@ async function runAICoach(user){
   };
 }
 
-// ── AI COACH · REAL LLM PASS (debounced, replaces the deterministic text above once it returns) ──
-let llmCoachTimer = null;
-function scheduleLLMCoach(user, summary){
-  clearTimeout(llmCoachTimer);
-  llmCoachTimer = setTimeout(() => enrichAICoachWithLLM(user, summary), 1200);
+// ── AI COACH · DAILY LLM BRIEFING (one per user per day, cached in ai_coach_briefings) ──
+// ai-coach is called at most once per page load (boot, only when today's briefing isn't
+// cached yet) and when the user presses Refresh. Saves never call it: saveTodayLog()
+// still calls scheduleLLMCoach(), which now only re-renders the cached briefing over the
+// deterministic text that runAICoach() just redrew.
+let dailyBriefing = null; // { day, message, insights }
+
+function localDateStr(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
-// Once today's (UTC) allowance is used up, skip the call and keep the deterministic
-// briefing with a one-line note, instead of hitting the function on every save.
-function aiCoachLimitKey(){ return 'lckdin-ai-coach-limit-' + new Date().toISOString().slice(0,10); }
+function renderBriefing(b){
+  const msgEl = document.getElementById('ai-msg');
+  if (b.message) msgEl.textContent = b.message;
+  if (Array.isArray(b.insights) && b.insights.length) {
+    document.getElementById('ai-insights').innerHTML = b.insights
+      .map(t => `<div class="ins"><div class="ins-dot"></div><div class="ins-txt">${escapeHtml(t)}</div></div>`)
+      .join('');
+  }
+}
+
+function showRefresh(on){
+  const btn = document.getElementById('ai-refresh');
+  if (btn) btn.hidden = !on;
+}
+
 function showAICoachNote(msgEl, text){
   const note = document.createElement('div');
   note.className = 'ai-limit-note';
@@ -1919,22 +1939,43 @@ function showAICoachNote(msgEl, text){
   msgEl.appendChild(note);
 }
 
-async function enrichAICoachWithLLM(user, summary){
+// Called after every save (from saveTodayLog). Render-only: no network call.
+function scheduleLLMCoach(user, summary){
+  if (dailyBriefing && dailyBriefing.day === localDateStr()) renderBriefing(dailyBriefing);
+}
+
+// Boot: show today's cached briefing, or generate it once if there's none yet.
+async function ensureDailyBriefing(user, summary){
+  const day = localDateStr();
+  try {
+    const { data } = await sb.from('ai_coach_briefings')
+      .select('briefing').eq('user_id', user.id).eq('day', day).maybeSingle();
+    if (data && data.briefing) {
+      dailyBriefing = { day, message: data.briefing.message, insights: data.briefing.insights };
+      renderBriefing(dailyBriefing);
+      showRefresh(!!summary);
+      return;
+    }
+  } catch (e) { /* cache read failed: fall through to generating */ }
+  if (summary) await requestBriefing(summary, false);
+}
+
+async function requestBriefing(summary, refresh){
   const msgEl = document.getElementById('ai-msg');
   const originalMsg = msgEl.innerHTML;
-  try {
-    if (localStorage.getItem(aiCoachLimitKey())) { showAICoachNote(msgEl, 'Daily AI limit reached, resets tomorrow'); return; }
-  } catch (e) { /* storage blocked: just make the call */ }
+  const refreshBtn = document.getElementById('ai-refresh');
+  const day = localDateStr();
   msgEl.innerHTML = '<em style="color:var(--text3)">Thinking…</em>';
+  if (refreshBtn) refreshBtn.disabled = true;
   trackEvent('ai_coach_requested', {});
   try {
-    const { data, error } = await sb.functions.invoke('ai-coach', { body: summary });
+    const { data, error } = await sb.functions.invoke('ai-coach', { body: { ...summary, date: day, refresh: !!refresh } });
     if (error) {
       const lim = await aiLimitError(error);
       if (lim) {
-        if (lim.code === 'daily_limit') { try { localStorage.setItem(aiCoachLimitKey(), '1'); } catch (e) {} }
         trackEvent('ai_coach_failed', { error_category: lim.code === 'daily_limit' ? 'ai_daily_limit' : 'ai_rate_limited' });
         msgEl.innerHTML = originalMsg;
+        if (dailyBriefing && dailyBriefing.day === day) renderBriefing(dailyBriefing);
         showAICoachNote(msgEl, lim.message);
         return;
       }
@@ -1943,22 +1984,36 @@ async function enrichAICoachWithLLM(user, summary){
     if (data.error) throw new Error(data.error);
 
     if (data.message) {
-      msgEl.textContent = data.message;
+      dailyBriefing = { day, message: data.message, insights: data.insights };
+      renderBriefing(dailyBriefing);
+      // Only the capped, caching ai-coach sends `cached`; until it's deployed, Refresh stays
+      // hidden so the uncapped old function can't be called on demand.
+      if ('cached' in data) showRefresh(true);
     } else {
       msgEl.innerHTML = originalMsg;
-    }
-    if (Array.isArray(data.insights) && data.insights.length) {
-      document.getElementById('ai-insights').innerHTML = data.insights
-        .map(t => `<div class="ins"><div class="ins-dot"></div><div class="ins-txt">${escapeHtml(t)}</div></div>`)
-        .join('');
     }
     trackEvent('ai_coach_succeeded', {});
   } catch (err) {
     console.error('AI coach LLM pass failed, keeping deterministic text:', err);
     trackEvent('ai_coach_failed', { error_category: 'llm_pass_failed' });
     msgEl.innerHTML = originalMsg;
+    if (dailyBriefing && dailyBriefing.day === day) renderBriefing(dailyBriefing);
+  } finally {
+    if (refreshBtn) refreshBtn.disabled = false;
   }
 }
+
+(function(){
+  const btn = document.getElementById('ai-refresh');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    if (!currentUser || btn.disabled) return;
+    btn.disabled = true;
+    const summary = await runAICoach(currentUser); // fresh numbers for the new briefing
+    if (summary) await requestBriefing(summary, true);
+    else btn.disabled = false;
+  });
+})();
 
 // ── DAILY FUEL QUOTES WIDGET ──
 const QUOTES=[
@@ -2117,7 +2172,7 @@ async function boot(){
   }
   await loadTodayLog(currentUser);
   const summary = await runAICoach(currentUser);
-  if (summary) scheduleLLMCoach(currentUser, summary);
+  ensureDailyBriefing(currentUser, summary);
   await checkProtocolCompletion();
 }
 boot();
