@@ -81,11 +81,11 @@ Logs: Supabase dashboard → Edge Functions → adapt-agent → Logs. `adapt_age
 
 ## Merging `pivot-agent` to main
 
-This branch also changes the user-facing AI (one cached coach briefing per day, the 3/day caps and friendly 429 messages). The **database is already migrated**: `ai_daily_usage`, `ai_coach_briefings` and the quota RPCs are live, and nothing uses them yet. `adapt-agent` is already deployed. **`ai-coach` and `analyze-journal` stay on main's version until step 3.**
+This branch also changes the user-facing AI (one cached coach briefing per day, the 3/day caps and friendly 429 messages). The **database is already migrated**: `ai_daily_usage`, `ai_coach_briefings`, `ai_global_usage` (18 Gemini calls per Pacific day across both functions, fails closed) and their RPCs are live, and nothing uses them yet. `adapt-agent` is already deployed. **`ai-coach` and `analyze-journal` stay on main's version until step 3.**
 
 Order matters. The new dashboard works with the old functions, but the old dashboard doesn't understand the new functions' 429s (it would show a generic error, and it would still call the coach on every save).
 
-1. **Before merging:** run design-guard, and supabase-guard for the two functions. Confirm both migrations are listed on the live project (`list_migrations`).
+1. **Before merging:** run design-guard, and supabase-guard for the two functions. Confirm all three migrations (`ai_daily_quota`, `ai_coach_briefings`, `ai_global_quota`) are listed on the live project (`list_migrations`).
 2. **Merge the frontend:** merge `pivot-agent` into `main`. Vercel deploys lckd-in.com; run deploy-check after it lands. Until step 3 the dashboard calls the *old* ai-coach once per page load (no caching yet, never on saves), which is fine for a short window. The Refresh button stays hidden until the new ai-coach answers, so the uncapped old function can't be called on demand.
 3. **Deploy the two functions** from `backend/`:
    ```bash
@@ -93,7 +93,7 @@ Order matters. The new dashboard works with the old functions, but the old dashb
    supabase functions deploy analyze-journal --project-ref qtlhpaqsmbyneivdsiei
    ```
    `verify_jwt` stays `true` for both (from `config.toml`).
-4. **Verify:** open the dashboard. The first load generates today's briefing and writes a row to `ai_coach_briefings`. A reload shows the same briefing, and checking rules doesn't call `ai-coach` (check the Network tab). Refresh regenerates it. The 4th Gemini call of the day (the first generation plus 3 Refreshes, or 4 Snap & Track photos) shows "Daily AI limit reached, resets tomorrow".
+4. **Verify:** open the dashboard. The first load generates today's briefing and writes a row to `ai_coach_briefings`. A reload shows the same briefing, and checking rules doesn't call `ai-coach` (check the Network tab). Refresh regenerates it. The 4th Gemini call of the day (the first generation plus 3 Refreshes, or 4 Snap & Track photos) shows "Daily AI limit reached, resets tomorrow". `select * from ai_global_usage` shows today's (Pacific) project-wide count; at 18 every user gets "AI is recharging — try again later" until midnight Pacific.
 5. **Schedule adapt-agent** (below).
 
 **Rollback:** redeploy the previous versions with `git show <pre-merge sha>:backend/supabase/functions/<name>/index.ts`, then revert the merge. The tables can stay; nothing reads them after a rollback.

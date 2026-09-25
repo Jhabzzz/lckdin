@@ -14,6 +14,9 @@ const ALLOWED_ORIGINS = new Set([
 // (ai_daily_usage). Failed model calls are refunded. The 429 bodies below are read by
 // the dashboard to show a specific message instead of a generic error.
 const DAILY_LIMIT = 3;
+// Project-wide: ai-coach + analyze-journal combined, per Pacific day (Gemini's reset),
+// kept under the free tier's 20/day. Fails CLOSED: going over breaks AI for everyone.
+const GLOBAL_DAILY_LIMIT = 18;
 const LIMIT_REACHED = { error: "daily_limit", message: "Daily AI limit reached, resets tomorrow" };
 const RECHARGING = { error: "ai_recharging", message: "AI is recharging — try again later" };
 
@@ -62,12 +65,20 @@ Deno.serve(async (req) => {
   }
 
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-  let quotaTaken: string | null = null; // user id whose call must be refunded if the model fails
+  let quotaTaken: string | null = null;  // user id whose call must be refunded if the model fails
+  let globalTaken: string | null = null; // Pacific day the global call was counted against
   const refund = async () => {
-    if (!quotaTaken) return;
-    const uid = quotaTaken;
+    const uid = quotaTaken, gday = globalTaken;
     quotaTaken = null;
-    await admin.rpc("ai_quota_refund", { p_user_id: uid, p_kind: "coach" });
+    globalTaken = null;
+    if (uid) {
+      const { error } = await admin.rpc("ai_quota_refund", { p_user_id: uid, p_kind: "coach" });
+      if (error) console.error("ai_quota_refund failed:", error.code);
+    }
+    if (gday) {
+      const { error } = await admin.rpc("ai_global_refund", { p_day: gday });
+      if (error) console.error("ai_global_refund failed:", error.code);
+    }
   };
 
   try {
@@ -99,14 +110,23 @@ Deno.serve(async (req) => {
 
     const { data: allowed, error: quotaError } = await admin.rpc("ai_quota_take", { p_user_id: user.id, p_kind: "coach", p_limit: DAILY_LIMIT });
     if (quotaError) {
-      // Quota table unreachable: let the call through rather than break the feature;
-      // Gemini's own 429 still protects the project quota.
+      // Per-user table unreachable: fail open for the per-user cap only; the global
+      // budget below still protects the project quota.
       console.error("ai_quota_take failed:", quotaError.code);
     } else if (allowed !== true) {
       return json(LIMIT_REACHED, 429);
     } else {
       quotaTaken = user.id;
     }
+
+    // Project-wide budget, taken after the per-user cap so capped users don't use it up.
+    const { data: globalDay, error: globalError } = await admin.rpc("ai_global_take", { p_limit: GLOBAL_DAILY_LIMIT });
+    if (globalError || !globalDay) {
+      if (globalError) console.error("ai_global_take failed (failing closed):", globalError.code);
+      await refund(); // give the user's call back: nothing was generated
+      return json(RECHARGING, 429);
+    }
+    globalTaken = globalDay;
 
     const historyLines = days
       .map((d: { day_number: number; score: number; missedRuleNames: string[] }) =>
@@ -160,6 +180,10 @@ Respond with ONLY valid JSON, no markdown, in exactly this shape:
       return json({ error: "Gemini request failed", status: geminiRes.status, detail: errText }, 502);
     }
 
+    // Gemini answered 200, so the request used real project quota: keep the global
+    // count from here on (only the user's own call is refunded if the output is bad).
+    globalTaken = null;
+
     const geminiData = await geminiRes.json();
     const textOut = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
 
@@ -179,6 +203,7 @@ Respond with ONLY valid JSON, no markdown, in exactly this shape:
     if (saveError) console.error("Could not cache briefing:", saveError.code); // still return it
 
     quotaTaken = null; // success: the call counts
+    globalTaken = null;
     return json({ ...briefing, cached: false, created_at: createdAt });
   } catch (err) {
     await refund().catch(() => {});

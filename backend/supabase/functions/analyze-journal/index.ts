@@ -19,32 +19,64 @@ const SUPPORTED_MIME_TYPES = new Set([
 // DAILY_LIMIT calls per UTC day. Failed model calls are refunded. The 429 bodies below
 // are read by the dashboard to show a specific message instead of a generic error.
 const DAILY_LIMIT = 3;
+// Project-wide: ai-coach + analyze-journal combined, per Pacific day (Gemini's reset),
+// kept under the free tier's 20/day. Fails CLOSED: going over breaks AI for everyone.
+const GLOBAL_DAILY_LIMIT = 18;
 const LIMIT_REACHED = { error: "daily_limit", message: "Daily AI limit reached, resets tomorrow" };
 const RECHARGING = { error: "ai_recharging", message: "AI is recharging — try again later" };
 
-async function takeQuota(req: Request, kind: "coach" | "snap"): Promise<{ userId: string | null; ok: boolean; refund: () => Promise<void> }> {
+// ok: allowed. !ok && !recharging: this user's daily cap. recharging: project-wide budget spent
+// (or its counter failed). refund() gives back whatever was taken; safe to call more than once.
+// commitGlobal(): Gemini answered 200, so keep the global count even if refund() runs later.
+async function takeQuota(req: Request, kind: "coach" | "snap"): Promise<{ userId: string | null; ok: boolean; recharging?: boolean; refund: () => Promise<void>; commitGlobal?: () => void }> {
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
   const { data, error: authError } = await admin.auth.getUser(jwt);
   const noop = async () => {};
   if (authError && !(authError.status && authError.status < 500)) {
-    // Auth API down/unreachable (not a bad token): don't tell signed-in users to sign in.
+    // Auth API down/unreachable (not a bad token): don't tell signed-in users to sign in,
+    // but don't let an unidentified call bypass the caps either.
     console.error("auth.getUser failed:", authError.status ?? "network");
-    return { userId: "unknown", ok: true, refund: noop };
+    return { userId: "unknown", ok: false, recharging: true, refund: noop };
   }
   const userId = data?.user?.id ?? null;
   if (!userId) return { userId: null, ok: false, refund: noop };
   const { data: allowed, error } = await admin.rpc("ai_quota_take", { p_user_id: userId, p_kind: kind, p_limit: DAILY_LIMIT });
+  let userTaken = false;
   if (error) {
-    // Quota table unreachable: let the call through rather than break the feature;
-    // Gemini's own 429 still protects the project quota.
+    // Per-user table unreachable: fail open for the per-user cap only; the global
+    // budget below still protects the project quota.
     console.error("ai_quota_take failed:", error.code);
-    return { userId, ok: true, refund: noop };
+  } else if (allowed !== true) {
+    return { userId, ok: false, refund: noop };
+  } else {
+    userTaken = true;
   }
-  return {
-    userId, ok: allowed === true,
-    refund: async () => { await admin.rpc("ai_quota_refund", { p_user_id: userId, p_kind: kind }); },
+
+  let globalDay: string | null = null;
+  const refund = async () => {
+    const u = userTaken, g = globalDay;
+    userTaken = false;
+    globalDay = null;
+    if (u) {
+      const { error } = await admin.rpc("ai_quota_refund", { p_user_id: userId, p_kind: kind });
+      if (error) console.error("ai_quota_refund failed:", error.code);
+    }
+    if (g) {
+      const { error } = await admin.rpc("ai_global_refund", { p_day: g });
+      if (error) console.error("ai_global_refund failed:", error.code);
+    }
   };
+
+  // Project-wide budget, taken after the per-user cap so capped users don't use it up.
+  const { data: gday, error: globalError } = await admin.rpc("ai_global_take", { p_limit: GLOBAL_DAILY_LIMIT });
+  if (globalError || !gday) {
+    if (globalError) console.error("ai_global_take failed (failing closed):", globalError.code);
+    await refund();
+    return { userId, ok: false, recharging: true, refund: noop };
+  }
+  globalDay = gday;
+  return { userId, ok: true, refund, commitGlobal: () => { globalDay = null; } };
 }
 
 function corsHeaders(origin: string | null) {
@@ -91,7 +123,7 @@ Deno.serve(async (req) => {
       );
     }
     if (!quota.ok) {
-      return new Response(JSON.stringify(LIMIT_REACHED),
+      return new Response(JSON.stringify(quota.recharging ? RECHARGING : LIMIT_REACHED),
         { status: 429, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
     }
 
@@ -158,6 +190,9 @@ Include all ${ruleCount} indices, 0 through ${lastIdx}, in the results array, in
         { status: 502, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
       );
     }
+
+    // Gemini answered 200: the request used real project quota, so keep the global count.
+    quota!.commitGlobal?.();
 
     const geminiData = await geminiRes.json();
     const textOut = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";

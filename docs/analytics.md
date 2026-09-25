@@ -156,7 +156,7 @@ thing to a score, deliberately coarser than the raw percentage.
 |---|---|---|
 | `ai_coach_requested` | `ai-coach` is invoked: once per day on dashboard load when there's no cached briefing, or on Refresh | — |
 | `ai_coach_succeeded` | The `ai-coach` edge function returns successfully | — |
-| `ai_coach_failed` | The edge function call throws or returns an error | `error_category`: `'llm_pass_failed'`, `'ai_daily_limit'` (user's 3/day allowance used) or `'ai_rate_limited'` (Gemini project quota 429) |
+| `ai_coach_failed` | The edge function call throws or returns an error | `error_category`: `'llm_pass_failed'`, `'ai_daily_limit'` (user's 3/day allowance used) or `'ai_rate_limited'` (Gemini project quota 429, or the project-wide 18/day cap in `ai_global_usage`) |
 
 ### Snap & Track (`dashboard.html`)
 | Event | Fires when | Properties |
