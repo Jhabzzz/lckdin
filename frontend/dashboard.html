@@ -667,6 +667,7 @@ body{transition:background-color .25s var(--ease),color .25s var(--ease)}
 .ai-bar-fill{width:100%;border-radius:3px 3px 0 0;background:var(--grad);min-height:3px;transition:height .8s var(--ease)}
 .ai-bar-lbl{font-family:var(--mono);font-size:7px;color:var(--text3);letter-spacing:.05em}
 .ai-msg strong{color:var(--text);font-weight:600;display:block;margin-bottom:8px}
+.ai-limit-note{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
 .ai-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--glass-brd);border-top:1px solid var(--glass-brd)}
 .ast{background:var(--bg3);padding:16px}
 .ast-v{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--text)}
@@ -1531,6 +1532,19 @@ function switchTab(n){
   document.getElementById('conf').style.display='none';
 }
 
+// 429s from ai-coach / analyze-journal carry a user-facing message
+// ("Daily AI limit reached, resets tomorrow" / "AI is recharging — try again later").
+// Returns { code, message } for those, null for any other error.
+async function aiLimitError(error){
+  try {
+    if (!error || !error.context || typeof error.context.json !== 'function') return null;
+    if (error.context.status !== 429) return null;
+    const b = await error.context.json();
+    if (b && (b.error === 'daily_limit' || b.error === 'ai_recharging') && b.message) return { code: b.error, message: String(b.message) };
+  } catch (e) { /* not JSON: fall through to the generic error */ }
+  return null;
+}
+
 // ── SNAP & TRACK · REAL GEMINI VISION ──
 let CS = [];
 
@@ -1556,7 +1570,15 @@ async function handleSnapUpload(file){
     const { data, error } = await sb.functions.invoke('analyze-journal', {
       body: { image: b64, mimeType, rules: RULES.map(r=>r.t) }
     });
-    if (error) throw error;
+    if (error) {
+      const lim = await aiLimitError(error);
+      if (lim) {
+        trackEvent('snap_track_failed', { error_category: lim.code === 'daily_limit' ? 'ai_daily_limit' : 'ai_rate_limited' });
+        alert(lim.message);
+        return;
+      }
+      throw error;
+    }
     if (data.error) throw new Error(data.error);
 
     CS = data.results.map(r => ({ ...RULES[r.idx], idx: r.idx, done: r.done }));
@@ -1887,14 +1909,37 @@ function scheduleLLMCoach(user, summary){
   llmCoachTimer = setTimeout(() => enrichAICoachWithLLM(user, summary), 1200);
 }
 
+// Once today's (UTC) allowance is used up, skip the call and keep the deterministic
+// briefing with a one-line note, instead of hitting the function on every save.
+function aiCoachLimitKey(){ return 'lckdin-ai-coach-limit-' + new Date().toISOString().slice(0,10); }
+function showAICoachNote(msgEl, text){
+  const note = document.createElement('div');
+  note.className = 'ai-limit-note';
+  note.textContent = text;
+  msgEl.appendChild(note);
+}
+
 async function enrichAICoachWithLLM(user, summary){
   const msgEl = document.getElementById('ai-msg');
   const originalMsg = msgEl.innerHTML;
+  try {
+    if (localStorage.getItem(aiCoachLimitKey())) { showAICoachNote(msgEl, 'Daily AI limit reached, resets tomorrow'); return; }
+  } catch (e) { /* storage blocked: just make the call */ }
   msgEl.innerHTML = '<em style="color:var(--text3)">Thinking…</em>';
   trackEvent('ai_coach_requested', {});
   try {
     const { data, error } = await sb.functions.invoke('ai-coach', { body: summary });
-    if (error) throw error;
+    if (error) {
+      const lim = await aiLimitError(error);
+      if (lim) {
+        if (lim.code === 'daily_limit') { try { localStorage.setItem(aiCoachLimitKey(), '1'); } catch (e) {} }
+        trackEvent('ai_coach_failed', { error_category: lim.code === 'daily_limit' ? 'ai_daily_limit' : 'ai_rate_limited' });
+        msgEl.innerHTML = originalMsg;
+        showAICoachNote(msgEl, lim.message);
+        return;
+      }
+      throw error;
+    }
     if (data.error) throw new Error(data.error);
 
     if (data.message) {

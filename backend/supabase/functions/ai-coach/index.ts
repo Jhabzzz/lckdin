@@ -1,9 +1,43 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const ALLOWED_ORIGINS = new Set([
   "https://lckd-in.com",
   "https://www.lckd-in.com",
 ]);
+
+// ── Per-user daily AI allowance + friendly rate-limit errors ──
+// Shared free-tier Gemini quota (20/day, 5/min per project), so each user gets
+// DAILY_LIMIT calls per UTC day. Failed model calls are refunded. The 429 bodies below
+// are read by the dashboard to show a specific message instead of a generic error.
+const DAILY_LIMIT = 3;
+const LIMIT_REACHED = { error: "daily_limit", message: "Daily AI limit reached, resets tomorrow" };
+const RECHARGING = { error: "ai_recharging", message: "AI is recharging — try again later" };
+
+async function takeQuota(req: Request, kind: "coach" | "snap"): Promise<{ userId: string | null; ok: boolean; refund: () => Promise<void> }> {
+  const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+  const { data, error: authError } = await admin.auth.getUser(jwt);
+  const noop = async () => {};
+  if (authError && !(authError.status && authError.status < 500)) {
+    // Auth API down/unreachable (not a bad token): don't tell signed-in users to sign in.
+    console.error("auth.getUser failed:", authError.status ?? "network");
+    return { userId: "unknown", ok: true, refund: noop };
+  }
+  const userId = data?.user?.id ?? null;
+  if (!userId) return { userId: null, ok: false, refund: noop };
+  const { data: allowed, error } = await admin.rpc("ai_quota_take", { p_user_id: userId, p_kind: kind, p_limit: DAILY_LIMIT });
+  if (error) {
+    // Quota table unreachable: let the call through rather than break the feature;
+    // Gemini's own 429 still protects the project quota.
+    console.error("ai_quota_take failed:", error.code);
+    return { userId, ok: true, refund: noop };
+  }
+  return {
+    userId, ok: allowed === true,
+    refund: async () => { await admin.rpc("ai_quota_refund", { p_user_id: userId, p_kind: kind }); },
+  };
+}
 
 function corsHeaders(origin: string | null) {
   const allowOrigin = origin && ALLOWED_ORIGINS.has(origin) ? origin : "https://lckd-in.com";
@@ -21,6 +55,7 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: CORS_HEADERS });
   }
 
+  let quota: Awaited<ReturnType<typeof takeQuota>> | null = null;
   try {
     const { dayNumber, rootRule, downstreamRules, missedToday, todayScore, days } = await req.json();
 
@@ -37,6 +72,18 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: "GEMINI_API_KEY not configured on the server" }),
         { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
       );
+    }
+
+    quota = await takeQuota(req, "coach");
+    if (!quota.userId) {
+      return new Response(
+        JSON.stringify({ error: "Sign in to use AI features" }),
+        { status: 401, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+      );
+    }
+    if (!quota.ok) {
+      return new Response(JSON.stringify(LIMIT_REACHED),
+        { status: 429, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
     }
 
     const historyLines = days
@@ -81,7 +128,13 @@ Respond with ONLY valid JSON, no markdown, in exactly this shape:
     );
 
     if (!geminiRes.ok) {
+      await quota!.refund();
       const errText = await geminiRes.text();
+      if (geminiRes.status === 429) {
+        console.error("Gemini rate limited:", errText.slice(0, 300));
+        return new Response(JSON.stringify(RECHARGING),
+          { status: 429, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
+      }
       console.error("Gemini error body:", errText);
       return new Response(
         JSON.stringify({ error: "Gemini request failed", status: geminiRes.status, detail: errText }),
@@ -96,6 +149,7 @@ Respond with ONLY valid JSON, no markdown, in exactly this shape:
     try {
       parsed = JSON.parse(textOut);
     } catch {
+      await quota!.refund();
       console.error("Could not parse Gemini text output:", textOut);
       return new Response(
         JSON.stringify({ error: "Could not parse Gemini response", raw: textOut }),
@@ -107,6 +161,7 @@ Respond with ONLY valid JSON, no markdown, in exactly this shape:
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
   } catch (err) {
+    if (quota?.ok) await quota.refund().catch(() => {});
     console.error("Unhandled error:", err);
     return new Response(
       JSON.stringify({ error: String(err) }),

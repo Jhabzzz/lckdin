@@ -58,6 +58,9 @@ lckdin/
 │       ├── config.toml        # per-function settings
 │       ├── functions/         # edge functions
 │       │   ├── adapt-agent/          # daily agent: suggests one adapted rule
+│       │   │   ├── index.ts          # handler: candidates, optional Gemini rewording, insert
+│       │   │   ├── logic.ts          # pure decision + template logic (no AI)
+│       │   │   └── logic.test.ts     # node backend/supabase/functions/adapt-agent/logic.test.ts
 │       │   ├── analyze-journal/      # Snap & Track (Gemini vision)
 │       │   ├── ai-coach/             # AI Coach (Gemini)
 │       │   ├── send-daily-reminder/  # cron reminder email

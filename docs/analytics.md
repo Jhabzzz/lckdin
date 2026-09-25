@@ -156,7 +156,7 @@ thing to a score, deliberately coarser than the raw percentage.
 |---|---|---|
 | `ai_coach_requested` | The debounced LLM coaching pass is invoked | — |
 | `ai_coach_succeeded` | The `ai-coach` edge function returns successfully | — |
-| `ai_coach_failed` | The edge function call throws or returns an error | `error_category: 'llm_pass_failed'` |
+| `ai_coach_failed` | The edge function call throws or returns an error | `error_category`: `'llm_pass_failed'`, `'ai_daily_limit'` (user's 3/day allowance used) or `'ai_rate_limited'` (Gemini project quota 429) |
 
 ### Snap & Track (`dashboard.html`)
 | Event | Fires when | Properties |
@@ -164,7 +164,7 @@ thing to a score, deliberately coarser than the raw percentage.
 | `snap_track_opened` | The Snap & Track tab is selected | — |
 | `snap_track_image_submitted` | A photo is submitted for analysis | — |
 | `snap_track_succeeded` | `analyze-journal` returns results | — |
-| `snap_track_failed` | The analysis call throws or returns an error | `error_category: 'vision_analysis_failed'` |
+| `snap_track_failed` | The analysis call throws or returns an error | `error_category`: `'vision_analysis_failed'`, `'ai_daily_limit'` or `'ai_rate_limited'` |
 | `snap_track_corrected` | User taps to correct an AI-detected rule (once per confirm screen) | — |
 | `snap_track_confirmed` | User confirms the detected results into today's log | — |
 

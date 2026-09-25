@@ -2254,6 +2254,19 @@ function switchTab(n){
   document.getElementById('conf').style.display='none';
 }
 
+// 429s from ai-coach / analyze-journal carry a user-facing message
+// ("Daily AI limit reached, resets tomorrow" / "AI is recharging — try again later").
+// Returns { code, message } for those, null for any other error.
+async function aiLimitError(error){
+  try {
+    if (!error || !error.context || typeof error.context.json !== 'function') return null;
+    if (error.context.status !== 429) return null;
+    const b = await error.context.json();
+    if (b && (b.error === 'daily_limit' || b.error === 'ai_recharging') && b.message) return { code: b.error, message: String(b.message) };
+  } catch (e) { /* not JSON: fall through to the generic error */ }
+  return null;
+}
+
 // ── SNAP & TRACK · REAL GEMINI VISION ──
 // Uses sb.functions.invoke so the user's auth JWT is attached automatically —
 // the analyze-journal edge function requires a signed-in caller.
@@ -2280,7 +2293,11 @@ async function handleSnapUpload(file){
     const { data, error } = await sb.functions.invoke('analyze-journal', {
       body: { image: b64, mimeType, rules: RULES.map(r=>r.t) }
     });
-    if (error) throw error;
+    if (error) {
+      const lim = await aiLimitError(error);
+      if (lim) { alert(lim.message); return; }
+      throw error;
+    }
     if (data.error) throw new Error(data.error);
 
     CS = data.results.map(r => ({ ...RULES[r.idx], idx: r.idx, done: r.done }));

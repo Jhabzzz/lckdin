@@ -6,29 +6,42 @@ A daily agent that notices when someone is slipping and suggests **one** easier 
 
 ```
 pg_cron (daily) ──> adapt-agent edge function            [x-internal-secret header]
-                      │ adapt_agent_candidates()          users who missed 2+ of the last 3 days
-                      │ per user, Gemini tool loop (≤5 tool steps):
-                      │   get_recent_logs · get_journal_entries · get_user_rules
-                      │   create_rule_adaptation ──> rule_adaptations (status = pending)
-                      └ logs token usage per user + per batch
+                      │ adapt_agent_candidates()          users who missed 2+ of the last 3 days (max 10 per run)
+                      │ per user:
+                      │   analyze()        decides the suggestion (logic.ts, no AI)
+                      │   buildTemplate()  writes it with exact numbers + dates (no AI)
+                      │   optional: ONE Gemini call rewords it (ADAPT_AGENT_GEMINI_KEY)
+                      │   insert ──> rule_adaptations (status = pending)
+                      └ logs outcome + token usage per user + per batch
 
 dashboard.html "Suggested adjustment" card
    Accept ─> confirm "Replace X with Y?" ─> accept_rule_adaptation()  (atomic: swaps that one rule + marks accepted)
    Reject ─> reject_rule_adaptation()
 ```
 
+## AI is optional (free tier)
+
+The template is the product; Gemini only polishes it.
+
+- **Template (always):** e.g. *You missed "Social Media < 30 min" on 2 of your last 3 logged days (Sep 20, 22) and on 3 of 5 logged days in the last 14 days.* Counts and dates come straight from `analyze()`, so a miscount like "2 of 2" can't happen.
+- **Rewording (optional):** only with `ADAPT_AGENT_GEMINI_KEY` (its own Gemini project). It **never** uses `GEMINI_API_KEY`, which is the user-facing ai-coach / analyze-journal quota. It makes one call per user, spaced 15s apart (free tier allows 5/min and 20/day). No new call is started after 100s; later users get the template.
+- **Guard:** a reworded reason is used only if it keeps every number, month and "X of Y" count from the template and adds no new number. Otherwise the template is used.
+- **Any error, timeout or 429 means the template is used.** A 429 also turns AI off for the rest of that run. The run never fails because of the model.
+- **Proposed rule (rule_change):** the Gemini call may propose the adapted rule. Without it, `loosenRule()` scales the rule's amount: a cap is loosened by half (`< 30 min` → `< 45 min`) and a target is halved (`20 min walk` → `10 min walk`). Clock times (`Sleep at 11:30 PM`) and rules without an amount have no honest template, so **no row is written** and the next run tries again.
+- Test the pure logic locally with `node backend/supabase/functions/adapt-agent/logic.test.ts`.
+
 ## Who gets a suggestion
 
 `adapt_agent_candidates()` picks users who:
 - logged at least once in the last 14 days (inactive users are left alone)
-- missed **2 or more of the last 3 completed days**, where "missed" means no log that day or status `MISS`. A **pivot-protected day is never counted as missed**, because using a pivot is already the "adapt, don't reset" move. The agent's prompt also tells it not to treat pivot days as evidence of slipping.
+- missed **2 or more of the last 3 completed days**, where "missed" means no log that day or status `MISS`. A **pivot-protected day is never counted as missed**, because using a pivot is already the "adapt, don't reset" move, and it's never used as evidence.
 - have had **no suggestion in the last 7 days**, whether pending, accepted or rejected
 
-A user can also have at most one pending suggestion (unique index), and each run is capped at 25 users with a 110s time budget.
+A user can also have at most one pending suggestion (unique index), and each run is capped at 10 users.
 
-## What gets suggested (decided in code, before the model runs)
+## What gets suggested (decided in code)
 
-`analyze()` in the edge function makes the decision deterministically. The model only explains *why* and words the suggestion, and `create_rule_adaptation` rejects anything else.
+`analyze()` in `adapt-agent/logic.ts` makes the decision deterministically. The model never chooses the type or the rule.
 
 - **Only completed days** are read, never the user's own today. There's no stored timezone, so the agent reads only `log_date` before the UTC date 12 hours ago. Every real timezone is between UTC−12 and UTC+14, so that date can never be anyone's today. At the 13:00 UTC cron this excludes exactly UTC-today; only users east of UTC+11 also lose their (completed) yesterday.
 - **Evidence** is the user's last 3 **logged** days within 14 days. No-log days make someone a candidate, but they are never evidence against a specific rule; only an unchecked rule on a logged day counts. Pivot days and **0% days** are excluded too: a day with nothing checked says nothing about *which* rule failed, and editing the rule list can write an all-unchecked placeholder row. Rules are matched by text, so edits to the list don't misalign history.
@@ -43,7 +56,7 @@ A user can also have at most one pending suggestion (unique index), and each run
 
 - **Types:** `type` is `rule_change` (uses `rule_index`, `old_rule`, `proposed_rule`) or `rough_patch` (uses `proposed_rule`, `focus_rules` [{index,t}], `focus_days`; `rule_index`/`old_rule` are null). A check constraint enforces the shape.
 
-- **Source:** `daily_logs` only. `get_journal_entries` returns rule-by-rule done/missed per day from `daily_logs.rules`. No journal photos are stored.
+- **Source:** `daily_logs` only (rule-by-rule done/missed per day from `daily_logs.rules`). No journal photos are stored.
 - **`rule_adaptations`:** `id, user_id, rule_index, old_rule, proposed_rule, reason, status (pending|accepted|rejected), created_at, decided_at`. `old_rule` is kept so an undo can be added later.
 - **RLS:** users can SELECT only their own rows. Nobody can insert, update or delete through the API. Inserts come from the edge function (service role), and decisions go through the two RPCs.
 
@@ -61,9 +74,10 @@ A user can also have at most one pending suggestion (unique index), and each run
 curl -X POST https://qtlhpaqsmbyneivdsiei.supabase.co/functions/v1/adapt-agent \
   -H "x-internal-secret: $INTERNAL_WEBHOOK_SECRET" -H "Content-Type: application/json" \
   -d '{"user_id":"<uuid>","dry_run":true}'   # omit user_id for a normal candidate run; omit dry_run to insert
+                                              # add "no_ai":true for template only (no Gemini call)
 ```
 
-Token usage: Supabase dashboard → Edge Functions → adapt-agent → Logs, events `adapt_agent_run` and `adapt_agent_batch`.
+Logs: Supabase dashboard → Edge Functions → adapt-agent → Logs. `adapt_agent_run` records each user's outcome, `source` (`ai` or `template`, and why AI wasn't used) and tokens. `adapt_agent_batch` records `gemini_calls` and `ai_disabled`.
 
 ## On merge to main: schedule the daily run
 
