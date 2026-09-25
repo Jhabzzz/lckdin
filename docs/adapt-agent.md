@@ -24,9 +24,22 @@ dashboard.html "Suggested adjustment" card
 - missed **2 or more of the last 3 completed days**, where "missed" means no log that day or status `MISS`. A **pivot-protected day is never counted as missed**, because using a pivot is already the "adapt, don't reset" move. The agent's prompt also tells it not to treat pivot days as evidence of slipping.
 - have had **no suggestion in the last 7 days**, whether pending, accepted or rejected
 
-A user can also have at most one pending suggestion (unique index), and each run is capped at 50 users.
+A user can also have at most one pending suggestion (unique index), and each run is capped at 25 users with a 110s time budget.
+
+## What gets suggested (decided in code, before the model runs)
+
+`analyze()` in the edge function makes the decision deterministically. The model only explains *why* and words the suggestion, and `create_rule_adaptation` rejects anything else.
+
+- **Evidence** is the user's last 3 **logged** days within 14 days. No-log days make someone a candidate, but they are never evidence against a specific rule; only an unchecked rule on a logged day counts. Pivot days and **0% days** are excluded too: a day with nothing checked says nothing about *which* rule failed, and editing the rule list can write an all-unchecked placeholder row. Rules are matched by text, so edits to the list don't misalign history.
+- **`rough_patch`:** if on most evidence days (2 of 3) **70% or more of the rules were missed together**, no rule is blamed. The suggestion is *"For 3 days, only your !!! rules (n)."* (or the 3 most-kept rules if there are no `!!!` rules). Accepting it records the commitment and **never changes the rule list**.
+- **`rule_change`:** otherwise, one failing rule (missed on most evidence days) gets an adapted version.
+  - `!!!` rules are **never** loosened unless one is the *only* rule failing. Non-`!!!` rules always win.
+  - Tie-break: the rule whose current miss streak **started first**, then the most misses in the 14-day window, then the lowest index.
+- **Nothing** is eligible (e.g. only 2+ `!!!` rules failing): no suggestion, and no Gemini call.
 
 ## Data
+
+- **Types:** `type` is `rule_change` (uses `rule_index`, `old_rule`, `proposed_rule`) or `rough_patch` (uses `proposed_rule`, `focus_rules` [{index,t}], `focus_days`; `rule_index`/`old_rule` are null). A check constraint enforces the shape.
 
 - **Source:** `daily_logs` only. `get_journal_entries` returns rule-by-rule done/missed per day from `daily_logs.rules`. No journal photos are stored.
 - **`rule_adaptations`:** `id, user_id, rule_index, old_rule, proposed_rule, reason, status (pending|accepted|rejected), created_at, decided_at`. `old_rule` is kept so an undo can be added later.

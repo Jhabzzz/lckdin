@@ -2084,15 +2084,19 @@ sb.auth.onAuthStateChange((event) => {
 <script>
 // ── SUGGESTED ADJUSTMENT (adapt-agent) ──
 // Additive: shows the user's pending rule_adaptations row above the AI briefing
-// card. Accept/reject go through RPCs, so the one-rule swap and the status change
-// happen atomically on the server. On success the page reloads, so RULES is rebuilt
-// from profiles.rules by boot() and is never mutated from here.
+// card. Two types:
+//   rule_change — accept swaps one rule (atomically, server-side), then the page
+//                 reloads so RULES is rebuilt from profiles.rules by boot().
+//   rough_patch — accept only records the commitment to focus on a short list of
+//                 rules for a few days; the rule list is never changed.
 (function () {
   var STYLE_ID = 'adj-styles';
   var css = [
     '.adj-rule{font-family:var(--mono);font-size:12px;line-height:1.6;padding:10px 12px;border:1px solid var(--line2);margin-bottom:8px;color:var(--text2)}',
     '.adj-rule b{display:block;font-size:9px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--text4);margin-bottom:4px}',
     '.adj-rule.new{border-color:var(--lime);color:var(--text)}',
+    '.adj-focus{list-style:none;margin:0;padding:0}',
+    '.adj-focus li{padding:2px 0}',
     '.adj-why{font-family:var(--mono);font-size:11px;line-height:1.75;color:var(--text3);margin:14px 0 18px}',
     '.adj-q{font-family:var(--mono);font-size:12px;line-height:1.6;color:var(--text);margin-bottom:12px}',
     '.adj-actions{display:flex;gap:8px;flex-wrap:wrap}',
@@ -2117,6 +2121,14 @@ sb.auth.onAuthStateChange((event) => {
     return n;
   }
 
+  function niceDate(iso) {
+    // 'YYYY-MM-DD' -> 'Sep 27' in the viewer's locale; falls back to the raw string.
+    try {
+      var p = String(iso).split('-');
+      return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    } catch (e) { return String(iso); }
+  }
+
   function currentRulesPayload() {
     // Only used server-side when profiles.rules is empty (user still on the default list).
     try {
@@ -2138,8 +2150,21 @@ sb.auth.onAuthStateChange((event) => {
     head.appendChild(el('div', 'ai-ttl', 'Suggested adjustment'));
     var body = el('div', 'ai-body');
 
-    var oldBox = el('div', 'adj-rule'); oldBox.appendChild(el('b', null, 'Now')); oldBox.appendChild(document.createTextNode(row.old_rule));
-    var newBox = el('div', 'adj-rule new'); newBox.appendChild(el('b', null, 'Suggested')); newBox.appendChild(document.createTextNode(row.proposed_rule));
+    var isPatch = row.type === 'rough_patch';
+    var focus = (Array.isArray(row.focus_rules) ? row.focus_rules : []).filter(function (f) { return f && f.t; });
+    var focusDays = row.focus_days || 3;
+    var oldBox, newBox;
+    if (isPatch) {
+      oldBox = el('div', 'adj-rule'); oldBox.appendChild(el('b', null, 'Rough patch'));
+      oldBox.appendChild(document.createTextNode(row.proposed_rule));
+      newBox = el('div', 'adj-rule new'); newBox.appendChild(el('b', null, 'Focus on'));
+      var list = el('ul', 'adj-focus');
+      focus.forEach(function (f) { list.appendChild(el('li', null, f.t)); });
+      newBox.appendChild(list);
+    } else {
+      oldBox = el('div', 'adj-rule'); oldBox.appendChild(el('b', null, 'Now')); oldBox.appendChild(document.createTextNode(row.old_rule));
+      newBox = el('div', 'adj-rule new'); newBox.appendChild(el('b', null, 'Suggested')); newBox.appendChild(document.createTextNode(row.proposed_rule));
+    }
     var why = el('div', 'adj-why', row.reason);
     var actions = el('div', 'adj-actions');
     var msg = el('div', 'adj-msg');
@@ -2159,8 +2184,10 @@ sb.auth.onAuthStateChange((event) => {
     function showConfirm() {
       setMsg('');
       actions.innerHTML = '';
-      var q = el('div', 'adj-q', 'Replace “' + row.old_rule + '” with “' + row.proposed_rule + '”?');
-      var yes = el('button', 'adj-btn primary', 'Yes, replace'); yes.type = 'button';
+      var q = el('div', 'adj-q', isPatch
+        ? 'Focus on just these ' + focus.length + ' rule' + (focus.length === 1 ? '' : 's') + ' for ' + focusDays + ' days? Your rule list won’t change.'
+        : 'Replace “' + row.old_rule + '” with “' + row.proposed_rule + '”?');
+      var yes = el('button', 'adj-btn primary', isPatch ? 'Yes, focus' : 'Yes, replace'); yes.type = 'button';
       var no = el('button', 'adj-btn', 'Cancel'); no.type = 'button';
       yes.onclick = doAccept;
       no.onclick = function () { q.remove(); showChoices(); };
@@ -2171,13 +2198,19 @@ sb.auth.onAuthStateChange((event) => {
     async function doAccept() {
       busy(true); setMsg('Applying…');
       try {
-        var res = await sb.rpc('accept_rule_adaptation', { p_id: row.id, p_current_rules: currentRulesPayload() });
+        var res = await sb.rpc('accept_rule_adaptation', { p_id: row.id, p_current_rules: isPatch ? null : currentRulesPayload() });
         if (res.error) throw res.error;
         if (!res.data || !res.data.success) {
           var code = res.data && res.data.error;
           setMsg(ERRORS[code] || 'Couldn’t apply that. Nothing was changed.', true);
           busy(false);
           if (code === 'already_decided' || code === 'not_found') actions.innerHTML = '';
+          return;
+        }
+        if (res.data.type === 'rough_patch') {
+          var q2 = card.querySelector('.adj-q'); if (q2) q2.remove();
+          actions.innerHTML = '';
+          setMsg('Locked in. Focus on these until ' + niceDate(res.data.focus_until) + '. Your rules are unchanged.');
           return;
         }
         setMsg('Rule updated.');
@@ -2210,7 +2243,7 @@ sb.auth.onAuthStateChange((event) => {
   async function load() {
     try {
       var res = await sb.from('rule_adaptations')
-        .select('id, rule_index, old_rule, proposed_rule, reason')
+        .select('id, type, rule_index, old_rule, proposed_rule, reason, focus_rules, focus_days')
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
         .limit(1)
